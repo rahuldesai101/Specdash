@@ -1,4 +1,4 @@
-# [IDE-001] A_CLOUD_FOR_SMALL_SOFTWARE
+# A_CLOUD_FOR_SMALL_SOFTWARE
 
 ```text
 [ TYPE: IDEA ]  [ CREATED: 2026-07-26 ]  [ STATUS: RAW ]  [ TAGS: #cloud, #infra, #ai-agent, #devex ]
