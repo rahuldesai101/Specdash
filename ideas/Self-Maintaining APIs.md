@@ -1,5 +1,5 @@
 
-# [IDE-002] SELF_MAINTAINING_APIS
+# SELF_MAINTAINING_APIS
 
 ```text
 [ TYPE: IDEA ]  [ CREATED: 2026-07-26 ]  [ STATUS: RAW ]  [ TAGS: #dev-tools, #automation, #ast, #ci-cd ]
