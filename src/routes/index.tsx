@@ -1,197 +1,191 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, useCallback } from "react";
+
+type Search = { owner?: string; repo?: string };
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "SANDBOX // R&D_SPEC_SYSTEM_v1.0" },
-      { name: "description", content: "Raw technical R&D dashboard synced to a GitHub repository." },
-      { property: "og:title", content: "SANDBOX // R&D_SPEC_SYSTEM_v1.0" },
-      { property: "og:description", content: "Raw technical R&D dashboard synced to a GitHub repository." },
+      { title: "SANDBOX // GITHUB_DB_INTERFACE_v1.0" },
+      {
+        name: "description",
+        content: "Brutalist developer dashboard that treats a GitHub repository as a database.",
+      },
+      { property: "og:title", content: "SANDBOX // GITHUB_DB_INTERFACE_v1.0" },
+      {
+        property: "og:description",
+        content: "GitHub-as-a-DB: read via REST tree, write via git commits.",
+      },
     ],
+  }),
+  validateSearch: (s: Record<string, unknown>): Search => ({
+    owner: typeof s.owner === "string" ? s.owner : undefined,
+    repo: typeof s.repo === "string" ? s.repo : undefined,
   }),
   component: Index,
 });
 
-const DIRS = ["ideas", "experiments", "research"] as const;
-type Dir = (typeof DIRS)[number];
+const COLLECTIONS = ["ideas", "experiments", "research"] as const;
+type Collection = (typeof COLLECTIONS)[number];
 
-type Entry = {
-  path: string;
-  name: string;
-  type: "IDE" | "EXP" | "RES";
-  dir: Dir;
-  sha: string;
-  size: number;
-  kind: "file" | "dir";
-  html_url: string;
-  download_url: string | null;
-  last_modified?: string;
-  last_commit?: string;
-};
-
-type GhItem = {
-  path: string;
-  name: string;
-  sha: string;
-  size: number;
-  type: "file" | "dir";
-  html_url: string;
-  download_url: string | null;
-};
-
-const TYPE_MAP: Record<Dir, Entry["type"]> = {
+const TYPE_MAP: Record<Collection, "IDE" | "EXP" | "RES"> = {
   ideas: "IDE",
   experiments: "EXP",
   research: "RES",
 };
 
-const STATUS_FROM_DIR: Record<Dir, string> = {
-  ideas: "RAW",
-  experiments: "ACTIVE",
-  research: "ARCHIVED",
+type Record_ = {
+  path: string;
+  filename: string;
+  ext: string;
+  sha: string;
+  size: number;
+  collection: Collection;
+  type: "IDE" | "EXP" | "RES";
+  kind: "blob" | "tree";
+  commit_sha?: string;
+  commit_date?: string;
 };
 
-async function fetchDir(owner: string, repo: string, path: string): Promise<GhItem[]> {
+type TreeItem = {
+  path: string;
+  mode: string;
+  type: "blob" | "tree";
+  sha: string;
+  size?: number;
+};
+
+async function fetchTree(owner: string, repo: string, branch: string) {
   const res = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
+    `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`,
     { headers: { Accept: "application/vnd.github+json" } },
   );
-  if (!res.ok) return [];
-  const data = await res.json();
-  return Array.isArray(data) ? data : [];
+  if (!res.ok) throw new Error(`TREE_FETCH_${res.status}`);
+  return (await res.json()) as { sha: string; tree: TreeItem[]; truncated: boolean };
 }
 
-async function walk(owner: string, repo: string, dir: Dir): Promise<Entry[]> {
-  const out: Entry[] = [];
-  const stack: string[] = [dir];
-  while (stack.length) {
-    const p = stack.pop()!;
-    const items = await fetchDir(owner, repo, p);
-    for (const it of items) {
-      if (it.type === "dir") {
-        stack.push(it.path);
-        out.push({
-          path: it.path,
-          name: it.name,
-          type: TYPE_MAP[dir],
-          dir,
-          sha: it.sha,
-          size: it.size,
-          kind: "dir",
-          html_url: it.html_url,
-          download_url: null,
-        });
-      } else {
-        out.push({
-          path: it.path,
-          name: it.name,
-          type: TYPE_MAP[dir],
-          dir,
-          sha: it.sha,
-          size: it.size,
-          kind: "file",
-          html_url: it.html_url,
-          download_url: it.download_url,
-        });
-      }
-    }
-  }
-  return out;
+async function fetchDefaultBranch(owner: string, repo: string): Promise<string> {
+  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+    headers: { Accept: "application/vnd.github+json" },
+  });
+  if (!res.ok) throw new Error(`REPO_FETCH_${res.status}`);
+  const d = await res.json();
+  return d.default_branch ?? "main";
 }
 
-async function fetchLastCommit(owner: string, repo: string): Promise<string> {
+async function fetchHeadCommit(owner: string, repo: string, branch: string) {
   const res = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/commits?per_page=1`,
+    `https://api.github.com/repos/${owner}/${repo}/commits/${branch}`,
     { headers: { Accept: "application/vnd.github+json" } },
   );
-  if (!res.ok) return "----------";
-  const data = await res.json();
-  return data?.[0]?.sha?.slice(0, 10) ?? "----------";
+  if (!res.ok) return null;
+  return (await res.json()) as {
+    sha: string;
+    commit: { committer: { date: string } };
+  };
 }
 
-async function fetchFileLastCommit(
+async function fetchFileCommit(
   owner: string,
   repo: string,
   path: string,
-): Promise<{ date?: string; sha?: string }> {
+): Promise<{ sha?: string; date?: string }> {
   const res = await fetch(
     `https://api.github.com/repos/${owner}/${repo}/commits?path=${encodeURIComponent(path)}&per_page=1`,
     { headers: { Accept: "application/vnd.github+json" } },
   );
   if (!res.ok) return {};
-  const data = await res.json();
-  const c = data?.[0];
-  return { date: c?.commit?.committer?.date, sha: c?.sha?.slice(0, 7) };
+  const d = await res.json();
+  return { sha: d?.[0]?.sha, date: d?.[0]?.commit?.committer?.date };
 }
 
-function loadConfig() {
-  if (typeof window === "undefined") return { owner: "", repo: "sandbox" };
-  try {
-    const raw = localStorage.getItem("sandbox.config");
-    if (raw) return JSON.parse(raw);
-  } catch {}
-  return { owner: "", repo: "sandbox" };
+function classify(path: string): Collection | null {
+  const seg = path.split("/")[0];
+  return (COLLECTIONS as readonly string[]).includes(seg) ? (seg as Collection) : null;
 }
 
 function Index() {
-  const [config, setConfig] = useState<{ owner: string; repo: string }>({
-    owner: "",
-    repo: "sandbox",
-  });
-  const [entries, setEntries] = useState<Entry[]>([]);
-  const [lastCommit, setLastCommit] = useState<string>("----------");
-  const [status, setStatus] = useState<"IDLE" | "SYNCING" | "CONNECTED" | "ERROR">("IDLE");
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: "/" });
+
+  const owner = search.owner ?? "";
+  const repo = search.repo ?? "sandbox";
+
+  const [records, setRecords] = useState<Record_[]>([]);
+  const [branch, setBranch] = useState("main");
+  const [headCommit, setHeadCommit] = useState<{ sha: string; date: string } | null>(null);
+  const [status, setStatus] = useState<"IDLE" | "SYNCING" | "SYNCED" | "ERROR">("IDLE");
   const [error, setError] = useState<string | null>(null);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState(false);
+  const [truncated, setTruncated] = useState(false);
+  const [cfgOpen, setCfgOpen] = useState(false);
+  const [writeOpen, setWriteOpen] = useState(false);
   const [now, setNow] = useState(() => new Date().toISOString());
 
   useEffect(() => {
-    const cfg = loadConfig();
-    setConfig(cfg);
-    if (!cfg.owner) setSettingsOpen(true);
-  }, []);
+    if (!owner) setCfgOpen(true);
+  }, [owner]);
 
   const sync = useCallback(async () => {
-    if (!config.owner || !config.repo) return;
+    if (!owner || !repo) return;
     setStatus("SYNCING");
     setError(null);
     try {
-      const [i, e, r, commit] = await Promise.all([
-        walk(config.owner, config.repo, "ideas"),
-        walk(config.owner, config.repo, "experiments"),
-        walk(config.owner, config.repo, "research"),
-        fetchLastCommit(config.owner, config.repo),
+      const br = await fetchDefaultBranch(owner, repo);
+      setBranch(br);
+      const [tree, head] = await Promise.all([
+        fetchTree(owner, repo, br),
+        fetchHeadCommit(owner, repo, br),
       ]);
-      const all = [...i, ...e, ...r];
-      setEntries(all);
-      setLastCommit(commit);
-      setStatus("CONNECTED");
+      setTruncated(tree.truncated);
+      if (head) setHeadCommit({ sha: head.sha, date: head.commit.committer.date });
+      const rows: Record_[] = [];
+      for (const item of tree.tree) {
+        const col = classify(item.path);
+        if (!col) continue;
+        if (item.path === col) continue; // skip the collection root itself
+        const filename = item.path.split("/").pop() ?? item.path;
+        const ext = filename.includes(".") ? filename.split(".").pop()! : "";
+        rows.push({
+          path: item.path,
+          filename,
+          ext,
+          sha: item.sha,
+          size: item.size ?? 0,
+          collection: col,
+          type: TYPE_MAP[col],
+          kind: item.type,
+        });
+      }
+      rows.sort((a, b) => a.path.localeCompare(b.path));
+      setRecords(rows);
+      setStatus("SYNCED");
 
-      // enrich with per-file last commit (batched, best effort)
-      const files = all.filter((x) => x.kind === "file").slice(0, 40);
+      // Enrich first N blobs with per-file commit metadata (best-effort, rate-limited)
+      const targets = rows.filter((r) => r.kind === "blob").slice(0, 30);
       const enriched = await Promise.all(
-        files.map(async (f) => {
-          const c = await fetchFileLastCommit(config.owner, config.repo, f.path);
-          return { ...f, last_modified: c.date, last_commit: c.sha };
+        targets.map(async (r) => {
+          const c = await fetchFileCommit(owner, repo, r.path);
+          return { path: r.path, ...c };
         }),
       );
-      setEntries((prev) =>
-        prev.map((p) => enriched.find((e2) => e2.path === p.path) ?? p),
+      setRecords((prev) =>
+        prev.map((r) => {
+          const e = enriched.find((x) => x.path === r.path);
+          return e ? { ...r, commit_sha: e.sha, commit_date: e.date } : r;
+        }),
       );
-    } catch (err) {
+    } catch (e) {
       setStatus("ERROR");
-      setError(err instanceof Error ? err.message : "unknown error");
+      setError(e instanceof Error ? e.message : "UNKNOWN_ERR");
     }
-  }, [config.owner, config.repo]);
+  }, [owner, repo]);
 
   useEffect(() => {
-    if (!config.owner) return;
+    if (!owner) return;
     sync();
     const t = setInterval(sync, 30_000);
     return () => clearInterval(t);
-  }, [sync, config.owner]);
+  }, [sync, owner]);
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date().toISOString()), 1000);
@@ -199,316 +193,303 @@ function Index() {
   }, []);
 
   const counts = useMemo(() => {
-    const files = entries.filter((e) => e.kind === "file");
+    const blobs = records.filter((r) => r.kind === "blob");
     return {
-      total: files.length,
-      ideas: files.filter((e) => e.dir === "ideas").length,
-      exp: files.filter((e) => e.dir === "experiments").length,
-      res: files.filter((e) => e.dir === "research").length,
+      total: blobs.length,
+      ideas: blobs.filter((r) => r.collection === "ideas").length,
+      exp: blobs.filter((r) => r.collection === "experiments").length,
+      res: blobs.filter((r) => r.collection === "research").length,
     };
-  }, [entries]);
+  }, [records]);
 
-  const rows = useMemo(
-    () =>
-      entries
-        .filter((e) => e.kind === "file")
-        .sort((a, b) => a.path.localeCompare(b.path)),
-    [entries],
-  );
-
-  return (
-    <div className="min-h-screen bg-black text-white">
-      <Header
-        status={status}
-        owner={config.owner}
-        repo={config.repo}
-        onOpenSettings={() => setSettingsOpen(true)}
-        onSync={sync}
-        now={now}
-      />
-      <StatBar
-        total={counts.total}
-        ideas={counts.ideas}
-        exp={counts.exp}
-        res={counts.res}
-        lastCommit={lastCommit}
-      />
-      <div className="px-4 py-3 flex items-center justify-between border-b border-hard">
-        <div className="text-[11px] uppercase tracking-widest text-[#00ff66]">
-          &gt; /spec_table  //  {rows.length} FILES INDEXED
-        </div>
-        <button
-          onClick={() => setCreateOpen(true)}
-          className="px-3 py-1.5 border border-[#00ff66] text-[#00ff66] text-[11px] uppercase tracking-wider hover:bg-[#00ff66] hover:text-black transition-colors"
-        >
-          [ + NEW_SANDBOX_ENTRY ]
-        </button>
-      </div>
-      {error && (
-        <div className="px-4 py-2 border-b border-hard text-[11px] text-[#ff5500]">
-          ERR: {error}
-        </div>
-      )}
-      <SpecTable rows={rows} owner={config.owner} repo={config.repo} />
-      <Footer now={now} />
-
-      {settingsOpen && (
-        <SettingsDrawer
-          config={config}
-          onClose={() => setSettingsOpen(false)}
-          onSave={(c) => {
-            setConfig(c);
-            try {
-              localStorage.setItem("sandbox.config", JSON.stringify(c));
-            } catch {}
-            setSettingsOpen(false);
-          }}
-        />
-      )}
-      {createOpen && (
-        <NewEntryModal
-          owner={config.owner}
-          repo={config.repo}
-          onClose={() => setCreateOpen(false)}
-        />
-      )}
-    </div>
-  );
-}
-
-function Header({
-  status,
-  owner,
-  repo,
-  onOpenSettings,
-  onSync,
-  now,
-}: {
-  status: string;
-  owner: string;
-  repo: string;
-  onOpenSettings: () => void;
-  onSync: () => void;
-  now: string;
-}) {
   const dot =
-    status === "CONNECTED"
+    status === "SYNCED"
       ? "#00ff66"
       : status === "SYNCING"
         ? "#ffaa00"
         : status === "ERROR"
           ? "#ff5500"
           : "#666";
+
   return (
-    <header className="border-b border-hard">
-      <div className="flex items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-4">
-          <div className="text-white text-[13px] font-bold tracking-wider">
+    <div className="min-h-screen bg-black text-white">
+      {/* HEADER */}
+      <header className="border-b border-hard">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
+          <div className="text-[13px] font-bold tracking-wider">
             SANDBOX <span className="text-[#333]">//</span>{" "}
-            <span className="text-[#00ff66]">R&amp;D_SPEC_SYSTEM_v1.0</span>
+            <span className="text-[#00ff66]">GITHUB_DB_INTERFACE_v1.0</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-3 text-[10px] uppercase tracking-widest">
+            <span className="flex items-center gap-2">
+              <span
+                className="inline-block w-2 h-2 animate-pulse"
+                style={{ backgroundColor: dot }}
+              />
+              [ DB_STATUS: {status} ]
+            </span>
+            <span className="text-[#333]">|</span>
+            <span>[ DB: {owner || "___"}/{repo || "___"}@{branch} ]</span>
+            <span className="text-[#333]">|</span>
+            <span className="text-[#666]">[ T: {now.slice(11, 19)}Z ]</span>
+            <span className="text-[#333]">|</span>
+            <button
+              onClick={sync}
+              className="border border-[#333] px-2 py-1 hover:border-[#00ff66] hover:text-[#00ff66]"
+            >
+              [PULL]
+            </button>
+            <button
+              onClick={() => setCfgOpen(true)}
+              className="border border-[#333] px-2 py-1 hover:border-[#00ff66] hover:text-[#00ff66]"
+            >
+              [CFG]
+            </button>
           </div>
         </div>
-        <div className="flex items-center gap-3 text-[10px] uppercase tracking-widest">
-          <span className="flex items-center gap-2">
-            <span
-              className="inline-block w-2 h-2 animate-pulse"
-              style={{ backgroundColor: dot }}
-            />
-            [ API_STATUS: {status} ]
-          </span>
-          <span className="text-[#666]">|</span>
-          <span className="text-white">
-            [ REPO: {owner || "___"}/{repo || "___"} ]
-          </span>
-          <span className="text-[#666]">|</span>
-          <span className="text-[#666]">[ T: {now.slice(11, 19)}Z ]</span>
-          <span className="text-[#666]">|</span>
-          <button
-            onClick={onSync}
-            className="border border-[#333] px-2 py-1 hover:border-[#00ff66] hover:text-[#00ff66]"
-          >
-            [SYNC]
-          </button>
-          <button
-            onClick={onOpenSettings}
-            className="border border-[#333] px-2 py-1 hover:border-[#00ff66] hover:text-[#00ff66]"
-          >
-            [CFG]
-          </button>
-        </div>
+      </header>
+
+      {/* STATS BAR */}
+      <div className="flex border-b border-hard">
+        <Stat label="TOTAL_RECORDS" value={counts.total} accent="#00ff66" />
+        <Stat label="IDEAS_COUNT" value={counts.ideas} />
+        <Stat label="EXP_COUNT" value={counts.exp} accent="#ff5500" />
+        <Stat label="RESEARCH_COUNT" value={counts.res} />
+        <Stat
+          label="HEAD_COMMIT"
+          value={headCommit?.sha.slice(0, 10) ?? "----------"}
+          accent="#00ff66"
+        />
       </div>
-    </header>
+
+      {/* SUB BAR */}
+      <div className="flex items-center justify-between border-b border-hard px-4 py-2">
+        <div className="text-[11px] uppercase tracking-widest text-[#00ff66]">
+          &gt; SELECT * FROM {"{ideas,experiments,research}"} — {records.filter((r) => r.kind === "blob").length} ROWS
+        </div>
+        <button
+          onClick={() => setWriteOpen(true)}
+          className="px-3 py-1.5 border border-[#00ff66] text-[#00ff66] text-[11px] uppercase tracking-wider hover:bg-[#00ff66] hover:text-black"
+        >
+          [ + WRITE_TO_SANDBOX_DB ]
+        </button>
+      </div>
+
+      {truncated && (
+        <div className="border-b border-hard px-4 py-2 text-[11px] text-[#ff5500]">
+          WARN: TREE_TRUNCATED — repository exceeds single-request tree size. Some records omitted.
+        </div>
+      )}
+      {error && (
+        <div className="border-b border-hard px-4 py-2 text-[11px] text-[#ff5500]">
+          ERR: {error} — verify owner/repo and public API rate limit (60/hr).
+        </div>
+      )}
+
+      {/* GRID */}
+      {!owner ? (
+        <div className="px-4 py-16 text-center text-[12px] text-[#666]">
+          &gt; NO_DB_CONFIGURED — open [CFG] to bind GITHUB_OWNER/GITHUB_REPO
+        </div>
+      ) : records.length === 0 && status === "SYNCED" ? (
+        <div className="px-4 py-16 text-center text-[12px] text-[#666]">
+          &gt; DB_EMPTY — no records in /ideas, /experiments, /research
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-[11px] border-collapse">
+            <thead>
+              <tr className="text-[10px] uppercase tracking-widest text-[#666]">
+                <Th>#</Th>
+                <Th>RECORD_PATH</Th>
+                <Th>TYPE</Th>
+                <Th>EXT</Th>
+                <Th>SIZE_B</Th>
+                <Th>COMMIT_SHA</Th>
+                <Th>TIMESTAMP</Th>
+                <Th>PRIMARY_KEY_LINK</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {records.map((r, i) => {
+                const typeColor =
+                  r.type === "IDE"
+                    ? "#00ff66"
+                    : r.type === "EXP"
+                      ? "#ff5500"
+                      : "#ffffff";
+                const link =
+                  r.kind === "tree"
+                    ? `https://github.com/${owner}/${repo}/tree/${branch}/${r.path}`
+                    : `https://github.com/${owner}/${repo}/blob/${branch}/${r.path}`;
+                return (
+                  <tr key={r.path} className="hover:bg-[#0a0a0a]">
+                    <Td className="text-[#555] tabular-nums">
+                      {String(i + 1).padStart(4, "0")}
+                    </Td>
+                    <Td className="text-white">
+                      /{r.path}
+                      {r.kind === "tree" && <span className="text-[#666]">/</span>}
+                    </Td>
+                    <Td style={{ color: typeColor }}>[{r.type}]</Td>
+                    <Td className="text-[#888]">{r.ext || "--"}</Td>
+                    <Td className="text-[#888] tabular-nums">
+                      {r.kind === "tree" ? "----" : r.size}
+                    </Td>
+                    <Td className="text-[#666] tabular-nums">
+                      {(r.commit_sha ?? r.sha).slice(0, 10)}
+                    </Td>
+                    <Td className="text-[#aaa] tabular-nums">
+                      {r.commit_date
+                        ? r.commit_date.replace("T", " ").slice(0, 19) + "Z"
+                        : "----------  --------"}
+                    </Td>
+                    <Td>
+                      <a
+                        href={link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#00ff66] hover:bg-[#00ff66] hover:text-black px-2 py-0.5 border border-[#00ff66]"
+                      >
+                        &gt; FK_OPEN
+                      </a>
+                    </Td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <footer className="border-t border-hard px-4 py-2 flex justify-between text-[10px] text-[#555] uppercase tracking-widest">
+        <span>&gt; GITHUB_DB_INTERFACE // ENGINE: git/trees?recursive=1</span>
+        <span>{now}</span>
+      </footer>
+
+      {cfgOpen && (
+        <CfgDrawer
+          owner={owner}
+          repo={repo}
+          onClose={() => setCfgOpen(false)}
+          onSave={(o, r) => {
+            navigate({ search: { owner: o, repo: r }, replace: true });
+            setCfgOpen(false);
+          }}
+        />
+      )}
+      {writeOpen && (
+        <WriteModal
+          owner={owner}
+          repo={repo}
+          branch={branch}
+          onClose={() => setWriteOpen(false)}
+        />
+      )}
+    </div>
   );
 }
 
-function Stat({ label, value, accent }: { label: string; value: string | number; accent?: string }) {
+function Th({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex-1 border-r border-hard px-4 py-3 last:border-r-0">
+    <th className="text-left border border-hard px-3 py-2 font-normal">{children}</th>
+  );
+}
+function Td({
+  children,
+  className = "",
+  style,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <td className={`border border-hard px-3 py-2 ${className}`} style={style}>
+      {children}
+    </td>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: string | number;
+  accent?: string;
+}) {
+  const v = typeof value === "number" ? String(value).padStart(4, "0") : value;
+  return (
+    <div className="flex-1 border-r border-hard px-4 py-3 last:border-r-0 min-w-[120px]">
       <div className="text-[10px] uppercase tracking-widest text-[#666]">{label}</div>
       <div
         className="text-[22px] font-bold tabular-nums mt-1"
         style={{ color: accent ?? "#ffffff" }}
       >
-        {value}
+        {v}
       </div>
     </div>
   );
 }
 
-function StatBar({
-  total,
-  ideas,
-  exp,
-  res,
-  lastCommit,
-}: {
-  total: number;
-  ideas: number;
-  exp: number;
-  res: number;
-  lastCommit: string;
-}) {
-  return (
-    <div className="flex border-b border-hard">
-      <Stat label="TOTAL_ENTRIES" value={String(total).padStart(4, "0")} accent="#00ff66" />
-      <Stat label="IDEAS_COUNT" value={String(ideas).padStart(4, "0")} />
-      <Stat label="ACTIVE_EXP_COUNT" value={String(exp).padStart(4, "0")} accent="#ff5500" />
-      <Stat label="RESEARCH_COUNT" value={String(res).padStart(4, "0")} />
-      <Stat label="LAST_COMMIT_HASH" value={lastCommit} accent="#00ff66" />
-    </div>
-  );
-}
-
-function SpecTable({
-  rows,
+function CfgDrawer({
   owner,
   repo,
-}: {
-  rows: Entry[];
-  owner: string;
-  repo: string;
-}) {
-  if (!owner) {
-    return (
-      <div className="px-4 py-16 text-center text-[12px] text-[#666]">
-        &gt; NO_REPO_CONFIGURED — open [CFG] to set GitHub username and repo.
-      </div>
-    );
-  }
-  if (!rows.length) {
-    return (
-      <div className="px-4 py-16 text-center text-[12px] text-[#666]">
-        &gt; NO_ENTRIES_FOUND in /ideas, /experiments, /research
-      </div>
-    );
-  }
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-[11px] border-collapse">
-        <thead>
-          <tr className="text-[10px] uppercase tracking-widest text-[#666]">
-            <th className="text-left border border-hard px-3 py-2 font-normal">#</th>
-            <th className="text-left border border-hard px-3 py-2 font-normal">PATH</th>
-            <th className="text-left border border-hard px-3 py-2 font-normal">TYPE</th>
-            <th className="text-left border border-hard px-3 py-2 font-normal">STATUS</th>
-            <th className="text-left border border-hard px-3 py-2 font-normal">LAST_MODIFIED</th>
-            <th className="text-left border border-hard px-3 py-2 font-normal">SHA</th>
-            <th className="text-left border border-hard px-3 py-2 font-normal">TARGET_URI</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r, i) => {
-            const status = STATUS_FROM_DIR[r.dir];
-            const statusColor =
-              status === "ACTIVE" ? "#ff5500" : status === "RAW" ? "#00ff66" : "#888";
-            const typeColor =
-              r.type === "IDE" ? "#00ff66" : r.type === "EXP" ? "#ff5500" : "#ffffff";
-            return (
-              <tr key={r.path} className="hover:bg-[#0a0a0a]">
-                <td className="border border-hard px-3 py-2 text-[#555] tabular-nums">
-                  {String(i + 1).padStart(3, "0")}
-                </td>
-                <td className="border border-hard px-3 py-2 text-white">/{r.path}</td>
-                <td className="border border-hard px-3 py-2" style={{ color: typeColor }}>
-                  [{r.type}]
-                </td>
-                <td className="border border-hard px-3 py-2" style={{ color: statusColor }}>
-                  {status}
-                </td>
-                <td className="border border-hard px-3 py-2 text-[#aaa] tabular-nums">
-                  {r.last_modified ? r.last_modified.replace("T", " ").slice(0, 19) + "Z" : "----------"}
-                </td>
-                <td className="border border-hard px-3 py-2 text-[#666] tabular-nums">
-                  {(r.last_commit ?? r.sha).slice(0, 7)}
-                </td>
-                <td className="border border-hard px-3 py-2">
-                  <a
-                    href={r.html_url || `https://github.com/${owner}/${repo}/blob/main/${r.path}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#00ff66] hover:bg-[#00ff66] hover:text-black px-2 py-0.5 border border-[#00ff66]"
-                  >
-                    &gt; OPEN_RAW
-                  </a>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function SettingsDrawer({
-  config,
   onClose,
   onSave,
 }: {
-  config: { owner: string; repo: string };
+  owner: string;
+  repo: string;
   onClose: () => void;
-  onSave: (c: { owner: string; repo: string }) => void;
+  onSave: (owner: string, repo: string) => void;
 }) {
-  const [owner, setOwner] = useState(config.owner);
-  const [repo, setRepo] = useState(config.repo || "sandbox");
+  const [o, setO] = useState(owner);
+  const [r, setR] = useState(repo || "sandbox");
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-end bg-black/80">
       <div className="w-full max-w-md h-full bg-black border-l border-hard p-6">
         <div className="flex items-center justify-between border-b border-hard pb-3 mb-4">
           <div className="text-[12px] uppercase tracking-widest text-[#00ff66]">
-            [ CONFIG_DRAWER ]
+            [ DB_CONFIG ]
           </div>
-          <button onClick={onClose} className="text-[#666] hover:text-white text-[11px]">
+          <button
+            onClick={onClose}
+            className="text-[#666] hover:text-white text-[11px]"
+          >
             [X CLOSE]
           </button>
         </div>
         <div className="space-y-4 text-[11px]">
-          <Field label="GITHUB_USERNAME">
+          <Field label="GITHUB_OWNER">
             <input
-              value={owner}
-              onChange={(e) => setOwner(e.target.value.trim())}
+              value={o}
+              onChange={(e) => setO(e.target.value.trim())}
               placeholder="octocat"
               className="w-full bg-black border border-hard px-2 py-2 text-white outline-none focus:border-[#00ff66]"
             />
           </Field>
-          <Field label="REPOSITORY_NAME">
+          <Field label="GITHUB_REPO">
             <input
-              value={repo}
-              onChange={(e) => setRepo(e.target.value.trim())}
+              value={r}
+              onChange={(e) => setR(e.target.value.trim())}
               placeholder="sandbox"
               className="w-full bg-black border border-hard px-2 py-2 text-white outline-none focus:border-[#00ff66]"
             />
           </Field>
-          <div className="text-[10px] text-[#666] leading-relaxed border border-hard p-3">
-            &gt; UNAUTHENTICATED_MODE — public GitHub REST API only.<br />
-            &gt; RATE_LIMIT: 60 req/hr per IP.<br />
-            &gt; REQUIRED_DIRS: /ideas, /experiments, /research
+          <div className="border border-hard p-3 text-[10px] text-[#666] leading-relaxed">
+            &gt; ENGINE: GitHub REST v3<br />
+            &gt; READ: /git/trees/{"{branch}"}?recursive=1<br />
+            &gt; WRITE: git commits via github.com/new/{"{branch}"}<br />
+            &gt; STATE: none — repo IS the database.<br />
+            &gt; CONFIG_PERSISTENCE: URL query params only.
           </div>
           <button
-            onClick={() => onSave({ owner, repo })}
+            onClick={() => onSave(o, r)}
             className="w-full border border-[#00ff66] text-[#00ff66] py-2 hover:bg-[#00ff66] hover:text-black text-[11px] uppercase tracking-widest"
           >
-            [ SAVE_&_SYNC ]
+            [ BIND_&_SYNC ]
           </button>
         </div>
       </div>
@@ -516,70 +497,73 @@ function SettingsDrawer({
   );
 }
 
-function NewEntryModal({
+function WriteModal({
   owner,
   repo,
+  branch,
   onClose,
 }: {
   owner: string;
   repo: string;
+  branch: string;
   onClose: () => void;
 }) {
-  const [dir, setDir] = useState<Dir>("ideas");
+  const [col, setCol] = useState<Collection>("ideas");
   const [filename, setFilename] = useState("");
   const [content, setContent] = useState(
-    "# New Entry\n\n> STATUS: RAW\n> DATE: \n\n## Hypothesis\n\n\n## Notes\n",
+    "# NEW_RECORD\n\n> COLLECTION: \n> DATE: \n\n## PAYLOAD\n\n\n",
   );
 
-  const cleanName = (filename || "untitled.md").replace(/^\/+/, "");
-  const finalName = cleanName.endsWith(".md") ? cleanName : `${cleanName}.md`;
-  const url =
-    owner && repo
-      ? `https://github.com/${owner}/${repo}/new/main?filename=${encodeURIComponent(
-          `${dir}/${finalName}`,
-        )}&value=${encodeURIComponent(content)}`
-      : "";
+  const clean = (filename || "untitled.md").replace(/^\/+/, "");
+  const finalName = clean.includes(".") ? clean : `${clean}.md`;
+  const canWrite = Boolean(owner && repo);
+  const url = canWrite
+    ? `https://github.com/${owner}/${repo}/new/${branch}?filename=${encodeURIComponent(
+        `${col}/${finalName}`,
+      )}&value=${encodeURIComponent(content)}`
+    : "";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4">
       <div className="w-full max-w-2xl bg-black border border-hard">
         <div className="flex items-center justify-between border-b border-hard px-4 py-3">
           <div className="text-[12px] uppercase tracking-widest text-[#00ff66]">
-            [ + NEW_SANDBOX_ENTRY ]
+            [ + WRITE_TO_SANDBOX_DB ]
           </div>
-          <button onClick={onClose} className="text-[#666] hover:text-white text-[11px]">
+          <button
+            onClick={onClose}
+            className="text-[#666] hover:text-white text-[11px]"
+          >
             [X CLOSE]
           </button>
         </div>
         <div className="p-4 space-y-4 text-[11px]">
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="TARGET_DIRECTORY">
-              <div className="flex border border-hard">
-                {DIRS.map((d) => (
-                  <button
-                    key={d}
-                    onClick={() => setDir(d)}
-                    className="flex-1 py-2 border-r border-hard last:border-r-0 uppercase tracking-wider"
-                    style={{
-                      backgroundColor: dir === d ? "#00ff66" : "transparent",
-                      color: dir === d ? "#000" : "#fff",
-                    }}
-                  >
-                    /{d}
-                  </button>
-                ))}
-              </div>
-            </Field>
-            <Field label="FILENAME">
-              <input
-                value={filename}
-                onChange={(e) => setFilename(e.target.value)}
-                placeholder="01_vector.md"
-                className="w-full bg-black border border-hard px-2 py-2 text-white outline-none focus:border-[#00ff66]"
-              />
-            </Field>
-          </div>
-          <Field label="RAW_MARKDOWN_CONTENT">
+          <Field label="TARGET_COLLECTION">
+            <div className="flex border border-hard">
+              {COLLECTIONS.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setCol(c)}
+                  className="flex-1 py-2 border-r border-hard last:border-r-0 uppercase tracking-wider"
+                  style={{
+                    backgroundColor: col === c ? "#00ff66" : "transparent",
+                    color: col === c ? "#000" : "#fff",
+                  }}
+                >
+                  /{c}
+                </button>
+              ))}
+            </div>
+          </Field>
+          <Field label="PRIMARY_KEY_FILENAME">
+            <input
+              value={filename}
+              onChange={(e) => setFilename(e.target.value)}
+              placeholder="rec-001.md"
+              className="w-full bg-black border border-hard px-2 py-2 text-white outline-none focus:border-[#00ff66]"
+            />
+          </Field>
+          <Field label="RAW_PAYLOAD">
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
@@ -588,19 +572,19 @@ function NewEntryModal({
             />
           </Field>
           <div className="border border-hard p-3 text-[10px] text-[#666] break-all">
-            &gt; TARGET: /{dir}/{finalName}
+            &gt; INSERT INTO {col} (path, content) VALUES (&apos;/{col}/{finalName}&apos;, &lt;payload&gt;)
           </div>
           <a
             href={url || "#"}
             target="_blank"
             rel="noopener noreferrer"
-            aria-disabled={!url}
+            aria-disabled={!canWrite}
             onClick={(e) => {
-              if (!url) e.preventDefault();
+              if (!canWrite) e.preventDefault();
             }}
             className="block text-center border border-[#00ff66] text-[#00ff66] py-2 hover:bg-[#00ff66] hover:text-black uppercase tracking-widest"
           >
-            [ COMMIT_VIA_GITHUB_WEB &gt; ]
+            [ COMMIT_TX &gt; github.com/new/{branch} ]
           </a>
         </div>
       </div>
@@ -608,7 +592,13 @@ function NewEntryModal({
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <label className="block">
       <div className="text-[10px] uppercase tracking-widest text-[#666] mb-1">
@@ -616,14 +606,5 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       </div>
       {children}
     </label>
-  );
-}
-
-function Footer({ now }: { now: string }) {
-  return (
-    <footer className="border-t border-hard px-4 py-2 flex justify-between text-[10px] text-[#555] uppercase tracking-widest">
-      <span>&gt; SANDBOX_TERMINAL // BUILD_v1.0.0</span>
-      <span>{now}</span>
-    </footer>
   );
 }
