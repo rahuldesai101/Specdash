@@ -1,4 +1,4 @@
-# [IDE-004] MULTIPLAYER_AI
+# MULTIPLAYER_AI
 
 ```text
 [ TYPE: IDEA ]  [ CREATED: 2026-07-26 ]  [ STATUS: RAW ]  [ TAGS: #agents, #collaboration, #ui-ux, #realtime ]
