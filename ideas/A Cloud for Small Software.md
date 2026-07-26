@@ -1,0 +1,12 @@
+> NEW_RECORD
+> COLLECTION: YC Requests for Startups (Fall 2026)
+> DATE: July 26, 2026
+
+> PAYLOAD
+1. A Cloud for Small Software
+Concept: A dedicated hosting, authentication, and permission management platform designed specifically for lightweight, single-use, or agent-generated internal software.
+
+Core Problem: Developers and non-engineers frequently prompt AI agents to build utility apps in minutes, but hosting them on enterprise clouds like AWS or managing auth and sharing is overly complex for micro-tools with few users.
+
+Solution: Provide zero-configuration deployment for mini-apps, featuring automatic Single Sign-On (SSO) wrapper integration, permission controls, and one-click internal sharing.
+
