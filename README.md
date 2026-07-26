@@ -18,13 +18,13 @@
 
 ---
 
-### 02 // DIRECTORY SPECIFICATION
+### 02 // DIRECTORY INDEX
 
-Click any folder below to navigate straight to that section of the repo:
-
-* [📁 `/ideas](https://github.com/rahuldesai101/sandbox/tree/main/ideas)` — Unformed concepts, whiteboard sketches, and architecture specs.
-* [📁 `/experiments](https://github.com/rahuldesai101/sandbox/tree/main/experiments)` — Runnable code spikes, prototypes, and technical benchmarks.
-* [📁 `/research](https://github.com/rahuldesai101/sandbox/tree/main/research)` — Paper breakdowns, deep dives, and performance analysis.
+| DIRECTORY | DESCRIPTION | LINK |
+| --- | --- | --- |
+| `📁 /ideas` | Unformed concepts, whiteboard sketches, and architecture specs | [📂 OPEN_IDEAS](https://github.com/rahuldesai101/sandbox/tree/main/ideas) |
+| `📁 /experiments` | Runnable code spikes, prototypes, and technical benchmarks | [📂 OPEN_EXPERIMENTS](https://github.com/rahuldesai101/sandbox/tree/main/experiments) |
+| `📁 /research` | Paper breakdowns, deep dives, and performance analysis | [📂 OPEN_RESEARCH](https://github.com/rahuldesai101/sandbox/tree/main/research) |
 
 ---
 
