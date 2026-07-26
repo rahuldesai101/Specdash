@@ -25,13 +25,14 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const COLLECTIONS = ["ideas", "experiments", "research"] as const;
+const COLLECTIONS = ["library/ideas", "library/experiments", "library/research", "docs"] as const;
 type Collection = (typeof COLLECTIONS)[number];
 
-const TYPE_MAP: Record<Collection, "IDE" | "EXP" | "RES"> = {
-  ideas: "IDE",
-  experiments: "EXP",
-  research: "RES",
+const TYPE_MAP: Record<Collection, "IDE" | "EXP" | "RES" | "DOC"> = {
+  "library/ideas": "IDE",
+  "library/experiments": "EXP",
+  "library/research": "RES",
+  "docs": "DOC",
 };
 
 type Record_ = {
@@ -41,7 +42,7 @@ type Record_ = {
   sha: string;
   size: number;
   collection: Collection;
-  type: "IDE" | "EXP" | "RES";
+  type: "IDE" | "EXP" | "RES" | "DOC";
   kind: "blob" | "tree";
   commit_sha?: string;
   commit_date?: string;
@@ -100,8 +101,18 @@ async function fetchFileCommit(
 }
 
 function classify(path: string): Collection | null {
-  const seg = path.split("/")[0];
-  return (COLLECTIONS as readonly string[]).includes(seg) ? (seg as Collection) : null;
+  // Check for library/* paths
+  if (path.startsWith("library/")) {
+    const seg = path.split("/")[1];
+    if (seg === "ideas" || seg === "experiments" || seg === "research") {
+      return `library/${seg}` as Collection;
+    }
+  }
+  // Check for docs paths
+  if (path.startsWith("docs/")) {
+    return "docs";
+  }
+  return null;
 }
 
 function Index() {
@@ -196,9 +207,10 @@ function Index() {
     const blobs = records.filter((r) => r.kind === "blob");
     return {
       total: blobs.length,
-      ideas: blobs.filter((r) => r.collection === "ideas").length,
-      exp: blobs.filter((r) => r.collection === "experiments").length,
-      res: blobs.filter((r) => r.collection === "research").length,
+      ideas: blobs.filter((r) => r.collection === "library/ideas").length,
+      exp: blobs.filter((r) => r.collection === "library/experiments").length,
+      res: blobs.filter((r) => r.collection === "library/research").length,
+      docs: blobs.filter((r) => r.collection === "docs").length,
     };
   }, [records]);
 
@@ -255,6 +267,7 @@ function Index() {
         <Stat label="IDEAS_COUNT" value={counts.ideas} />
         <Stat label="EXP_COUNT" value={counts.exp} accent="#ff5500" />
         <Stat label="RESEARCH_COUNT" value={counts.res} />
+        <Stat label="DOCS_COUNT" value={counts.docs} accent="#9966ff" />
         <Stat
           label="HEAD_COMMIT"
           value={headCommit?.sha.slice(0, 10) ?? "----------"}
@@ -265,7 +278,7 @@ function Index() {
       {/* SUB BAR */}
       <div className="flex items-center justify-between border-b border-hard px-4 py-2">
         <div className="text-[11px] uppercase tracking-widest text-[#00ff66]">
-          &gt; SELECT * FROM {"{ideas,experiments,research}"} — {records.filter((r) => r.kind === "blob").length} ROWS
+          &gt; SELECT * FROM {"{library,docs}"} — {records.filter((r) => r.kind === "blob").length} ROWS
         </div>
         <button
           onClick={() => setWriteOpen(true)}
@@ -293,7 +306,7 @@ function Index() {
         </div>
       ) : records.length === 0 && status === "SYNCED" ? (
         <div className="px-4 py-16 text-center text-[12px] text-[#666]">
-          &gt; DB_EMPTY — no records in /ideas, /experiments, /research
+          &gt; DB_EMPTY — no records in /library or /docs
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -317,7 +330,9 @@ function Index() {
                     ? "#00ff66"
                     : r.type === "EXP"
                       ? "#ff5500"
-                      : "#ffffff";
+                      : r.type === "DOC"
+                        ? "#9966ff"
+                        : "#ffffff";
                 const link =
                   r.kind === "tree"
                     ? `https://github.com/${owner}/${repo}/tree/${branch}/${r.path}`
@@ -508,7 +523,7 @@ function WriteModal({
   branch: string;
   onClose: () => void;
 }) {
-  const [col, setCol] = useState<Collection>("ideas");
+  const [col, setCol] = useState<Collection>("library/ideas");
   const [filename, setFilename] = useState("");
   const [content, setContent] = useState(
     "# NEW_RECORD\n\n> COLLECTION: \n> DATE: \n\n## PAYLOAD\n\n\n",
@@ -522,6 +537,11 @@ function WriteModal({
         `${col}/${finalName}`,
       )}&value=${encodeURIComponent(content)}`
     : "";
+
+  const getCollectionLabel = (c: Collection) => {
+    if (c === "docs") return "DOCS";
+    return c.split("/")[1]?.toUpperCase() || c.toUpperCase();
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4">
@@ -539,18 +559,18 @@ function WriteModal({
         </div>
         <div className="p-4 space-y-4 text-[11px]">
           <Field label="TARGET_COLLECTION">
-            <div className="flex border border-hard">
+            <div className="flex border border-hard flex-wrap">
               {COLLECTIONS.map((c) => (
                 <button
                   key={c}
                   onClick={() => setCol(c)}
-                  className="flex-1 py-2 border-r border-hard last:border-r-0 uppercase tracking-wider"
+                  className="flex-1 py-2 border-r border-hard last:border-r-0 uppercase tracking-wider text-xs min-w-[80px]"
                   style={{
                     backgroundColor: col === c ? "#00ff66" : "transparent",
                     color: col === c ? "#000" : "#fff",
                   }}
                 >
-                  /{c}
+                  /{getCollectionLabel(c)}
                 </button>
               ))}
             </div>
