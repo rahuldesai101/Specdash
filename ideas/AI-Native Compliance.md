@@ -1,5 +1,5 @@
 
-# [IDE-003] AI_NATIVE_COMPLIANCE
+# AI_NATIVE_COMPLIANCE
 
 ```text
 [ TYPE: IDEA ]  [ CREATED: 2026-07-26 ]  [ STATUS: RAW ]  [ TAGS: #b2b-saas, #legaltech, #compliance, #agents ]
