@@ -1,3 +1,10 @@
+# [IDE-004] MULTIPLAYER_AI
+
+```text
+[ TYPE: IDEA ]  [ CREATED: 2026-07-26 ]  [ STATUS: RAW ]  [ TAGS: #agents, #collaboration, #ui-ux, #realtime ]
+
+```
+
 ### 01 // PROBLEM STATEMENT
 
 Current AI agent workflows operate as single-user, black-box processes or static read-only chat logs. When an agent executes complex, long-running multi-hour tasks, team members cannot collaborate, intervene in real time during wrong turns, or hand off control to a teammate.
