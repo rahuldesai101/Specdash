@@ -63,8 +63,11 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --background: oklch(0 0 0);
+  --foreground: oklch(1 0 0);
+  --term-green: #00ff66;
+  --alert-orange: #ff5500;
+  --hard-border: #333333;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);
   --popover: oklch(1 0 0);
@@ -138,7 +141,19 @@
   }
 
   body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
+    background-color: #000000;
+    color: #ffffff;
+    font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    -webkit-font-smoothing: antialiased;
   }
+
+  button, input, textarea, select {
+    font-family: inherit;
+    border-radius: 0 !important;
+  }
+}
+
+@utility border-hard {
+  border: 1px solid #333333;
 }
