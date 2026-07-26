@@ -1,29 +1,19 @@
-# Welcome to your Lovable project
+# 🧪 Lab & R&D Sandbox
 
-This project was built with [Lovable](https://lovable.dev).
+A Rahul Prabhudesai's personal repository for tracking raw ideas, technical experiments, and research notes.
 
-## Build with Lovable
+## 🗂 Tracker
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+| Category | Title / Topic | Status | Link |
+| :--- | :--- | :--- | :--- |
+| **Idea** | AI Automated Journaling | 💡 Concept | [Link](https://github.com/rahuldesai101/sandbox/tree/main/ideas) |
+| **Experiment** | Local Vector Search Spike | 🔬 In Progress | [Link](https://github.com/rahuldesai101/sandbox/tree/main/experiments) |
+| **Research** | WebAssembly Performance | 📝 Done | [Link](https://github.com/rahuldesai101/sandbox/tree/main/research) |
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+---
 
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
-```
-
-## Built with
-
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
+## 🚦 Status Legend
+- 💡 **Concept:** Early stage, outline/notes only.
+- 🔬 **In Progress:** Active experimentation or coding.
+- 📦 **Archived / Paused:** Idea tested or parked for later.
+- 🚀 **Graduated:** Spun off into its own dedicated repository/project.
