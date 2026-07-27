@@ -54,6 +54,7 @@ function Index() {
   const [patOpen, setPatOpen] = useState(false);
   const [hasPat, setHasPat] = useState(false);
   const [spec, setSpec] = useState<{ path: string; text: string | null; err?: string } | null>(null);
+  const [copied, setCopied] = useState(false);
   const [now, setNow] = useState("");
   const [aiCfg, setAiCfg] = useState<AiConfig | null>(null);
   const [aiOpen, setAiOpen] = useState(false);
@@ -147,8 +148,16 @@ function Index() {
   const dot =
     status === "SYNCED" ? "#00ff66" : status === "SYNCING" ? "#ffaa00" : status === "ERROR" ? "#ff5500" : "#666";
 
+  const ghBlobUrl = (path: string, ref: string) =>
+    `https://github.com/${owner}/${repo}/blob/${ref}/${path.split("/").map(encodeURIComponent).join("/")}`;
+  const ghTreeUrl = (dir: string) =>
+    dir === "root"
+      ? `https://github.com/${owner}/${repo}/tree/${branch}`
+      : `https://github.com/${owner}/${repo}/tree/${branch}/${dir.split("/").map(encodeURIComponent).join("/")}`;
+
   const openSpec = async (path: string) => {
     setCmdOpen(false);
+    setCopied(false);
     setSpec({ path, text: null });
     try {
       const text = await fetchRaw(owner, repo, branch, path);
@@ -239,13 +248,36 @@ function Index() {
             <button
               key={dir}
               onClick={() => setActiveDir(dir)}
-              className="px-3 py-2 border-r border-hard text-[11px] uppercase tracking-wider"
+              className="px-3 py-2 border-r border-hard text-[11px] uppercase tracking-wider inline-flex items-center gap-2"
               style={{
                 backgroundColor: activeDir === dir ? "#00ff66" : "transparent",
                 color: activeDir === dir ? "#000" : "#fff",
               }}
             >
-              📁 /{dir} ({String(list.length).padStart(2, "0")})
+              <span>
+                📁 /{dir} ({String(list.length).padStart(2, "0")})
+              </span>
+              {owner && (
+                <span
+                  role="link"
+                  tabIndex={0}
+                  title="Open folder in GitHub"
+                  aria-label={`Open folder /${dir} in GitHub`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.open(ghTreeUrl(dir), "_blank", "noopener,noreferrer");
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.stopPropagation();
+                      window.open(ghTreeUrl(dir), "_blank", "noopener,noreferrer");
+                    }
+                  }}
+                  className="opacity-60 hover:opacity-100 cursor-pointer"
+                >
+                  ↗
+                </span>
+              )}
             </button>
           ))}
         </nav>
@@ -277,12 +309,24 @@ function Index() {
                   <Td className="text-[#888]">/{f.path}</Td>
                   <Td className="text-[#666] tabular-nums">{f.sha.slice(0, 12)}</Td>
                   <Td>
+                    <div className="flex items-center gap-2">
                     <button
                       onClick={() => openSpec(f.path)}
                       className="text-[#00ff66] border border-[#00ff66] px-2 py-0.5 hover:bg-[#00ff66] hover:text-black"
                     >
                       &gt; OPEN_SPEC
                     </button>
+                    <a
+                      href={ghBlobUrl(f.path, branch)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Open on GitHub"
+                      aria-label={`Open ${f.name} on GitHub`}
+                      className="border border-[#333] px-2 py-0.5 text-[#888] hover:border-[#00ff66] hover:text-[#00ff66]"
+                    >
+                      ↗
+                    </a>
+                    </div>
                   </Td>
                 </tr>
               ))}
@@ -330,9 +374,34 @@ function Index() {
               <div className="text-[11px] uppercase tracking-widest text-[#00ff66] break-all">
                 [ SPEC ] /{spec.path}
               </div>
-              <button onClick={() => setSpec(null)} className="text-[#666] hover:text-white text-[11px]">
-                [X CLOSE]
-              </button>
+              <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest shrink-0">
+                <a
+                  href={ghBlobUrl(spec.path, branch)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="border border-[#00ff66] text-[#00ff66] px-2 py-1 hover:bg-[#00ff66] hover:text-black"
+                >
+                  [ VIEW ON GITHUB ↗ ]
+                </a>
+                <button
+                  onClick={async () => {
+                    const sha = files.find((f) => f.path === spec.path)?.sha ?? branch;
+                    try {
+                      await navigator.clipboard.writeText(ghBlobUrl(spec.path, sha));
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 1500);
+                    } catch {
+                      /* clipboard blocked */
+                    }
+                  }}
+                  className="border border-[#333] px-2 py-1 text-[#888] hover:border-[#00ff66] hover:text-[#00ff66]"
+                >
+                  {copied ? "[ COPIED ]" : "[ COPY PERMALINK ]"}
+                </button>
+                <button onClick={() => setSpec(null)} className="text-[#666] hover:text-white text-[11px]">
+                  [X CLOSE]
+                </button>
+              </div>
             </div>
             <div className="overflow-auto p-4">
               {spec.err ? (
