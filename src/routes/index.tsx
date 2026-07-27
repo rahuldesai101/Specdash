@@ -16,6 +16,8 @@ import { AiConfigDrawer } from "@/components/ai/AiConfigDrawer";
 import { CommandBar } from "@/components/ai/CommandBar";
 import { SpecAssistant } from "@/components/ai/SpecAssistant";
 import { MarkdownView } from "@/components/md/MarkdownView";
+import { NewSpecModal } from "@/components/git/NewSpecModal";
+import { editFileIntentUrl } from "@/lib/git-intent";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -58,6 +60,7 @@ function Index() {
   const [now, setNow] = useState("");
   const [aiCfg, setAiCfg] = useState<AiConfig | null>(null);
   const [aiOpen, setAiOpen] = useState(false);
+  const [newOpen, setNewOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [excerpts, setExcerpts] = useState<Record<string, string>>({});
 
