@@ -46,7 +46,7 @@ export function SpecAssistant({
       return;
     }
     if (!text) {
-      setErr("SPEC_NOT_LOADED");
+      setErr("SPEC_NOT_LOADED — file content is still loading or failed to fetch");
       return;
     }
     abortRef.current?.abort();
@@ -77,7 +77,8 @@ export function SpecAssistant({
           <button
             key={k}
             onClick={() => run(k)}
-            className="border border-[#333] px-2 py-1 hover:border-[#00ff66] hover:text-[#00ff66]"
+            disabled={!text || busy}
+            className="border border-[#333] px-2 py-1 hover:border-[#00ff66] hover:text-[#00ff66] disabled:opacity-40 disabled:hover:border-[#333] disabled:hover:text-inherit"
           >
             [ {TASKS[k].label} ]
           </button>
