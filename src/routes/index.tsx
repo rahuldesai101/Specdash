@@ -444,6 +444,10 @@ function Index() {
             </div>
             <SpecAssistant cfg={aiCfg} path={spec.path} text={spec.text} />
           </div>
+          <p className="sr-only">
+            Opens GitHub web editor. If you do not have write access, GitHub will automatically create a fork and Pull
+            Request for you.
+          </p>
         </div>
       )}
 
@@ -460,11 +464,24 @@ function Index() {
       )}
 
       {cmdOpen && (
+        <>
         <CommandBar
           cfg={aiCfg}
           index={files.map((f) => ({ path: f.path, dir: f.dir, name: f.name, excerpt: excerpts[f.path] }))}
           onClose={() => setCmdOpen(false)}
           onOpen={openSpec}
+        />
+        </>
+      )}
+
+      {newOpen && owner && (
+        <NewSpecModal
+          owner={owner}
+          repo={repo}
+          branch={branch}
+          folders={groups.length ? groups.map(([d]) => d) : ["root"]}
+          activeDir={activeDir}
+          onClose={() => setNewOpen(false)}
         />
       )}
     </div>
