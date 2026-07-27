@@ -1,5 +1,9 @@
 import { useRef, useState } from "react";
-import { streamCompletion, type AiConfig } from "@/lib/ai-engine";
+import { toast } from "sonner";
+import { streamBudgeted, TOO_LARGE_MESSAGE, type AiConfig } from "@/lib/ai-engine";
+import { DEFAULT_BUDGET, TokenLimitError, truncateToTokenBudget } from "@/lib/token-budget";
+
+const SYSTEM_PROMPT = "You are a concise engineering assistant. Keep responses brief and bulleted.";
 
 const TASKS = {
   SUMMARIZE: {
@@ -54,17 +58,22 @@ export function SpecAssistant({
     abortRef.current = ctrl;
     setBusy(true);
     try {
-      await streamCompletion(
+      await streamBudgeted(
         cfg,
-        [
-          { role: "system", content: "You are a terse principal engineer reviewing markdown specs. Plain text output." },
-          { role: "user", content: `${TASKS[k].prompt}\n\nFILE: ${path}\n\n${text.slice(0, 60000)}` },
-        ],
+        SYSTEM_PROMPT,
+        (budget) => `${TASKS[k].prompt}\n\nFILE: ${path}\n\n${truncateToTokenBudget(text, budget)}`,
         (d) => setOut((p) => p + d),
         ctrl.signal,
+        DEFAULT_BUDGET,
       );
     } catch (e) {
-      if (!ctrl.signal.aborted) setErr(e instanceof Error ? e.message : "AI_ERR");
+      if (ctrl.signal.aborted) return;
+      if (e instanceof TokenLimitError) {
+        toast.error(TOO_LARGE_MESSAGE);
+        setErr(TOO_LARGE_MESSAGE);
+      } else {
+        setErr(e instanceof Error ? e.message : "AI_ERR");
+      }
     } finally {
       setBusy(false);
     }

@@ -1,3 +1,5 @@
+import { DEFAULT_BUDGET, TokenLimitError } from "./token-budget";
+
 export type ProviderId = "groq" | "openai" | "anthropic" | "google";
 
 export const PROVIDERS: { id: ProviderId; label: string; model: string; keyHint: string }[] = [
@@ -104,11 +106,15 @@ export async function streamCompletion(
 
   if (!res.ok || !res.body) {
     let detail = String(res.status);
+    let raw = "";
     try {
-      const t = await res.text();
-      detail = `${res.status} ${t.slice(0, 300)}`;
+      raw = await res.text();
+      detail = `${res.status} ${raw.slice(0, 300)}`;
     } catch {
       /* ignore */
+    }
+    if (res.status === 413 || /request too large|too many tokens|context length/i.test(raw)) {
+      throw new TokenLimitError(`TOKEN_LIMIT ${detail}`);
     }
     throw new Error(`AI_ERR ${detail}`);
   }
@@ -133,5 +139,47 @@ export async function streamCompletion(
         /* partial frame — ignore */
       }
     }
+  }
+}
+
+export const TOO_LARGE_MESSAGE =
+  "File context too large for free AI rate limits. Please select a smaller spec or upgrade key.";
+
+/**
+ * Budgeted streaming: builds the user payload at `budget` chars, and on a
+ * token/size rejection retries ONCE at 50% of that budget.
+ */
+export async function streamBudgeted(
+  cfg: AiConfig,
+  system: string,
+  buildUser: (budget: number) => string,
+  onDelta: (chunk: string) => void,
+  signal?: AbortSignal,
+  budget: number = DEFAULT_BUDGET,
+): Promise<void> {
+  const attempt = (b: number) =>
+    streamCompletion(
+      cfg,
+      [
+        { role: "system", content: system },
+        { role: "user", content: buildUser(b) },
+      ],
+      onDelta,
+      signal,
+    );
+
+  try {
+    await attempt(budget);
+  } catch (e) {
+    if (e instanceof TokenLimitError && !signal?.aborted) {
+      try {
+        await attempt(Math.floor(budget / 2));
+        return;
+      } catch (e2) {
+        if (e2 instanceof TokenLimitError) throw new TokenLimitError(TOO_LARGE_MESSAGE);
+        throw e2;
+      }
+    }
+    throw e;
   }
 }

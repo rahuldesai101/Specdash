@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { streamCompletion, type AiConfig } from "@/lib/ai-engine";
+import { toast } from "sonner";
+import { streamBudgeted, TOO_LARGE_MESSAGE, type AiConfig } from "@/lib/ai-engine";
+import { buildRepoManifest, DEFAULT_BUDGET, TokenLimitError } from "@/lib/token-budget";
 
 export type IndexedRecord = { path: string; dir: string; name: string; excerpt?: string };
 
@@ -50,27 +52,24 @@ export function CommandBar({
     setOut("");
     const ctrl = new AbortController();
     abortRef.current = ctrl;
-    const corpus = index
-      .map((r) => `PATH: ${r.path}\nDIR: ${r.dir}\n${r.excerpt ? `EXCERPT: ${r.excerpt.slice(0, 1200)}` : "EXCERPT: <not loaded>"}`)
-      .join("\n---\n")
-      .slice(0, 90000);
-
     try {
-      await streamCompletion(
+      await streamBudgeted(
         cfg,
-        [
-          {
-            role: "system",
-            content:
-              "You are SANDBOX, a terminal search agent over a markdown spec repository. Answer tersely in uppercase-ish technical style. ALWAYS cite matching records by their exact full PATH string on its own line. If nothing matches, say NO_MATCHING_RECORDS.",
-          },
-          { role: "user", content: `INDEX:\n${corpus}\n\nQUERY: ${q}` },
-        ],
+        "You are a concise engineering assistant. Keep responses brief and bulleted. Output ONLY a JSON array of file paths.",
+        (budget) =>
+          `Given this repo file index (path | folder | headings):\n${buildRepoManifest(index, budget - q.length - 200)}\n\nIdentify which 3 file paths best answer the query: ${q}\nOutput JSON array of paths only.`,
         (d) => setOut((p) => p + d),
         ctrl.signal,
+        DEFAULT_BUDGET,
       );
     } catch (e) {
-      if (!ctrl.signal.aborted) setErr(e instanceof Error ? e.message : "AI_ERR");
+      if (ctrl.signal.aborted) return;
+      if (e instanceof TokenLimitError) {
+        toast.error(TOO_LARGE_MESSAGE);
+        setErr(TOO_LARGE_MESSAGE);
+      } else {
+        setErr(e instanceof Error ? e.message : "AI_ERR");
+      }
     } finally {
       setBusy(false);
     }
