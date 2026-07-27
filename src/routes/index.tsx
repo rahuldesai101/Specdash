@@ -513,7 +513,7 @@ function Index() {
 
         {/* CENTER */}
         <main className="min-w-0 flex-1">
-          <div className="grid grid-cols-2 border-b border-hard sm:grid-cols-4">
+          <div className="grid grid-cols-2 border-b border-hard bg-black sm:grid-cols-4 lg:sticky lg:top-[89px] lg:z-30">
             <Stat label="MD_RECORDS" value={files.length} accent="#00ff66" />
             <Stat label="DIRECTORIES" value={groups.length} />
             <Stat label="ACTIVE_ROWS" value={rows.length} accent="#ff5500" />
