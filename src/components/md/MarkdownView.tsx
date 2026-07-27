@@ -1,37 +1,110 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { toast } from "sonner";
 import { Mermaid } from "./Mermaid";
+import { RepoImage } from "./RepoImage";
+import { blobUrl, isExternal, rawUrl, resolveRelativePath, slugify } from "@/lib/path-resolve";
 
-export function MarkdownView({ source }: { source: string }) {
+export type MdRepoCtx = {
+  owner: string;
+  repo: string;
+  branch: string;
+  currentPath: string;
+  exists: (path: string) => boolean;
+  onOpen: (path: string) => void;
+};
+
+function textOf(children: React.ReactNode): string {
+  if (typeof children === "string" || typeof children === "number") return String(children);
+  if (Array.isArray(children)) return children.map(textOf).join("");
+  if (children && typeof children === "object" && "props" in (children as any))
+    return textOf((children as any).props?.children);
+  return "";
+}
+
+export function MarkdownView({ source, ctx }: { source: string; ctx?: MdRepoCtx }) {
+  const resolve = (href: string) => resolveRelativePath(ctx?.currentPath ?? "", href.split(/[?#]/)[0]);
+
   return (
     <div className="text-[12px] leading-relaxed text-[#ccc] space-y-3">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
           h1: ({ children }) => (
-            <h1 className="text-[16px] font-bold text-[#00ff66] uppercase tracking-wider border-b border-hard pb-2">
+            <h1 id={slugify(textOf(children))} className="text-[16px] font-bold text-[#00ff66] uppercase tracking-wider border-b border-hard pb-2">
               {children}
             </h1>
           ),
           h2: ({ children }) => (
-            <h2 className="text-[14px] font-bold text-white uppercase tracking-wider border-b border-hard pb-1">
+            <h2 id={slugify(textOf(children))} className="text-[14px] font-bold text-white uppercase tracking-wider border-b border-hard pb-1">
               {children}
             </h2>
           ),
           h3: ({ children }) => (
-            <h3 className="text-[12px] font-bold text-[#00ff66] uppercase tracking-widest">{children}</h3>
+            <h3 id={slugify(textOf(children))} className="text-[12px] font-bold text-[#00ff66] uppercase tracking-widest">{children}</h3>
           ),
           p: ({ children }) => <p className="text-[#ccc]">{children}</p>,
-          a: ({ children, href }) => (
-            <a
-              href={href}
-              target="_blank"
-              rel="noreferrer"
-              className="text-[#00ff66] underline underline-offset-2 hover:bg-[#00ff66] hover:text-black"
-            >
-              {children}
-            </a>
-          ),
+          a: ({ children, href }) => {
+            const cls =
+              "text-[#00ff66] underline underline-offset-2 hover:bg-[#00ff66] hover:text-black cursor-pointer";
+            const h = href ?? "";
+            if (!h || isExternal(h)) {
+              return (
+                <a href={h} target="_blank" rel="noopener noreferrer" className={cls}>
+                  {children}
+                </a>
+              );
+            }
+            if (h.startsWith("#")) {
+              return (
+                <a
+                  href={h}
+                  className={cls}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document
+                      .getElementById(decodeURIComponent(h.slice(1)))
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
+                >
+                  {children}
+                </a>
+              );
+            }
+            if (!ctx) {
+              return (
+                <a href={h} target="_blank" rel="noopener noreferrer" className={cls}>
+                  {children}
+                </a>
+              );
+            }
+            const resolved = resolve(h);
+            const gh = blobUrl(ctx.owner, ctx.repo, ctx.branch, resolved);
+            if (/\.md$/i.test(resolved)) {
+              return (
+                <a
+                  href={gh}
+                  className={cls}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (ctx.exists(resolved)) {
+                      ctx.onOpen(resolved);
+                    } else {
+                      toast.error(`File [${resolved}] not found in repository index.`);
+                      window.open(gh, "_blank", "noopener,noreferrer");
+                    }
+                  }}
+                >
+                  {children}
+                </a>
+              );
+            }
+            return (
+              <a href={gh} target="_blank" rel="noopener noreferrer" className={cls}>
+                {children}
+              </a>
+            );
+          },
           ul: ({ children }) => <ul className="list-disc pl-5 space-y-1 marker:text-[#00ff66]">{children}</ul>,
           ol: ({ children }) => <ol className="list-decimal pl-5 space-y-1 marker:text-[#00ff66]">{children}</ol>,
           li: ({ children }) => <li className="text-[#ccc]">{children}</li>,
@@ -51,9 +124,14 @@ export function MarkdownView({ source }: { source: string }) {
           ),
           td: ({ children }) => <td className="border border-hard px-2 py-1 align-top">{children}</td>,
           input: (props) => <input {...props} readOnly className="mr-2 accent-[#00ff66]" />,
-          img: ({ src, alt }) => (
-            <img src={typeof src === "string" ? src : ""} alt={alt ?? ""} loading="lazy" className="max-w-full border border-hard" />
-          ),
+          img: ({ src, alt }) => {
+            const raw = typeof src === "string" ? src : "";
+            const url =
+              !raw || isExternal(raw) || raw.startsWith("data:") || !ctx
+                ? raw
+                : rawUrl(ctx.owner, ctx.repo, ctx.branch, resolve(raw));
+            return <RepoImage src={url} alt={alt ?? ""} />;
+          },
           pre: ({ children }) => <>{children}</>,
           code: ({ className, children, ...props }) => {
             const text = String(children ?? "").replace(/\n$/, "");
