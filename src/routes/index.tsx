@@ -394,6 +394,15 @@ function Index() {
                 >
                   [ VIEW ON GITHUB ↗ ]
                 </a>
+                <a
+                  href={editFileIntentUrl({ owner, repo, branch, path: spec.path })}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Opens GitHub web editor. If you do not have write access, GitHub will automatically create a fork and Pull Request for you."
+                  className="border border-[#ff5500] text-[#ff5500] px-3 py-1.5 hover:bg-[#ff5500] hover:text-black"
+                >
+                  [ EDIT SPEC ↗ ]
+                </a>
                 <button
                   onClick={async () => {
                     const sha = files.find((f) => f.path === spec.path)?.sha ?? branch;
