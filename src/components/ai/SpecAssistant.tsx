@@ -3,7 +3,10 @@ import { toast } from "sonner";
 import { streamBudgeted, TOO_LARGE_MESSAGE, type AiConfig } from "@/lib/ai-engine";
 import { DEFAULT_BUDGET, TokenLimitError, truncateToTokenBudget } from "@/lib/token-budget";
 
-const SYSTEM_PROMPT = "You are a concise engineering assistant. Keep responses brief and bulleted.";
+const SYSTEM_PROMPT =
+  "You are an expert technical editor. Your analysis MUST be strictly confined to the SPEC CONTENT provided. " +
+  "Do not reference outside repository files, root paths, or directory structures. " +
+  "Keep responses brief and bulleted.";
 
 const TASKS = {
   SUMMARIZE: {
@@ -61,7 +64,11 @@ export function SpecAssistant({
       await streamBudgeted(
         cfg,
         SYSTEM_PROMPT,
-        (budget) => `${TASKS[k].prompt}\n\nFILE: ${path}\n\n${truncateToTokenBudget(text, budget)}`,
+        (budget) =>
+          `Perform action: [${k}]\n${TASKS[k].prompt}\nTarget File Path: ${path}\n\nSPEC CONTENT:\n${truncateToTokenBudget(
+            text,
+            budget,
+          )}`,
         (d) => setOut((p) => p + d),
         ctrl.signal,
         DEFAULT_BUDGET,
