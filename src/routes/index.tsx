@@ -283,6 +283,14 @@ function Index() {
               )}
             </button>
           ))}
+          {owner && (
+            <button
+              onClick={() => setNewOpen(true)}
+              className="px-3 py-2 border-r border-hard text-[11px] uppercase tracking-wider text-[#00ff66] hover:bg-[#00ff66] hover:text-black"
+            >
+              + NEW SPEC
+            </button>
+          )}
         </nav>
       )}
 
