@@ -315,7 +315,7 @@ function Index() {
           <div className="min-w-0 flex items-center gap-2">
             <button
               onClick={() => setSpec(null)}
-              className="lg:hidden min-h-11 min-w-11 border border-hard px-2 text-[11px] text-[#888] hover:text-[#00ff66]"
+              className="sm:hidden min-h-11 min-w-11 border border-hard px-2 text-[11px] text-[#888] hover:text-[#00ff66]"
               aria-label="Back to list"
             >
               ←
@@ -365,7 +365,7 @@ function Index() {
             </button>
             <button
               onClick={() => setSpec(null)}
-              className="hidden lg:inline-flex min-h-9 items-center px-2 text-[11px] text-[#666] hover:text-white"
+              className="min-h-11 sm:min-h-9 inline-flex items-center px-2 text-[11px] text-[#666] hover:text-white"
             >
               [X]
             </button>
@@ -512,7 +512,7 @@ function Index() {
         )}
 
         {/* CENTER */}
-        <main className={`min-w-0 flex-1 ${spec ? "hidden lg:block" : "block"}`}>
+        <main className="min-w-0 flex-1">
           <div className="grid grid-cols-2 border-b border-hard sm:grid-cols-4">
             <Stat label="MD_RECORDS" value={files.length} accent="#00ff66" />
             <Stat label="DIRECTORIES" value={groups.length} />
