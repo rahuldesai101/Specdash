@@ -16,6 +16,8 @@ import { AiConfigDrawer } from "@/components/ai/AiConfigDrawer";
 import { CommandBar } from "@/components/ai/CommandBar";
 import { SpecAssistant } from "@/components/ai/SpecAssistant";
 import { MarkdownView } from "@/components/md/MarkdownView";
+import { NewSpecModal } from "@/components/git/NewSpecModal";
+import { editFileIntentUrl } from "@/lib/git-intent";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -58,6 +60,7 @@ function Index() {
   const [now, setNow] = useState("");
   const [aiCfg, setAiCfg] = useState<AiConfig | null>(null);
   const [aiOpen, setAiOpen] = useState(false);
+  const [newOpen, setNewOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [excerpts, setExcerpts] = useState<Record<string, string>>({});
 
@@ -280,6 +283,14 @@ function Index() {
               )}
             </button>
           ))}
+          {owner && (
+            <button
+              onClick={() => setNewOpen(true)}
+              className="px-3 py-2 border-r border-hard text-[11px] uppercase tracking-wider text-[#00ff66] hover:bg-[#00ff66] hover:text-black"
+            >
+              + NEW SPEC
+            </button>
+          )}
         </nav>
       )}
 
@@ -383,6 +394,15 @@ function Index() {
                 >
                   [ VIEW ON GITHUB ↗ ]
                 </a>
+                <a
+                  href={editFileIntentUrl({ owner, repo, branch, path: spec.path })}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Opens GitHub web editor. If you do not have write access, GitHub will automatically create a fork and Pull Request for you."
+                  className="border border-[#ff5500] text-[#ff5500] px-3 py-1.5 hover:bg-[#ff5500] hover:text-black"
+                >
+                  [ EDIT SPEC ↗ ]
+                </a>
                 <button
                   onClick={async () => {
                     const sha = files.find((f) => f.path === spec.path)?.sha ?? branch;
@@ -422,6 +442,10 @@ function Index() {
                 />
               )}
             </div>
+            <p className="border-t border-hard px-5 py-2 text-[10px] text-[#555]">
+              Opens GitHub web editor. If you do not have write access, GitHub will automatically create a fork and
+              Pull Request for you.
+            </p>
             <SpecAssistant cfg={aiCfg} path={spec.path} text={spec.text} />
           </div>
         </div>
@@ -445,6 +469,17 @@ function Index() {
           index={files.map((f) => ({ path: f.path, dir: f.dir, name: f.name, excerpt: excerpts[f.path] }))}
           onClose={() => setCmdOpen(false)}
           onOpen={openSpec}
+        />
+      )}
+
+      {newOpen && owner && (
+        <NewSpecModal
+          owner={owner}
+          repo={repo}
+          branch={branch}
+          folders={groups.length ? groups.map(([d]) => d) : ["root"]}
+          activeDir={activeDir}
+          onClose={() => setNewOpen(false)}
         />
       )}
     </div>
