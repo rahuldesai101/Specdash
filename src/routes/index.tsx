@@ -374,9 +374,34 @@ function Index() {
               <div className="text-[11px] uppercase tracking-widest text-[#00ff66] break-all">
                 [ SPEC ] /{spec.path}
               </div>
-              <button onClick={() => setSpec(null)} className="text-[#666] hover:text-white text-[11px]">
-                [X CLOSE]
-              </button>
+              <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest shrink-0">
+                <a
+                  href={ghBlobUrl(spec.path, branch)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="border border-[#00ff66] text-[#00ff66] px-2 py-1 hover:bg-[#00ff66] hover:text-black"
+                >
+                  [ VIEW ON GITHUB ↗ ]
+                </a>
+                <button
+                  onClick={async () => {
+                    const sha = files.find((f) => f.path === spec.path)?.sha ?? branch;
+                    try {
+                      await navigator.clipboard.writeText(ghBlobUrl(spec.path, sha));
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 1500);
+                    } catch {
+                      /* clipboard blocked */
+                    }
+                  }}
+                  className="border border-[#333] px-2 py-1 text-[#888] hover:border-[#00ff66] hover:text-[#00ff66]"
+                >
+                  {copied ? "[ COPIED ]" : "[ COPY PERMALINK ]"}
+                </button>
+                <button onClick={() => setSpec(null)} className="text-[#666] hover:text-white text-[11px]">
+                  [X CLOSE]
+                </button>
+              </div>
             </div>
             <div className="overflow-auto p-4">
               {spec.err ? (
