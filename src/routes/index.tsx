@@ -315,7 +315,7 @@ function Index() {
           <div className="min-w-0 flex items-center gap-2">
             <button
               onClick={() => setSpec(null)}
-              className="lg:hidden min-h-11 min-w-11 border border-hard px-2 text-[11px] text-[#888] hover:text-[#00ff66]"
+              className="sm:hidden min-h-11 min-w-11 border border-hard px-2 text-[11px] text-[#888] hover:text-[#00ff66]"
               aria-label="Back to list"
             >
               ←
@@ -365,7 +365,7 @@ function Index() {
             </button>
             <button
               onClick={() => setSpec(null)}
-              className="hidden lg:inline-flex min-h-9 items-center px-2 text-[11px] text-[#666] hover:text-white"
+              className="min-h-11 sm:min-h-9 inline-flex items-center px-2 text-[11px] text-[#666] hover:text-white"
             >
               [X]
             </button>
@@ -512,7 +512,7 @@ function Index() {
         )}
 
         {/* CENTER */}
-        <main className={`min-w-0 flex-1 ${spec ? "hidden lg:block" : "block"}`}>
+        <main className="min-w-0 flex-1">
           <div className="grid grid-cols-2 border-b border-hard sm:grid-cols-4">
             <Stat label="MD_RECORDS" value={files.length} accent="#00ff66" />
             <Stat label="DIRECTORIES" value={groups.length} />
@@ -642,16 +642,16 @@ function Index() {
           </footer>
         </main>
 
-        {/* RIGHT READER PANE (desktop) */}
-        {spec && readerOpen && (
-          <aside className="hidden lg:block w-[46%] max-w-[900px] shrink-0 border-l border-hard">
-            <div className="sticky top-[89px] h-[calc(100vh-89px)]">{reader}</div>
-          </aside>
-        )}
       </div>
 
-      {/* MOBILE / TABLET FULLSCREEN READER */}
-      {spec && <div className="fixed inset-0 z-40 bg-black lg:hidden">{reader}</div>}
+      {/* SPEC READER OVERLAY */}
+      {spec && readerOpen && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/85 sm:p-4">
+          <div className="h-full w-full border-hard bg-black sm:h-[92vh] sm:max-w-5xl sm:border 2xl:max-w-6xl">
+            {reader}
+          </div>
+        </div>
+      )}
 
       {/* MOBILE NAV DRAWER */}
       {mobileNav && (
