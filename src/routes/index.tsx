@@ -478,6 +478,9 @@ function Index() {
               <button onClick={() => setKeysOpen(true)} className={`${btn} hidden lg:inline-flex`} title="Shortcuts (Ctrl+/)">
                 ⌨
               </button>
+              <Link to="/changelog" className={btn} title="Changelog timeline">
+                📜<span className="hidden md:inline ml-1">CHANGELOG</span>
+              </Link>
             </div>
           </div>
 
