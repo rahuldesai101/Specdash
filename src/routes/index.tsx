@@ -369,17 +369,17 @@ function Index() {
 
       {spec && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4">
-          <div className="w-full max-w-3xl max-h-[85vh] flex flex-col bg-black border border-hard">
-            <div className="flex items-center justify-between border-b border-hard px-4 py-3">
-              <div className="text-[11px] uppercase tracking-widest text-[#00ff66] break-all">
+          <div className="w-full max-w-5xl h-[92vh] flex flex-col bg-black border border-hard">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-hard px-5 py-4">
+              <div className="text-[12px] uppercase tracking-widest text-[#00ff66] break-all">
                 [ SPEC ] /{spec.path}
               </div>
-              <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest shrink-0">
+              <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest shrink-0">
                 <a
                   href={ghBlobUrl(spec.path, branch)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="border border-[#00ff66] text-[#00ff66] px-2 py-1 hover:bg-[#00ff66] hover:text-black"
+                  className="border border-[#00ff66] text-[#00ff66] px-3 py-1.5 hover:bg-[#00ff66] hover:text-black"
                 >
                   [ VIEW ON GITHUB ↗ ]
                 </a>
@@ -394,16 +394,16 @@ function Index() {
                       /* clipboard blocked */
                     }
                   }}
-                  className="border border-[#333] px-2 py-1 text-[#888] hover:border-[#00ff66] hover:text-[#00ff66]"
+                  className="border border-[#333] px-3 py-1.5 text-[#888] hover:border-[#00ff66] hover:text-[#00ff66]"
                 >
                   {copied ? "[ COPIED ]" : "[ COPY PERMALINK ]"}
                 </button>
-                <button onClick={() => setSpec(null)} className="text-[#666] hover:text-white text-[11px]">
+                <button onClick={() => setSpec(null)} className="px-2 py-1.5 text-[#666] hover:text-white text-[11px]">
                   [X CLOSE]
                 </button>
               </div>
             </div>
-            <div className="overflow-auto p-4">
+            <div className="flex-1 overflow-auto px-6 py-6 text-[14px] leading-7">
               {spec.err ? (
                 <pre className="text-[11px] whitespace-pre-wrap text-[#ff5500]">ERR: {spec.err}</pre>
               ) : spec.text === null ? (

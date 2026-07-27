@@ -72,13 +72,13 @@ export function SpecAssistant({
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-2 border-t border-hard px-4 py-2 text-[10px] uppercase tracking-widest">
+      <div className="flex flex-wrap items-center gap-2 border-t border-hard px-5 py-3 text-[11px] uppercase tracking-widest">
         {(Object.keys(TASKS) as TaskKey[]).map((k) => (
           <button
             key={k}
             onClick={() => run(k)}
             disabled={!text || busy}
-            className="border border-[#333] px-2 py-1 hover:border-[#00ff66] hover:text-[#00ff66] disabled:opacity-40 disabled:hover:border-[#333] disabled:hover:text-inherit"
+            className="border border-[#333] px-3 py-1.5 hover:border-[#00ff66] hover:text-[#00ff66] disabled:opacity-40 disabled:hover:border-[#333] disabled:hover:text-inherit"
           >
             [ {TASKS[k].label} ]
           </button>
@@ -87,21 +87,23 @@ export function SpecAssistant({
           {cfg ? `[ AI: ACTIVE (${cfg.provider.toUpperCase()}) ]` : "[ AI: DISABLED ]"}
         </span>
         {open && (
-          <button onClick={() => setOpen(false)} className="border border-[#333] px-2 py-1 hover:text-white">
+          <button onClick={() => setOpen(false)} className="border border-[#333] px-3 py-1.5 hover:text-white">
             [ HIDE_DRAWER ]
           </button>
         )}
       </div>
 
       {open && (
-        <div className="border-t border-hard max-h-[35vh] overflow-auto p-4 text-[11px]">
-          <div className="text-[10px] uppercase tracking-widest text-[#666] mb-2">
+        <div className="border-t border-hard max-h-[45vh] min-h-[160px] overflow-auto p-5 text-[13px] leading-relaxed">
+          <div className="text-[11px] uppercase tracking-widest text-[#666] mb-3">
             &gt; {task} {busy && <span className="text-[#ffaa00]">// STREAMING...</span>}
           </div>
           {err ? (
             <div className="text-[#ff5500] break-all">ERR: {err}</div>
           ) : (
-            <pre className="whitespace-pre-wrap text-[#ccc]">{out || "> AWAITING_TOKENS..."}</pre>
+            <pre className="whitespace-pre-wrap text-[13px] leading-relaxed text-[#ddd]">
+              {out || "> AWAITING_TOKENS..."}
+            </pre>
           )}
         </div>
       )}
