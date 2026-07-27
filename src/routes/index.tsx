@@ -11,6 +11,10 @@ import {
   type RateLimit,
   type TreeItem,
 } from "@/lib/github-db";
+import { loadAiConfig, saveAiConfig, type AiConfig } from "@/lib/ai-engine";
+import { AiConfigDrawer } from "@/components/ai/AiConfigDrawer";
+import { CommandBar } from "@/components/ai/CommandBar";
+import { SpecAssistant } from "@/components/ai/SpecAssistant";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -50,6 +54,10 @@ function Index() {
   const [hasPat, setHasPat] = useState(false);
   const [spec, setSpec] = useState<{ path: string; text: string | null; err?: string } | null>(null);
   const [now, setNow] = useState("");
+  const [aiCfg, setAiCfg] = useState<AiConfig | null>(null);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [cmdOpen, setCmdOpen] = useState(false);
+  const [excerpts, setExcerpts] = useState<Record<string, string>>({});
 
   // hydrate config from localStorage
   useEffect(() => {
@@ -59,6 +67,19 @@ function Index() {
     setRepo(r);
     setHasPat(Boolean(getPat()));
     if (!o) setCfgOpen(true);
+    setAiCfg(loadAiConfig());
+  }, []);
+
+  // global Ctrl+K
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setCmdOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
   }, []);
 
   useEffect(() => {
@@ -126,10 +147,12 @@ function Index() {
     status === "SYNCED" ? "#00ff66" : status === "SYNCING" ? "#ffaa00" : status === "ERROR" ? "#ff5500" : "#666";
 
   const openSpec = async (path: string) => {
+    setCmdOpen(false);
     setSpec({ path, text: null });
     try {
       const text = await fetchRaw(owner, repo, branch, path);
       setSpec({ path, text });
+      setExcerpts((p) => ({ ...p, [path]: text }));
     } catch (e) {
       setSpec({ path, text: null, err: e instanceof Error ? e.message : "RAW_ERR" });
     }
@@ -162,6 +185,22 @@ function Index() {
             </span>
             <span className="text-[#333]">|</span>
             <span className="text-[#666]">[ T: {now.slice(11, 19)}Z ]</span>
+            <span style={{ color: aiCfg ? "#00ff66" : "#ff5500" }}>
+              {aiCfg ? `[ AI: ACTIVE (${aiCfg.provider.toUpperCase()}) ]` : "[ AI: DISABLED ]"}
+            </span>
+            <button
+              onClick={() => setCmdOpen(true)}
+              className="border border-[#333] px-2 py-1 hover:border-[#00ff66] hover:text-[#00ff66]"
+            >
+              [SEARCH ⌘/CTRL+K]
+            </button>
+            <button
+              onClick={() => setAiOpen(true)}
+              className="border px-2 py-1"
+              style={{ borderColor: aiCfg ? "#00ff66" : "#333", color: aiCfg ? "#00ff66" : "#fff" }}
+            >
+              [AI_CFG]
+            </button>
             <button onClick={sync} className="border border-[#333] px-2 py-1 hover:border-[#00ff66] hover:text-[#00ff66]">
               [PULL]
             </button>
@@ -297,8 +336,30 @@ function Index() {
             <pre className="overflow-auto p-4 text-[11px] whitespace-pre-wrap text-[#ccc]">
               {spec.err ? `ERR: ${spec.err}` : (spec.text ?? "> LOADING_FROM_RAW_CDN...")}
             </pre>
+            <SpecAssistant cfg={aiCfg} path={spec.path} text={spec.text} />
           </div>
         </div>
+      )}
+
+      {aiOpen && (
+        <AiConfigDrawer
+          cfg={aiCfg}
+          onClose={() => setAiOpen(false)}
+          onSave={(c) => {
+            saveAiConfig(c);
+            setAiCfg(c);
+            setAiOpen(false);
+          }}
+        />
+      )}
+
+      {cmdOpen && (
+        <CommandBar
+          cfg={aiCfg}
+          index={files.map((f) => ({ path: f.path, dir: f.dir, name: f.name, excerpt: excerpts[f.path] }))}
+          onClose={() => setCmdOpen(false)}
+          onOpen={openSpec}
+        />
       )}
     </div>
   );
