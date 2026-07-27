@@ -642,16 +642,16 @@ function Index() {
           </footer>
         </main>
 
-        {/* RIGHT READER PANE (desktop) */}
-        {spec && readerOpen && (
-          <aside className="hidden lg:block w-[46%] max-w-[900px] shrink-0 border-l border-hard">
-            <div className="sticky top-[89px] h-[calc(100vh-89px)]">{reader}</div>
-          </aside>
-        )}
       </div>
 
-      {/* MOBILE / TABLET FULLSCREEN READER */}
-      {spec && <div className="fixed inset-0 z-40 bg-black lg:hidden">{reader}</div>}
+      {/* SPEC READER OVERLAY */}
+      {spec && readerOpen && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/85 sm:p-4">
+          <div className="h-full w-full border-hard bg-black sm:h-[92vh] sm:max-w-5xl sm:border 2xl:max-w-6xl">
+            {reader}
+          </div>
+        </div>
+      )}
 
       {/* MOBILE NAV DRAWER */}
       {mobileNav && (
