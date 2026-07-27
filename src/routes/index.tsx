@@ -15,6 +15,7 @@ import { loadAiConfig, saveAiConfig, type AiConfig } from "@/lib/ai-engine";
 import { AiConfigDrawer } from "@/components/ai/AiConfigDrawer";
 import { CommandBar } from "@/components/ai/CommandBar";
 import { SpecAssistant } from "@/components/ai/SpecAssistant";
+import { MarkdownView } from "@/components/md/MarkdownView";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -333,9 +334,15 @@ function Index() {
                 [X CLOSE]
               </button>
             </div>
-            <pre className="overflow-auto p-4 text-[11px] whitespace-pre-wrap text-[#ccc]">
-              {spec.err ? `ERR: ${spec.err}` : (spec.text ?? "> LOADING_FROM_RAW_CDN...")}
-            </pre>
+            <div className="overflow-auto p-4">
+              {spec.err ? (
+                <pre className="text-[11px] whitespace-pre-wrap text-[#ff5500]">ERR: {spec.err}</pre>
+              ) : spec.text === null ? (
+                <pre className="text-[11px] text-[#666]">&gt; LOADING_FROM_RAW_CDN...</pre>
+              ) : (
+                <MarkdownView source={spec.text} />
+              )}
+            </div>
             <SpecAssistant cfg={aiCfg} path={spec.path} text={spec.text} />
           </div>
         </div>
