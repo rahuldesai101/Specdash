@@ -1,7 +1,16 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState, useCallback } from "react";
-
-type Search = { owner?: string; repo?: string };
+import { createFileRoute } from "@tanstack/react-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  dirOf,
+  fetchRaw,
+  getPat,
+  ghFetch,
+  parseRepoInput,
+  setPat,
+  type CacheStatus,
+  type RateLimit,
+  type TreeItem,
+} from "@/lib/github-db";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -9,182 +18,80 @@ export const Route = createFileRoute("/")({
       { title: "SANDBOX // GITHUB_DB_INTERFACE_v1.0" },
       {
         name: "description",
-        content: "Brutalist developer dashboard that treats a GitHub repository as a database.",
+        content:
+          "Brutalist repo indexer: dynamic markdown tree discovery, PAT auth, ETag caching and raw CDN spec reads.",
       },
       { property: "og:title", content: "SANDBOX // GITHUB_DB_INTERFACE_v1.0" },
       {
         property: "og:description",
-        content: "GitHub-as-a-DB: read via REST tree, write via git commits.",
+        content: "GitHub-as-a-DB indexer with ETag caching and raw CDN pipeline.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
-  }),
-  validateSearch: (s: Record<string, unknown>): Search => ({
-    owner: typeof s.owner === "string" ? s.owner : undefined,
-    repo: typeof s.repo === "string" ? s.repo : undefined,
   }),
   component: Index,
 });
 
-const COLLECTIONS = ["library/ideas", "library/experiments", "library/research", "docs"] as const;
-type Collection = (typeof COLLECTIONS)[number];
-
-const TYPE_MAP: Record<Collection, "IDE" | "EXP" | "RES" | "DOC"> = {
-  "library/ideas": "IDE",
-  "library/experiments": "EXP",
-  "library/research": "RES",
-  "docs": "DOC",
-};
-
-type Record_ = {
-  path: string;
-  filename: string;
-  ext: string;
-  sha: string;
-  size: number;
-  collection: Collection;
-  type: "IDE" | "EXP" | "RES" | "DOC";
-  kind: "blob" | "tree";
-  commit_sha?: string;
-  commit_date?: string;
-};
-
-type TreeItem = {
-  path: string;
-  mode: string;
-  type: "blob" | "tree";
-  sha: string;
-  size?: number;
-};
-
-async function fetchTree(owner: string, repo: string, branch: string) {
-  const res = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`,
-    { headers: { Accept: "application/vnd.github+json" } },
-  );
-  if (!res.ok) throw new Error(`TREE_FETCH_${res.status}`);
-  return (await res.json()) as { sha: string; tree: TreeItem[]; truncated: boolean };
-}
-
-async function fetchDefaultBranch(owner: string, repo: string): Promise<string> {
-  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
-    headers: { Accept: "application/vnd.github+json" },
-  });
-  if (!res.ok) throw new Error(`REPO_FETCH_${res.status}`);
-  const d = await res.json();
-  return d.default_branch ?? "main";
-}
-
-async function fetchHeadCommit(owner: string, repo: string, branch: string) {
-  const res = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/commits/${branch}`,
-    { headers: { Accept: "application/vnd.github+json" } },
-  );
-  if (!res.ok) return null;
-  return (await res.json()) as {
-    sha: string;
-    commit: { committer: { date: string } };
-  };
-}
-
-async function fetchFileCommit(
-  owner: string,
-  repo: string,
-  path: string,
-): Promise<{ sha?: string; date?: string }> {
-  const res = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/commits?path=${encodeURIComponent(path)}&per_page=1`,
-    { headers: { Accept: "application/vnd.github+json" } },
-  );
-  if (!res.ok) return {};
-  const d = await res.json();
-  return { sha: d?.[0]?.sha, date: d?.[0]?.commit?.committer?.date };
-}
-
-function classify(path: string): Collection | null {
-  // Check for library/* paths
-  if (path.startsWith("library/")) {
-    const seg = path.split("/")[1];
-    if (seg === "ideas" || seg === "experiments" || seg === "research") {
-      return `library/${seg}` as Collection;
-    }
-  }
-  // Check for docs paths
-  if (path.startsWith("docs/")) {
-    return "docs";
-  }
-  return null;
-}
+type FileRow = { path: string; name: string; sha: string; size: number; dir: string };
 
 function Index() {
-  const search = Route.useSearch();
-  const navigate = useNavigate({ from: "/" });
-
-  const owner = search.owner ?? "";
-  const repo = search.repo ?? "sandbox";
-
-  const [records, setRecords] = useState<Record_[]>([]);
+  const [owner, setOwner] = useState("");
+  const [repo, setRepo] = useState("sandbox");
   const [branch, setBranch] = useState("main");
-  const [headCommit, setHeadCommit] = useState<{ sha: string; date: string } | null>(null);
+  const [files, setFiles] = useState<FileRow[]>([]);
+  const [activeDir, setActiveDir] = useState<string | null>(null);
   const [status, setStatus] = useState<"IDLE" | "SYNCING" | "SYNCED" | "ERROR">("IDLE");
   const [error, setError] = useState<string | null>(null);
-  const [truncated, setTruncated] = useState(false);
+  const [rate, setRate] = useState<RateLimit>({ remaining: null, limit: null });
+  const [cacheStatus, setCacheStatus] = useState<CacheStatus>("MISS");
   const [cfgOpen, setCfgOpen] = useState(false);
-  const [writeOpen, setWriteOpen] = useState(false);
-  const [now, setNow] = useState(() => new Date().toISOString());
+  const [patOpen, setPatOpen] = useState(false);
+  const [hasPat, setHasPat] = useState(false);
+  const [spec, setSpec] = useState<{ path: string; text: string | null; err?: string } | null>(null);
+  const [now, setNow] = useState("");
+
+  // hydrate config from localStorage
+  useEffect(() => {
+    const o = localStorage.getItem("activeOwner") ?? "";
+    const r = localStorage.getItem("activeRepo") ?? "sandbox";
+    setOwner(o);
+    setRepo(r);
+    setHasPat(Boolean(getPat()));
+    if (!o) setCfgOpen(true);
+  }, []);
 
   useEffect(() => {
-    if (!owner) setCfgOpen(true);
-  }, [owner]);
+    const t = setInterval(() => setNow(new Date().toISOString()), 1000);
+    setNow(new Date().toISOString());
+    return () => clearInterval(t);
+  }, []);
 
   const sync = useCallback(async () => {
     if (!owner || !repo) return;
     setStatus("SYNCING");
     setError(null);
     try {
-      const br = await fetchDefaultBranch(owner, repo);
+      const meta = await ghFetch<{ default_branch: string }>(`/repos/${owner}/${repo}`);
+      const br = meta.data.default_branch || "main";
       setBranch(br);
-      const [tree, head] = await Promise.all([
-        fetchTree(owner, repo, br),
-        fetchHeadCommit(owner, repo, br),
-      ]);
-      setTruncated(tree.truncated);
-      if (head) setHeadCommit({ sha: head.sha, date: head.commit.committer.date });
-      const rows: Record_[] = [];
-      for (const item of tree.tree) {
-        const col = classify(item.path);
-        if (!col) continue;
-        if (item.path === col) continue; // skip the collection root itself
-        const filename = item.path.split("/").pop() ?? item.path;
-        const ext = filename.includes(".") ? filename.split(".").pop()! : "";
-        rows.push({
-          path: item.path,
-          filename,
-          ext,
-          sha: item.sha,
-          size: item.size ?? 0,
-          collection: col,
-          type: TYPE_MAP[col],
-          kind: item.type,
-        });
-      }
-      rows.sort((a, b) => a.path.localeCompare(b.path));
-      setRecords(rows);
+      const tree = await ghFetch<{ tree: TreeItem[]; truncated: boolean }>(
+        `/repos/${owner}/${repo}/git/trees/${br}?recursive=1`,
+      );
+      setRate(tree.rate.remaining !== null ? tree.rate : meta.rate);
+      setCacheStatus(tree.status);
+      const rows: FileRow[] = tree.data.tree
+        .filter((i) => i.type === "blob" && i.path.toLowerCase().endsWith(".md"))
+        .map((i) => ({
+          path: i.path,
+          name: i.path.split("/").pop() ?? i.path,
+          sha: i.sha,
+          size: i.size ?? 0,
+          dir: dirOf(i.path),
+        }))
+        .sort((a, b) => a.path.localeCompare(b.path));
+      setFiles(rows);
       setStatus("SYNCED");
-
-      // Enrich first N blobs with per-file commit metadata (best-effort, rate-limited)
-      const targets = rows.filter((r) => r.kind === "blob").slice(0, 30);
-      const enriched = await Promise.all(
-        targets.map(async (r) => {
-          const c = await fetchFileCommit(owner, repo, r.path);
-          return { path: r.path, ...c };
-        }),
-      );
-      setRecords((prev) =>
-        prev.map((r) => {
-          const e = enriched.find((x) => x.path === r.path);
-          return e ? { ...r, commit_sha: e.sha, commit_date: e.date } : r;
-        }),
-      );
     } catch (e) {
       setStatus("ERROR");
       setError(e instanceof Error ? e.message : "UNKNOWN_ERR");
@@ -192,193 +99,160 @@ function Index() {
   }, [owner, repo]);
 
   useEffect(() => {
-    if (!owner) return;
-    sync();
-    const t = setInterval(sync, 30_000);
-    return () => clearInterval(t);
-  }, [sync, owner]);
+    if (owner && repo) sync();
+  }, [sync, owner, repo]);
+
+  const groups = useMemo(() => {
+    const m = new Map<string, FileRow[]>();
+    for (const f of files) {
+      const arr = m.get(f.dir) ?? [];
+      arr.push(f);
+      m.set(f.dir, arr);
+    }
+    return [...m.entries()].sort((a, b) =>
+      a[0] === "root" ? -1 : b[0] === "root" ? 1 : a[0].localeCompare(b[0]),
+    );
+  }, [files]);
 
   useEffect(() => {
-    const t = setInterval(() => setNow(new Date().toISOString()), 1000);
-    return () => clearInterval(t);
-  }, []);
+    if (groups.length && (activeDir === null || !groups.some(([d]) => d === activeDir))) {
+      setActiveDir(groups[0][0]);
+    }
+  }, [groups, activeDir]);
 
-  const counts = useMemo(() => {
-    const blobs = records.filter((r) => r.kind === "blob");
-    return {
-      total: blobs.length,
-      ideas: blobs.filter((r) => r.collection === "library/ideas").length,
-      exp: blobs.filter((r) => r.collection === "library/experiments").length,
-      res: blobs.filter((r) => r.collection === "library/research").length,
-      docs: blobs.filter((r) => r.collection === "docs").length,
-    };
-  }, [records]);
+  const rows = groups.find(([d]) => d === activeDir)?.[1] ?? [];
 
   const dot =
-    status === "SYNCED"
-      ? "#00ff66"
-      : status === "SYNCING"
-        ? "#ffaa00"
-        : status === "ERROR"
-          ? "#ff5500"
-          : "#666";
+    status === "SYNCED" ? "#00ff66" : status === "SYNCING" ? "#ffaa00" : status === "ERROR" ? "#ff5500" : "#666";
+
+  const openSpec = async (path: string) => {
+    setSpec({ path, text: null });
+    try {
+      const text = await fetchRaw(owner, repo, branch, path);
+      setSpec({ path, text });
+    } catch (e) {
+      setSpec({ path, text: null, err: e instanceof Error ? e.message : "RAW_ERR" });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* HEADER */}
       <header className="border-b border-hard">
         <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
-          <div className="text-[13px] font-bold tracking-wider">
+          <h1 className="text-[13px] font-bold tracking-wider">
             SANDBOX <span className="text-[#333]">//</span>{" "}
             <span className="text-[#00ff66]">GITHUB_DB_INTERFACE_v1.0</span>
-          </div>
+          </h1>
           <div className="flex flex-wrap items-center gap-3 text-[10px] uppercase tracking-widest">
             <span className="flex items-center gap-2">
-              <span
-                className="inline-block w-2 h-2 animate-pulse"
-                style={{ backgroundColor: dot }}
-              />
+              <span className="inline-block w-2 h-2 animate-pulse" style={{ backgroundColor: dot }} />
               [ DB_STATUS: {status} ]
             </span>
             <span className="text-[#333]">|</span>
             <span>[ DB: {owner || "___"}/{repo || "___"}@{branch} ]</span>
             <span className="text-[#333]">|</span>
-            <span className="text-[#666]">[ T: {now.slice(11, 19)}Z ]</span>
+            <span style={{ color: rate.remaining !== null && rate.remaining < 10 ? "#ff5500" : "#888" }}>
+              [ API_QUOTA: {rate.remaining ?? "--"}/{rate.limit ?? "--"} ]
+            </span>
             <span className="text-[#333]">|</span>
-            <button
-              onClick={sync}
-              className="border border-[#333] px-2 py-1 hover:border-[#00ff66] hover:text-[#00ff66]"
-            >
+            <span style={{ color: cacheStatus === "304" ? "#00ff66" : "#666" }}>
+              {cacheStatus === "304"
+                ? "[ CACHE: 304 NOT_MODIFIED (0 COST) ]"
+                : `[ CACHE: ${cacheStatus} ]`}
+            </span>
+            <span className="text-[#333]">|</span>
+            <span className="text-[#666]">[ T: {now.slice(11, 19)}Z ]</span>
+            <button onClick={sync} className="border border-[#333] px-2 py-1 hover:border-[#00ff66] hover:text-[#00ff66]">
               [PULL]
             </button>
             <button
-              onClick={() => setCfgOpen(true)}
-              className="border border-[#333] px-2 py-1 hover:border-[#00ff66] hover:text-[#00ff66]"
+              onClick={() => setPatOpen(true)}
+              className="border px-2 py-1"
+              style={{ borderColor: hasPat ? "#00ff66" : "#ff5500", color: hasPat ? "#00ff66" : "#ff5500" }}
             >
+              [CONNECT_GITHUB{hasPat ? ": OK" : ""}]
+            </button>
+            <button onClick={() => setCfgOpen(true)} className="border border-[#333] px-2 py-1 hover:border-[#00ff66] hover:text-[#00ff66]">
               [CFG]
             </button>
           </div>
         </div>
       </header>
 
-      {/* STATS BAR */}
       <div className="flex border-b border-hard">
-        <Stat label="TOTAL_RECORDS" value={counts.total} accent="#00ff66" />
-        <Stat label="IDEAS_COUNT" value={counts.ideas} />
-        <Stat label="EXP_COUNT" value={counts.exp} accent="#ff5500" />
-        <Stat label="RESEARCH_COUNT" value={counts.res} />
-        <Stat label="DOCS_COUNT" value={counts.docs} accent="#9966ff" />
-        <Stat
-          label="HEAD_COMMIT"
-          value={headCommit?.sha.slice(0, 10) ?? "----------"}
-          accent="#00ff66"
-        />
+        <Stat label="MD_RECORDS" value={files.length} accent="#00ff66" />
+        <Stat label="DIRECTORIES" value={groups.length} />
+        <Stat label="ACTIVE_DIR_ROWS" value={rows.length} accent="#ff5500" />
+        <Stat label="BRANCH" value={branch} />
       </div>
 
-      {/* SUB BAR */}
-      <div className="flex items-center justify-between border-b border-hard px-4 py-2">
-        <div className="text-[11px] uppercase tracking-widest text-[#00ff66]">
-          &gt; SELECT * FROM {"{library,docs}"} — {records.filter((r) => r.kind === "blob").length} ROWS
-        </div>
-        <button
-          onClick={() => setWriteOpen(true)}
-          className="px-3 py-1.5 border border-[#00ff66] text-[#00ff66] text-[11px] uppercase tracking-wider hover:bg-[#00ff66] hover:text-black"
-        >
-          [ + WRITE_TO_SANDBOX_DB ]
-        </button>
-      </div>
-
-      {truncated && (
-        <div className="border-b border-hard px-4 py-2 text-[11px] text-[#ff5500]">
-          WARN: TREE_TRUNCATED — repository exceeds single-request tree size. Some records omitted.
-        </div>
-      )}
       {error && (
         <div className="border-b border-hard px-4 py-2 text-[11px] text-[#ff5500]">
-          ERR: {error} — verify owner/repo and public API rate limit (60/hr).
+          ERR: {error} — verify owner/repo, or connect a PAT for higher quota / private repos.
         </div>
       )}
 
-      {/* GRID */}
+      {/* DIR TABS */}
+      {groups.length > 0 && (
+        <nav className="flex flex-wrap border-b border-hard">
+          {groups.map(([dir, list]) => (
+            <button
+              key={dir}
+              onClick={() => setActiveDir(dir)}
+              className="px-3 py-2 border-r border-hard text-[11px] uppercase tracking-wider"
+              style={{
+                backgroundColor: activeDir === dir ? "#00ff66" : "transparent",
+                color: activeDir === dir ? "#000" : "#fff",
+              }}
+            >
+              📁 /{dir} ({String(list.length).padStart(2, "0")})
+            </button>
+          ))}
+        </nav>
+      )}
+
       {!owner ? (
         <div className="px-4 py-16 text-center text-[12px] text-[#666]">
           &gt; NO_DB_CONFIGURED — open [CFG] to bind GITHUB_OWNER/GITHUB_REPO
         </div>
-      ) : records.length === 0 && status === "SYNCED" ? (
-        <div className="px-4 py-16 text-center text-[12px] text-[#666]">
-          &gt; DB_EMPTY — no records in /library or /docs
-        </div>
+      ) : files.length === 0 && status === "SYNCED" ? (
+        <div className="px-4 py-16 text-center text-[12px] text-[#666]">&gt; NO_MARKDOWN_RECORDS_FOUND</div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-[11px] border-collapse">
             <thead>
               <tr className="text-[10px] uppercase tracking-widest text-[#666]">
                 <Th>#</Th>
-                <Th>RECORD_PATH</Th>
-                <Th>TYPE</Th>
-                <Th>EXT</Th>
-                <Th>SIZE_B</Th>
-                <Th>COMMIT_SHA</Th>
-                <Th>TIMESTAMP</Th>
-                <Th>PRIMARY_KEY_LINK</Th>
+                <Th>FILE_NAME</Th>
+                <Th>RELATIVE_PATH</Th>
+                <Th>SHA</Th>
+                <Th>ACTION</Th>
               </tr>
             </thead>
             <tbody>
-              {records.map((r, i) => {
-                const typeColor =
-                  r.type === "IDE"
-                    ? "#00ff66"
-                    : r.type === "EXP"
-                      ? "#ff5500"
-                      : r.type === "DOC"
-                        ? "#9966ff"
-                        : "#ffffff";
-                const link =
-                  r.kind === "tree"
-                    ? `https://github.com/${owner}/${repo}/tree/${branch}/${r.path}`
-                    : `https://github.com/${owner}/${repo}/blob/${branch}/${r.path}`;
-                return (
-                  <tr key={r.path} className="hover:bg-[#0a0a0a]">
-                    <Td className="text-[#555] tabular-nums">
-                      {String(i + 1).padStart(4, "0")}
-                    </Td>
-                    <Td className="text-white">
-                      /{r.path}
-                      {r.kind === "tree" && <span className="text-[#666]">/</span>}
-                    </Td>
-                    <Td style={{ color: typeColor }}>[{r.type}]</Td>
-                    <Td className="text-[#888]">{r.ext || "--"}</Td>
-                    <Td className="text-[#888] tabular-nums">
-                      {r.kind === "tree" ? "----" : r.size}
-                    </Td>
-                    <Td className="text-[#666] tabular-nums">
-                      {(r.commit_sha ?? r.sha).slice(0, 10)}
-                    </Td>
-                    <Td className="text-[#aaa] tabular-nums">
-                      {r.commit_date
-                        ? r.commit_date.replace("T", " ").slice(0, 19) + "Z"
-                        : "----------  --------"}
-                    </Td>
-                    <Td>
-                      <a
-                        href={link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#00ff66] hover:bg-[#00ff66] hover:text-black px-2 py-0.5 border border-[#00ff66]"
-                      >
-                        &gt; FK_OPEN
-                      </a>
-                    </Td>
-                  </tr>
-                );
-              })}
+              {rows.map((f, i) => (
+                <tr key={f.path} className="hover:bg-[#0a0a0a]">
+                  <Td className="text-[#555] tabular-nums">{String(i + 1).padStart(4, "0")}</Td>
+                  <Td className="text-white">{f.name}</Td>
+                  <Td className="text-[#888]">/{f.path}</Td>
+                  <Td className="text-[#666] tabular-nums">{f.sha.slice(0, 12)}</Td>
+                  <Td>
+                    <button
+                      onClick={() => openSpec(f.path)}
+                      className="text-[#00ff66] border border-[#00ff66] px-2 py-0.5 hover:bg-[#00ff66] hover:text-black"
+                    >
+                      &gt; OPEN_SPEC
+                    </button>
+                  </Td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
       )}
 
       <footer className="border-t border-hard px-4 py-2 flex justify-between text-[10px] text-[#555] uppercase tracking-widest">
-        <span>&gt; GITHUB_DB_INTERFACE // ENGINE: git/trees?recursive=1</span>
+        <span>&gt; ENGINE: git/trees?recursive=1 + ETAG_304 + RAW_CDN</span>
         <span>{now}</span>
       </footer>
 
@@ -388,64 +262,73 @@ function Index() {
           repo={repo}
           onClose={() => setCfgOpen(false)}
           onSave={(o, r) => {
-            navigate({ search: { owner: o, repo: r }, replace: true });
+            localStorage.setItem("activeOwner", o);
+            localStorage.setItem("activeRepo", r);
+            setOwner(o);
+            setRepo(r);
             setCfgOpen(false);
           }}
         />
       )}
-      {writeOpen && (
-        <WriteModal
-          owner={owner}
-          repo={repo}
-          branch={branch}
-          onClose={() => setWriteOpen(false)}
+
+      {patOpen && (
+        <PatModal
+          onClose={() => setPatOpen(false)}
+          onSave={(v) => {
+            setPat(v);
+            setHasPat(Boolean(v));
+            setPatOpen(false);
+            sync();
+          }}
         />
+      )}
+
+      {spec && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4">
+          <div className="w-full max-w-3xl max-h-[85vh] flex flex-col bg-black border border-hard">
+            <div className="flex items-center justify-between border-b border-hard px-4 py-3">
+              <div className="text-[11px] uppercase tracking-widest text-[#00ff66] break-all">
+                [ SPEC ] /{spec.path}
+              </div>
+              <button onClick={() => setSpec(null)} className="text-[#666] hover:text-white text-[11px]">
+                [X CLOSE]
+              </button>
+            </div>
+            <pre className="overflow-auto p-4 text-[11px] whitespace-pre-wrap text-[#ccc]">
+              {spec.err ? `ERR: ${spec.err}` : (spec.text ?? "> LOADING_FROM_RAW_CDN...")}
+            </pre>
+          </div>
+        </div>
       )}
     </div>
   );
 }
 
 function Th({ children }: { children: React.ReactNode }) {
-  return (
-    <th className="text-left border border-hard px-3 py-2 font-normal">{children}</th>
-  );
+  return <th className="text-left border border-hard px-3 py-2 font-normal">{children}</th>;
 }
-function Td({
-  children,
-  className = "",
-  style,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  style?: React.CSSProperties;
-}) {
-  return (
-    <td className={`border border-hard px-3 py-2 ${className}`} style={style}>
-      {children}
-    </td>
-  );
+function Td({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return <td className={`border border-hard px-3 py-2 ${className}`}>{children}</td>;
 }
 
-function Stat({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: string | number;
-  accent?: string;
-}) {
+function Stat({ label, value, accent }: { label: string; value: string | number; accent?: string }) {
   const v = typeof value === "number" ? String(value).padStart(4, "0") : value;
   return (
     <div className="flex-1 border-r border-hard px-4 py-3 last:border-r-0 min-w-[120px]">
       <div className="text-[10px] uppercase tracking-widest text-[#666]">{label}</div>
-      <div
-        className="text-[22px] font-bold tabular-nums mt-1"
-        style={{ color: accent ?? "#ffffff" }}
-      >
+      <div className="text-[22px] font-bold tabular-nums mt-1" style={{ color: accent ?? "#ffffff" }}>
         {v}
       </div>
     </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <div className="text-[10px] uppercase tracking-widest text-[#666] mb-1">&gt; {label}</div>
+      {children}
+    </label>
   );
 }
 
@@ -462,46 +345,44 @@ function CfgDrawer({
 }) {
   const [o, setO] = useState(owner);
   const [r, setR] = useState(repo || "sandbox");
+  const submit = () => {
+    const p = parseRepoInput(o);
+    onSave(p.owner, (p.repo || parseRepoInput(r).repo || r || "sandbox").trim());
+  };
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-end bg-black/80">
       <div className="w-full max-w-md h-full bg-black border-l border-hard p-6">
         <div className="flex items-center justify-between border-b border-hard pb-3 mb-4">
-          <div className="text-[12px] uppercase tracking-widest text-[#00ff66]">
-            [ DB_CONFIG ]
-          </div>
-          <button
-            onClick={onClose}
-            className="text-[#666] hover:text-white text-[11px]"
-          >
+          <div className="text-[12px] uppercase tracking-widest text-[#00ff66]">[ DB_CONFIG ]</div>
+          <button onClick={onClose} className="text-[#666] hover:text-white text-[11px]">
             [X CLOSE]
           </button>
         </div>
         <div className="space-y-4 text-[11px]">
-          <Field label="GITHUB_OWNER">
+          <Field label="GITHUB_OWNER / REPO_URL">
             <input
               value={o}
-              onChange={(e) => setO(e.target.value.trim())}
-              placeholder="octocat"
+              onChange={(e) => setO(e.target.value)}
+              placeholder="octocat  |  https://github.com/octocat/sandbox"
               className="w-full bg-black border border-hard px-2 py-2 text-white outline-none focus:border-[#00ff66]"
             />
           </Field>
           <Field label="GITHUB_REPO">
             <input
               value={r}
-              onChange={(e) => setR(e.target.value.trim())}
+              onChange={(e) => setR(e.target.value)}
               placeholder="sandbox"
               className="w-full bg-black border border-hard px-2 py-2 text-white outline-none focus:border-[#00ff66]"
             />
           </Field>
           <div className="border border-hard p-3 text-[10px] text-[#666] leading-relaxed">
-            &gt; ENGINE: GitHub REST v3<br />
-            &gt; READ: /git/trees/{"{branch}"}?recursive=1<br />
-            &gt; WRITE: git commits via github.com/new/{"{branch}"}<br />
-            &gt; STATE: none — repo IS the database.<br />
-            &gt; CONFIG_PERSISTENCE: URL query params only.
+            &gt; READ: /git/trees/{"{branch}"}?recursive=1 (filter: blob + .md)<br />
+            &gt; CACHE: ETag + If-None-Match, 304 = 0 quota cost<br />
+            &gt; FILE_READ: raw.githubusercontent.com (no REST cost)<br />
+            &gt; PERSIST: localStorage[activeOwner, activeRepo]
           </div>
           <button
-            onClick={() => onSave(o, r)}
+            onClick={submit}
             className="w-full border border-[#00ff66] text-[#00ff66] py-2 hover:bg-[#00ff66] hover:text-black text-[11px] uppercase tracking-widest"
           >
             [ BIND_&_SYNC ]
@@ -512,119 +393,48 @@ function CfgDrawer({
   );
 }
 
-function WriteModal({
-  owner,
-  repo,
-  branch,
-  onClose,
-}: {
-  owner: string;
-  repo: string;
-  branch: string;
-  onClose: () => void;
-}) {
-  const [col, setCol] = useState<Collection>("library/ideas");
-  const [filename, setFilename] = useState("");
-  const [content, setContent] = useState(
-    "# NEW_RECORD\n\n> COLLECTION: \n> DATE: \n\n## PAYLOAD\n\n\n",
-  );
-
-  const clean = (filename || "untitled.md").replace(/^\/+/, "");
-  const finalName = clean.includes(".") ? clean : `${clean}.md`;
-  const canWrite = Boolean(owner && repo);
-  const url = canWrite
-    ? `https://github.com/${owner}/${repo}/new/${branch}?filename=${encodeURIComponent(
-        `${col}/${finalName}`,
-      )}&value=${encodeURIComponent(content)}`
-    : "";
-
-  const getCollectionLabel = (c: Collection) => {
-    if (c === "docs") return "DOCS";
-    return c.split("/")[1]?.toUpperCase() || c.toUpperCase();
-  };
-
+function PatModal({ onClose, onSave }: { onClose: () => void; onSave: (v: string) => void }) {
+  const [v, setV] = useState(getPat());
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4">
-      <div className="w-full max-w-2xl bg-black border border-hard">
+      <div className="w-full max-w-lg bg-black border border-hard">
         <div className="flex items-center justify-between border-b border-hard px-4 py-3">
-          <div className="text-[12px] uppercase tracking-widest text-[#00ff66]">
-            [ + WRITE_TO_SANDBOX_DB ]
-          </div>
-          <button
-            onClick={onClose}
-            className="text-[#666] hover:text-white text-[11px]"
-          >
+          <div className="text-[12px] uppercase tracking-widest text-[#00ff66]">[ CONNECT_GITHUB ]</div>
+          <button onClick={onClose} className="text-[#666] hover:text-white text-[11px]">
             [X CLOSE]
           </button>
         </div>
         <div className="p-4 space-y-4 text-[11px]">
-          <Field label="TARGET_COLLECTION">
-            <div className="flex border border-hard flex-wrap">
-              {COLLECTIONS.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setCol(c)}
-                  className="flex-1 py-2 border-r border-hard last:border-r-0 uppercase tracking-wider text-xs min-w-[80px]"
-                  style={{
-                    backgroundColor: col === c ? "#00ff66" : "transparent",
-                    color: col === c ? "#000" : "#fff",
-                  }}
-                >
-                  /{getCollectionLabel(c)}
-                </button>
-              ))}
-            </div>
-          </Field>
-          <Field label="PRIMARY_KEY_FILENAME">
+          <Field label="GITHUB_PAT">
             <input
-              value={filename}
-              onChange={(e) => setFilename(e.target.value)}
-              placeholder="rec-001.md"
+              type="password"
+              value={v}
+              onChange={(e) => setV(e.target.value.trim())}
+              placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
               className="w-full bg-black border border-hard px-2 py-2 text-white outline-none focus:border-[#00ff66]"
             />
           </Field>
-          <Field label="RAW_PAYLOAD">
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              rows={12}
-              className="w-full bg-black border border-hard px-2 py-2 text-white outline-none focus:border-[#00ff66] resize-none text-[11px]"
-            />
-          </Field>
-          <div className="border border-hard p-3 text-[10px] text-[#666] break-all">
-            &gt; INSERT INTO {col} (path, content) VALUES (&apos;/{col}/{finalName}&apos;, &lt;payload&gt;)
+          <div className="border border-hard p-3 text-[10px] text-[#666] leading-relaxed">
+            &gt; SCOPE: `repo` for private repos, none for public<br />
+            &gt; STORAGE: localStorage[github_pat] — browser only<br />
+            &gt; NEVER transmitted to any backend other than api.github.com
           </div>
-          <a
-            href={url || "#"}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-disabled={!canWrite}
-            onClick={(e) => {
-              if (!canWrite) e.preventDefault();
-            }}
-            className="block text-center border border-[#00ff66] text-[#00ff66] py-2 hover:bg-[#00ff66] hover:text-black uppercase tracking-widest"
-          >
-            [ COMMIT_TX &gt; github.com/new/{branch} ]
-          </a>
+          <div className="flex gap-2">
+            <button
+              onClick={() => onSave(v)}
+              className="flex-1 border border-[#00ff66] text-[#00ff66] py-2 hover:bg-[#00ff66] hover:text-black uppercase tracking-widest"
+            >
+              [ AUTHORIZE ]
+            </button>
+            <button
+              onClick={() => onSave("")}
+              className="flex-1 border border-[#ff5500] text-[#ff5500] py-2 hover:bg-[#ff5500] hover:text-black uppercase tracking-widest"
+            >
+              [ REVOKE ]
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  );
-}
-
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="block">
-      <div className="text-[10px] uppercase tracking-widest text-[#666] mb-1">
-        &gt; {label}
-      </div>
-      {children}
-    </label>
   );
 }

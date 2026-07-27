@@ -1,0 +1,125 @@
+const CACHE_PREFIX = "ghdb_cache:";
+
+export type CacheStatus = "MISS" | "FRESH" | "304";
+
+export function getPat(): string {
+  if (typeof window === "undefined") return "";
+  return window.localStorage.getItem("github_pat") ?? "";
+}
+
+export function setPat(v: string) {
+  if (typeof window === "undefined") return;
+  if (v) window.localStorage.setItem("github_pat", v);
+  else window.localStorage.removeItem("github_pat");
+}
+
+/** Accepts "owner/repo", a raw GitHub URL, or a bare owner string. */
+export function parseRepoInput(raw: string): { owner: string; repo?: string } {
+  let s = (raw || "").trim();
+  if (!s) return { owner: "" };
+  s = s.replace(/^https?:\/\/(www\.)?github\.com\//i, "");
+  s = s.replace(/^git@github\.com:/i, "");
+  s = s.replace(/\.git$/i, "");
+  s = s.replace(/^\/+|\/+$/g, "");
+  const parts = s.split("/").filter(Boolean);
+  return { owner: parts[0] ?? "", repo: parts[1] };
+}
+
+export type RateLimit = { remaining: number | null; limit: number | null };
+
+export type ApiResult<T> = {
+  data: T;
+  status: CacheStatus;
+  rate: RateLimit;
+};
+
+function readCache<T>(key: string): { etag: string; data: T } | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(CACHE_PREFIX + key);
+    return raw ? (JSON.parse(raw) as { etag: string; data: T }) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(key: string, etag: string, data: unknown) {
+  if (typeof window === "undefined" || !etag) return;
+  try {
+    window.localStorage.setItem(CACHE_PREFIX + key, JSON.stringify({ etag, data }));
+  } catch {
+    /* quota exceeded — cache is best-effort */
+  }
+}
+
+export async function ghFetch<T>(path: string): Promise<ApiResult<T>> {
+  const url = `https://api.github.com${path}`;
+  const cached = readCache<T>(url);
+  const pat = getPat();
+  const headers: Record<string, string> = { Accept: "application/vnd.github+json" };
+  if (pat) headers.Authorization = `Bearer ${pat}`;
+  if (cached?.etag) headers["If-None-Match"] = cached.etag;
+
+  const res = await fetch(url, { headers, cache: "no-store" });
+  const rate: RateLimit = {
+    remaining: numOrNull(res.headers.get("x-ratelimit-remaining")),
+    limit: numOrNull(res.headers.get("x-ratelimit-limit")),
+  };
+
+  if (res.status === 304 && cached) {
+    return { data: cached.data, status: "304", rate };
+  }
+  if (!res.ok) {
+    let msg = `${res.status}`;
+    try {
+      const b = await res.json();
+      if (b?.message) msg = `${res.status} ${b.message}`;
+    } catch {
+      /* ignore */
+    }
+    throw new Error(msg);
+  }
+  const data = (await res.json()) as T;
+  const etag = res.headers.get("etag") ?? "";
+  writeCache(url, etag, data);
+  return { data, status: "FRESH", rate };
+}
+
+function numOrNull(v: string | null) {
+  if (v === null) return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+export async function fetchRaw(
+  owner: string,
+  repo: string,
+  branch: string,
+  filePath: string,
+): Promise<string> {
+  const pat = getPat();
+  const headers: Record<string, string> = {};
+  if (pat) headers.Authorization = `token ${pat}`;
+  const res = await fetch(
+    `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${filePath
+      .split("/")
+      .map(encodeURIComponent)
+      .join("/")}`,
+    { headers },
+  );
+  if (!res.ok) throw new Error(`RAW_${res.status}`);
+  return res.text();
+}
+
+export type TreeItem = {
+  path: string;
+  mode: string;
+  type: "blob" | "tree";
+  sha: string;
+  size?: number;
+};
+
+export function dirOf(path: string) {
+  const i = path.lastIndexOf("/");
+  return i === -1 ? "root" : path.slice(0, i);
+}
