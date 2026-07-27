@@ -409,7 +409,17 @@ function Index() {
               ) : spec.text === null ? (
                 <pre className="text-[11px] text-[#666]">&gt; LOADING_FROM_RAW_CDN...</pre>
               ) : (
-                <MarkdownView source={spec.text} />
+                <MarkdownView
+                  source={spec.text}
+                  ctx={{
+                    owner,
+                    repo,
+                    branch,
+                    currentPath: spec.path,
+                    exists: (p) => files.some((f) => f.path === p),
+                    onOpen: (p) => openSpec(p),
+                  }}
+                />
               )}
             </div>
             <SpecAssistant cfg={aiCfg} path={spec.path} text={spec.text} />
