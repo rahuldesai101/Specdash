@@ -97,18 +97,41 @@ export async function fetchRaw(
   branch: string,
   filePath: string,
 ): Promise<string> {
+  const enc = filePath.split("/").map(encodeURIComponent).join("/");
   const pat = getPat();
-  const headers: Record<string, string> = {};
-  if (pat) headers.Authorization = `token ${pat}`;
-  const res = await fetch(
-    `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${filePath
-      .split("/")
-      .map(encodeURIComponent)
-      .join("/")}`,
-    { headers },
+
+  // 1) raw CDN — CORS-safe ONLY without custom headers (an Authorization
+  //    header triggers a preflight that raw.githubusercontent.com rejects,
+  //    surfacing as "Failed to fetch"). Works for public repos.
+  try {
+    const res = await fetch(
+      `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${enc}`,
+      { cache: "no-store" },
+    );
+    if (res.ok) return await res.text();
+  } catch {
+    /* fall through to the REST contents API */
+  }
+
+  // 2) REST contents API — supports CORS with auth, works for private repos.
+  const headers: Record<string, string> = { Accept: "application/vnd.github.raw" };
+  if (pat) headers.Authorization = `Bearer ${pat}`;
+  const api = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/contents/${enc}?ref=${encodeURIComponent(branch)}`,
+    { headers, cache: "no-store" },
   );
-  if (!res.ok) throw new Error(`RAW_${res.status}`);
-  return res.text();
+  if (api.ok) return await api.text();
+
+  let detail = String(api.status);
+  try {
+    const b = await api.json();
+    if (b?.message) detail = `${api.status} ${b.message}`;
+  } catch {
+    /* ignore */
+  }
+  throw new Error(
+    `RAW_FETCH_FAILED (${detail})${pat ? "" : " — connect a GITHUB_PAT for private repos"}`,
+  );
 }
 
 export type TreeItem = {
