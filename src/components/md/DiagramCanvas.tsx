@@ -1,4 +1,5 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { onHotkey } from "@/lib/hotkeys";
 
 let seq = 0;
 
