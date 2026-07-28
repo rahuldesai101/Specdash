@@ -16,6 +16,8 @@ import { AiConfigDrawer } from "@/components/ai/AiConfigDrawer";
 import { CommandBar } from "@/components/ai/CommandBar";
 import { SpecAssistant } from "@/components/ai/SpecAssistant";
 import { MarkdownView } from "@/components/md/MarkdownView";
+import { DiagramCanvas } from "@/components/md/DiagramCanvas";
+import { isWorkflowPath, parseWorkflow } from "@/lib/workflow-graph";
 import { NewSpecModal } from "@/components/git/NewSpecModal";
 import { SpecToc } from "@/components/layout/SpecToc";
 import { ShortcutsModal } from "@/components/layout/ShortcutsModal";
@@ -198,7 +200,9 @@ function Index() {
       setRate(tree.rate.remaining !== null ? tree.rate : meta.rate);
       setCacheStatus(tree.status);
       const rowsAll: FileRow[] = tree.data.tree
-        .filter((i) => i.type === "blob" && i.path.toLowerCase().endsWith(".md"))
+        .filter(
+          (i) => i.type === "blob" && (i.path.toLowerCase().endsWith(".md") || isWorkflowPath(i.path)),
+        )
         .map((i) => ({
           path: i.path,
           name: i.path.split("/").pop() ?? i.path,
