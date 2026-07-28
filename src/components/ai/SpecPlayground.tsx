@@ -73,6 +73,7 @@ export function SpecPlayground({
     const system =
       `You are running with the following markdown document as your SYSTEM PROMPT. ` +
       `Follow its instructions, tone and constraints faithfully.\n\n` +
+      `${MD_FORMAT_RULES}\n\n` +
       `--- SYSTEM PROMPT (from ${path}) ---\n` +
       truncateToTokenBudget(text, DEFAULT_BUDGET);
 
@@ -154,9 +155,13 @@ export function SpecPlayground({
               >
                 {t.role === "user" ? "> USER" : "> ASSISTANT"}
               </div>
-              <pre className="whitespace-pre-wrap break-words text-[13px] leading-relaxed text-[#ddd]">
-                {t.content || (busy && i === turns.length - 1 ? "> AWAITING_TOKENS..." : "")}
-              </pre>
+              {t.role === "assistant" && t.content ? (
+                <MarkdownView source={normalizeAiMarkdown(t.content)} />
+              ) : (
+                <pre className="whitespace-pre-wrap break-words text-[13px] leading-relaxed text-[#ddd]">
+                  {t.content || (busy && i === turns.length - 1 ? "> AWAITING_TOKENS..." : "")}
+                </pre>
+              )}
             </div>
           ))}
           {err && <div className="break-all text-[11px] text-[#ff5500]">ERR: {err}</div>}
