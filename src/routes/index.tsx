@@ -262,6 +262,15 @@ function Index() {
 
   const agentSpec = useMemo(() => (agentRaw ? parseAgentSpec(agentRaw) : null), [agentRaw]);
 
+  const searchState = useSearchIndex(owner, repo, branch, files, excerpts);
+
+  const runSnippet = useCallback((code: string, lang: string) => {
+    setSeed({
+      text: `Run / evaluate this ${lang} snippet:\n\n\`\`\`${lang}\n${code}\n\`\`\``,
+      nonce: Date.now(),
+    });
+  }, []);
+
   const groups = useMemo(() => {
     const m = new Map<string, FileRow[]>();
     for (const f of files) {
