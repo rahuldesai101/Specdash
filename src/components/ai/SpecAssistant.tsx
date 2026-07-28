@@ -1,13 +1,16 @@
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { streamBudgeted, TOO_LARGE_MESSAGE, type AiConfig } from "@/lib/ai-engine";
+import { streamBudgeted, TOO_LARGE_MESSAGE, withFormatRules, type AiConfig } from "@/lib/ai-engine";
 import { DEFAULT_BUDGET, TokenLimitError, truncateToTokenBudget } from "@/lib/token-budget";
+import { normalizeAiMarkdown } from "@/lib/md-normalize";
+import { MarkdownView } from "@/components/md/MarkdownView";
 import { SpecPlayground } from "./SpecPlayground";
 
-const SYSTEM_PROMPT =
+const SYSTEM_PROMPT = withFormatRules(
   "You are an expert technical editor. Your analysis MUST be strictly confined to the SPEC CONTENT provided. " +
-  "Do not reference outside repository files, root paths, or directory structures. " +
-  "Keep responses brief and bulleted.";
+    "Do not reference outside repository files, root paths, or directory structures. " +
+    "Keep responses brief and bulleted.",
+);
 
 const TASKS = {
   SUMMARIZE: {
@@ -44,6 +47,7 @@ export function SpecAssistant({
   const [err, setErr] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const [playgroundOpen, setPlaygroundOpen] = useState(false);
+  const clean = normalizeAiMarkdown(out);
 
   const run = async (k: TaskKey) => {
     setOpen(true);
