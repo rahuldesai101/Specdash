@@ -21,6 +21,12 @@ import { SpecToc } from "@/components/layout/SpecToc";
 import { ShortcutsModal } from "@/components/layout/ShortcutsModal";
 import { ReadmeModal } from "@/components/layout/ReadmeModal";
 import { editFileIntentUrl } from "@/lib/git-intent";
+import {
+  appPermalink,
+  ghBlobUrl as buildBlobUrl,
+  ghTreeUrl as buildTreeUrl,
+  parseDeepLink,
+} from "@/lib/gh-url";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
@@ -84,10 +90,19 @@ function Index() {
   const [readerOpen, setReaderOpen] = useState(true);
   const [keysOpen, setKeysOpen] = useState(false);
   const [readmeOpen, setReadmeOpen] = useState(false);
+  const [headSha, setHeadSha] = useState<string | null>(null);
+  const [pendingPath, setPendingPath] = useState<string | null>(null);
+  const [pinnedBranch, setPinnedBranch] = useState<string | null>(null);
 
   useEffect(() => {
-    const o = localStorage.getItem("activeOwner") ?? "";
-    const r = localStorage.getItem("activeRepo") ?? "sandbox";
+    const dl = parseDeepLink(window.location.search);
+    const o = dl.owner ?? localStorage.getItem("activeOwner") ?? "";
+    const r = dl.repo ?? localStorage.getItem("activeRepo") ?? "sandbox";
+    if (dl.branch) {
+      setBranch(dl.branch);
+      setPinnedBranch(dl.branch);
+    }
+    if (dl.path) setPendingPath(dl.path);
     setOwner(o);
     setRepo(r);
     setHasPat(Boolean(getPat()));
@@ -166,7 +181,7 @@ function Index() {
     setError(null);
     try {
       const meta = await ghFetch<{ default_branch: string }>(`/repos/${owner}/${repo}`);
-      const br = meta.data.default_branch || "main";
+      const br = pinnedBranch || meta.data.default_branch || "main";
       setBranch(br);
       const tree = await ghFetch<{ tree: TreeItem[]; truncated: boolean }>(
         `/repos/${owner}/${repo}/git/trees/${br}?recursive=1`,
@@ -185,11 +200,19 @@ function Index() {
         .sort((a, b) => a.path.localeCompare(b.path));
       setFiles(rowsAll);
       setStatus("SYNCED");
+      try {
+        const head = await ghFetch<Array<{ sha: string }>>(
+          `/repos/${owner}/${repo}/commits?sha=${encodeURIComponent(br)}&per_page=1`,
+        );
+        setHeadSha(head.data?.[0]?.sha ?? null);
+      } catch {
+        setHeadSha(null);
+      }
     } catch (e) {
       setStatus("ERROR");
       setError(e instanceof Error ? e.message : "UNKNOWN_ERR");
     }
-  }, [owner, repo]);
+  }, [owner, repo, pinnedBranch]);
 
   useEffect(() => {
     if (owner && repo) sync();
@@ -219,12 +242,9 @@ function Index() {
   const dot =
     status === "SYNCED" ? "#00ff66" : status === "SYNCING" ? "#ffaa00" : status === "ERROR" ? "#ff5500" : "#666";
 
-  const ghBlobUrl = (path: string, ref: string) =>
-    `https://github.com/${owner}/${repo}/blob/${ref}/${path.split("/").map(encodeURIComponent).join("/")}`;
-  const ghTreeUrl = (dir: string) =>
-    dir === "root"
-      ? `https://github.com/${owner}/${repo}/tree/${branch}`
-      : `https://github.com/${owner}/${repo}/tree/${branch}/${dir.split("/").map(encodeURIComponent).join("/")}`;
+  const ghBlobUrl = (path: string, ref?: string | null) =>
+    buildBlobUrl(owner, repo, ref ?? branch, path);
+  const ghTreeUrl = (dir: string) => buildTreeUrl(owner, repo, branch, dir);
 
   const openSpec = async (path: string) => {
     setCmdOpen(false);
@@ -232,6 +252,14 @@ function Index() {
     setCopied(false);
     setReaderOpen(true);
     setSpec({ path, text: null });
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("repo", `${owner}/${repo}`);
+      url.searchParams.set("path", path);
+      window.history.replaceState(null, "", url.toString());
+    } catch {
+      /* ignore */
+    }
     try {
       const text = await fetchRaw(owner, repo, branch, path);
       setSpec({ path, text });
@@ -249,6 +277,20 @@ function Index() {
       toast.error("CLIPBOARD_BLOCKED");
     }
   };
+
+  // deep-link: open the requested spec once the tree is loaded
+  useEffect(() => {
+    if (!pendingPath || status !== "SYNCED" || !files.length) return;
+    const match = files.find((f) => f.path === pendingPath);
+    setPendingPath(null);
+    if (match) {
+      setActiveDir(match.dir);
+      openSpec(match.path);
+    } else {
+      toast.error(`SPEC_NOT_FOUND: /${pendingPath}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingPath, status, files]);
 
   const btn =
     "min-h-11 sm:min-h-9 inline-flex items-center justify-center border border-[#333] px-3 text-[10px] uppercase tracking-widest hover:border-[#00ff66] hover:text-[#00ff66]";
@@ -380,8 +422,7 @@ function Index() {
             </button>
             <button
               onClick={() => {
-                const sha = files.find((f) => f.path === spec.path)?.sha ?? branch;
-                copy(ghBlobUrl(spec.path, sha), "PERMALINK_COPIED").then(() => {
+                copy(ghBlobUrl(spec.path, headSha ?? branch), "PERMALINK_COPIED").then(() => {
                   setCopied(true);
                   setTimeout(() => setCopied(false), 1500);
                 });
@@ -389,6 +430,13 @@ function Index() {
               className={btn}
             >
               {copied ? "[ COPIED ]" : "🔗 PERMALINK"}
+            </button>
+            <button
+              onClick={() => copy(appPermalink(owner, repo, spec.path, branch), "SHARE_LINK_COPIED")}
+              className={btn}
+              title="Copy a SPEC DASH share link to this file"
+            >
+              🔗 SHARE
             </button>
             <button
               onClick={() => setSpec(null)}
