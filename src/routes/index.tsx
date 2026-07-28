@@ -208,6 +208,11 @@ function Index() {
         .sort((a, b) => a.path.localeCompare(b.path));
       setFiles(rowsAll);
       setStatus("SYNCED");
+      const detected = detectRootSpecs(
+        tree.data.tree.filter((i) => i.type === "blob").map((i) => i.path),
+      );
+      setRootSpecs(detected);
+      setAgentPath((prev) => (prev && detected.some((d) => d.path === prev) ? prev : detected[0]?.path ?? null));
       try {
         const head = await ghFetch<Array<{ sha: string }>>(
           `/repos/${owner}/${repo}/commits?sha=${encodeURIComponent(br)}&per_page=1`,
