@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { MD_FORMAT_RULES, streamCompletion, TOO_LARGE_MESSAGE, type AiConfig } from "@/lib/ai-engine";
 import { normalizeAiMarkdown } from "@/lib/md-normalize";
 import { MarkdownView } from "@/components/md/MarkdownView";
+import { ExternalAiMenu } from "./ExternalAiMenu";
 import { TokenLimitError, truncateToTokenBudget } from "@/lib/token-budget";
 import { DEFAULT_BUDGET } from "@/lib/token-budget";
 
@@ -132,6 +133,16 @@ export function SpecPlayground({
             <span style={{ color: cfg ? "#00ff66" : "#ff5500" }}>
               {cfg ? `[ ${cfg.provider.toUpperCase()} • ${cfg.model} ]` : "[ AI: DISABLED ]"}
             </span>
+            <ExternalAiMenu
+              path={path}
+              text={text}
+              action={
+                input.trim() ||
+                [...turns].reverse().find((t) => t.role === "user")?.content ||
+                "Act on the system prompt above and await my instructions."
+              }
+              directive={`You are running with the markdown document below as your SYSTEM PROMPT. Follow its instructions, tone and constraints faithfully.`}
+            />
             <button
               onClick={onClose}
               className="border border-[#333] px-2 py-1 hover:border-[#00ff66] hover:text-[#00ff66]"

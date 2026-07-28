@@ -5,6 +5,7 @@ import { DEFAULT_BUDGET, TokenLimitError, truncateToTokenBudget } from "@/lib/to
 import { normalizeAiMarkdown } from "@/lib/md-normalize";
 import { MarkdownView } from "@/components/md/MarkdownView";
 import { SpecPlayground } from "./SpecPlayground";
+import { ExternalAiMenu } from "./ExternalAiMenu";
 
 const SYSTEM_PROMPT = withFormatRules(
   "You are an expert technical editor. Your analysis MUST be strictly confined to the SPEC CONTENT provided. " +
@@ -113,6 +114,11 @@ export function SpecAssistant({
         >
           [ 🎮 RUN_AS_SYSTEM_PROMPT ]
         </button>
+        <ExternalAiMenu
+          path={path}
+          text={text}
+          action={task ? TASKS[task].prompt : "Review this spec and report anything notable."}
+        />
         <span className="ml-auto" style={{ color: cfg ? "#00ff66" : "#ff5500" }}>
           {cfg ? `[ AI: ACTIVE (${cfg.provider.toUpperCase()}) ]` : "[ AI: DISABLED ]"}
         </span>

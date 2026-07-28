@@ -18,12 +18,14 @@ export function ExternalAiMenu({
   text,
   action,
   directive,
+  dropUp = false,
   className = "",
 }: {
   path: string;
   text: string | null;
   action: string;
   directive?: string;
+  dropUp?: boolean;
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -72,7 +74,7 @@ export function ExternalAiMenu({
         [ 🌐 OPEN IN EXTERNAL AI ▾ ]
       </button>
       {open && (
-        <div className="absolute right-0 bottom-full z-[70] mb-1 w-[290px] border border-hard bg-black">
+        <div className={`absolute right-0 z-[70] w-[290px] border border-hard bg-black ${dropUp ? "bottom-full mb-1" : "top-full mt-1"}`}>
           <div className="border-b border-[#222] px-3 py-2 text-[10px] uppercase tracking-widest text-[#666]">
             ZERO-COST // NO API KEY REQUIRED
           </div>
