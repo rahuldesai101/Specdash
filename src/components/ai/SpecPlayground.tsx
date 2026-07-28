@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { streamCompletion, TOO_LARGE_MESSAGE, type AiConfig } from "@/lib/ai-engine";
+import { MD_FORMAT_RULES, streamCompletion, TOO_LARGE_MESSAGE, type AiConfig } from "@/lib/ai-engine";
+import { normalizeAiMarkdown } from "@/lib/md-normalize";
+import { MarkdownView } from "@/components/md/MarkdownView";
 import { TokenLimitError, truncateToTokenBudget } from "@/lib/token-budget";
 import { DEFAULT_BUDGET } from "@/lib/token-budget";
 
