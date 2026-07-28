@@ -21,6 +21,8 @@ import { SpecToc } from "@/components/layout/SpecToc";
 import { ShortcutsModal } from "@/components/layout/ShortcutsModal";
 import { ReadmeModal } from "@/components/layout/ReadmeModal";
 import { editFileIntentUrl } from "@/lib/git-intent";
+import { detectRootSpecs, parseAgentSpec, type RootSpec } from "@/lib/agents-spec";
+import { AgentOsBanner, AgentOsPanel } from "@/components/agents/AgentOsPanel";
 import {
   appPermalink,
   ghBlobUrl as buildBlobUrl,
@@ -93,6 +95,12 @@ function Index() {
   const [headSha, setHeadSha] = useState<string | null>(null);
   const [pendingPath, setPendingPath] = useState<string | null>(null);
   const [pinnedBranch, setPinnedBranch] = useState<string | null>(null);
+  const [rootSpecs, setRootSpecs] = useState<RootSpec[]>([]);
+  const [agentPath, setAgentPath] = useState<string | null>(null);
+  const [agentRaw, setAgentRaw] = useState<string | null>(null);
+  const [agentLoading, setAgentLoading] = useState(false);
+  const [agentErr, setAgentErr] = useState<string | null>(null);
+  const [agentOpen, setAgentOpen] = useState(false);
 
   useEffect(() => {
     const dl = parseDeepLink(window.location.search);
