@@ -21,6 +21,12 @@ import { SpecToc } from "@/components/layout/SpecToc";
 import { ShortcutsModal } from "@/components/layout/ShortcutsModal";
 import { ReadmeModal } from "@/components/layout/ReadmeModal";
 import { editFileIntentUrl } from "@/lib/git-intent";
+import {
+  appPermalink,
+  ghBlobUrl as buildBlobUrl,
+  ghTreeUrl as buildTreeUrl,
+  parseDeepLink,
+} from "@/lib/gh-url";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
@@ -84,10 +90,15 @@ function Index() {
   const [readerOpen, setReaderOpen] = useState(true);
   const [keysOpen, setKeysOpen] = useState(false);
   const [readmeOpen, setReadmeOpen] = useState(false);
+  const [headSha, setHeadSha] = useState<string | null>(null);
+  const [pendingPath, setPendingPath] = useState<string | null>(null);
 
   useEffect(() => {
-    const o = localStorage.getItem("activeOwner") ?? "";
-    const r = localStorage.getItem("activeRepo") ?? "sandbox";
+    const dl = parseDeepLink(window.location.search);
+    const o = dl.owner ?? localStorage.getItem("activeOwner") ?? "";
+    const r = dl.repo ?? localStorage.getItem("activeRepo") ?? "sandbox";
+    if (dl.branch) setBranch(dl.branch);
+    if (dl.path) setPendingPath(dl.path);
     setOwner(o);
     setRepo(r);
     setHasPat(Boolean(getPat()));
