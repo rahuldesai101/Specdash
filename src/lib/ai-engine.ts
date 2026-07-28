@@ -37,39 +37,6 @@ export function defaultModel(p: ProviderId) {
 
 type Msg = { role: "system" | "user"; content: string };
 
-/** Hard output-hygiene contract prepended to EVERY system prompt. */
-export const OUTPUT_RULES = `You are an expert technical AI assistant.
-CRITICAL OUTPUT RULES:
-1. Produce clean, perfectly structured, human-readable prose or strictly valid JSON.
-2. NEVER output unclosed markdown blocks, stray backticks (\`), or double-escaped asterisks (\\*).
-3. When summarizing or generating action items, use standard bullet points ("* ") with clear bold section leads.
-4. NEVER start responses with conversational fluff like "Sure! Here is your summary:". Jump DIRECTLY into the answer.
-5. Strictly adhere to clean visual hierarchy using standard #, ## and ### headers only when necessary.`;
-
-const FLUFF =
-  /^\s*(sure|certainly|of course|absolutely|here('s| is| are)[^\n]*|okay|ok)[^\n]{0,120}?[:!.]\s*\n+/i;
-
-/**
- * Normalizes raw model output: strips fluff openers, unescapes double-escaped
- * markdown, drops stray/unclosed code fences and collapses excess blank lines.
- */
-export function sanitizeLlmOutput(raw: string): string {
-  if (!raw) return "";
-  let t = raw.replace(/\r\n/g, "\n");
-  t = t.replace(FLUFF, "");
-  t = t.replace(/\\([*_#`~[\]()>-])/g, "$1");
-  // Close an odd number of ``` fences.
-  const fences = (t.match(/^```/gm) ?? []).length;
-  if (fences % 2 === 1) t += "\n```";
-  // Drop an empty fence pair the model sometimes emits at the very end.
-  t = t.replace(/\n```\s*```\s*$/g, "");
-  // Stray single backticks on their own line.
-  t = t.replace(/^\s*`\s*$/gm, "");
-  t = t.replace(/[ \t]+$/gm, "");
-  t = t.replace(/\n{3,}/g, "\n\n");
-  return t.trim();
-}
-
 function endpoint(c: AiConfig) {
   switch (c.provider) {
     case "groq":
@@ -133,14 +100,7 @@ export async function streamCompletion(
   const res = await fetch(endpoint(cfg), {
     method: "POST",
     headers: headers(cfg),
-    body: JSON.stringify(
-      body(
-        cfg,
-        msgs.some((m) => m.role === "system")
-          ? msgs.map((m) => (m.role === "system" ? { ...m, content: `${OUTPUT_RULES}\n\n${m.content}` } : m))
-          : [{ role: "system", content: OUTPUT_RULES } as Msg, ...msgs],
-      ),
-    ),
+    body: JSON.stringify(body(cfg, msgs)),
     signal,
   });
 

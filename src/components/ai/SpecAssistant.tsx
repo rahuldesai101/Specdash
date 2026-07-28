@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { sanitizeLlmOutput, streamBudgeted, TOO_LARGE_MESSAGE, type AiConfig } from "@/lib/ai-engine";
+import { streamBudgeted, TOO_LARGE_MESSAGE, type AiConfig } from "@/lib/ai-engine";
 import { DEFAULT_BUDGET, TokenLimitError, truncateToTokenBudget } from "@/lib/token-budget";
 import { SpecPlayground } from "./SpecPlayground";
 
@@ -128,7 +128,7 @@ export function SpecAssistant({
             <div className="text-[#ff5500] break-all">ERR: {err}</div>
           ) : (
             <pre className="whitespace-pre-wrap text-[13px] leading-relaxed text-[#ddd]">
-              {sanitizeLlmOutput(out) || "> AWAITING_TOKENS..."}
+              {out || "> AWAITING_TOKENS..."}
             </pre>
           )}
         </div>
