@@ -1,0 +1,122 @@
+/**
+ * Zero-cost web deep-linking: launch the active spec + prompt inside a
+ * consumer AI web app (ChatGPT / Claude / Gemini / Kimi) with no API key.
+ *
+ * Strategy:
+ *  - The full markdown payload is ALWAYS written to the clipboard.
+ *  - If the provider supports a prompt query param and the payload fits under
+ *    its URL ceiling, we prefill it so the user only has to hit Enter.
+ *  - Otherwise we open a blank chat and the user pastes (Ctrl/Cmd+V).
+ */
+
+export type ExternalProvider = {
+  id: "chatgpt" | "claude" | "gemini" | "kimi";
+  label: string;
+  dot: string;
+  color: string;
+  /** Build target URL. Returns null in "clipboard-only" mode. */
+  url: (payload: string) => string;
+  /** Max payload chars safely embeddable in the URL (0 = no prefill support). */
+  urlLimit: number;
+};
+
+export const EXTERNAL_PROVIDERS: ExternalProvider[] = [
+  {
+    id: "chatgpt",
+    label: "ChatGPT",
+    dot: "🟢",
+    color: "#00ff66",
+    urlLimit: 6000,
+    url: (p) => (p ? `https://chatgpt.com/?q=${encodeURIComponent(p)}` : "https://chatgpt.com/"),
+  },
+  {
+    id: "claude",
+    label: "Claude",
+    dot: "🟣",
+    color: "#c07cff",
+    urlLimit: 6000,
+    url: (p) => (p ? `https://claude.ai/new?q=${encodeURIComponent(p)}` : "https://claude.ai/new"),
+  },
+  {
+    id: "gemini",
+    label: "Google Gemini",
+    dot: "🔵",
+    color: "#5599ff",
+    urlLimit: 0,
+    url: () => "https://gemini.google.com/app",
+  },
+  {
+    id: "kimi",
+    label: "Kimi AI",
+    dot: "🌙",
+    color: "#ffaa00",
+    urlLimit: 0,
+    url: () => "https://www.kimi.com/",
+  },
+];
+
+export const DEFAULT_DIRECTIVE =
+  "You are an expert technical editor and documentation reviewer. Be precise, terse and cite the spec.";
+
+/** Hard ceiling for the pasted context so consumer web apps don't choke. */
+const MAX_SPEC_CHARS = 40000;
+
+function clampSpec(raw: string): string {
+  if (raw.length <= MAX_SPEC_CHARS) return raw;
+  const head = raw.slice(0, Math.floor(MAX_SPEC_CHARS * 0.7));
+  const tail = raw.slice(-Math.floor(MAX_SPEC_CHARS * 0.3));
+  return `${head}\n\n...[ TRUNCATED ${raw.length - MAX_SPEC_CHARS} CHARS ]...\n\n${tail}`;
+}
+
+export function buildExternalPayload(opts: {
+  path: string;
+  rawText: string;
+  action: string;
+  directive?: string;
+}): string {
+  return [
+    "[ SYSTEM DIRECTIVE / GUIDELINES ]",
+    opts.directive?.trim() || DEFAULT_DIRECTIVE,
+    "",
+    "[ ACTIVE SPEC CONTEXT ]",
+    `File: ${opts.path}`,
+    "---",
+    clampSpec(opts.rawText ?? ""),
+    "",
+    "[ PROMPT / USER ACTION ]",
+    opts.action.trim(),
+  ].join("\n");
+}
+
+export async function copyText(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      return ok;
+    } catch {
+      return false;
+    }
+  }
+}
+
+export type LaunchResult = { copied: boolean; prefilled: boolean };
+
+export async function launchExternalAi(
+  provider: ExternalProvider,
+  payload: string,
+): Promise<LaunchResult> {
+  const copied = await copyText(payload);
+  const prefilled = provider.urlLimit > 0 && payload.length <= provider.urlLimit;
+  window.open(provider.url(prefilled ? payload : ""), "_blank", "noopener,noreferrer");
+  return { copied, prefilled };
+}

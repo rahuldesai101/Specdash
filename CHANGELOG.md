@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **Dynamic Tab Titles:** `document.title` now tracks the active repo, folder, and file (`📄 file.md — SPEC DASH`).
 - **Shareable Deep Links:** `🔗 SHARE` copies `/?repo={owner}/{repo}&path={file}`; direct loads restore the repo, folder, and open spec.
 - **AI Operating System Detector:** Auto-detects root `AGENTS.md`, `llms.txt`, `agents.txt`, `.cursorrules` (plus `CLAUDE.md`/`CURSOR.md`), renders a `[ 🤖 AI OPERATING SYSTEM DETECTED ]` banner, a sticky nav pill, and a side panel parsing agent boundaries, style guides, and 1-click `📋 COPY COMMAND` build/test commands.
+- **Zero-Cost External AI Deep-Links:** New `[ 🌐 OPEN IN EXTERNAL AI ▾ ]` menu in the Spec Viewer AI bar and Playground launches ChatGPT, Claude, Gemini, or Kimi with the formatted spec payload — clipboard-backed, URL-prefilled where supported, and requiring no paid API key.
 
 ### Fixed
 - **Broken GitHub Permalinks:** Permalinks used the blob SHA (404). Links now use the head commit SHA with strict `blob/{ref}/{path}` and `tree/{ref}/{path}` formation, slash normalization, and per-segment URL encoding.
