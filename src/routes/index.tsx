@@ -253,6 +253,14 @@ function Index() {
     setReaderOpen(true);
     setSpec({ path, text: null });
     try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("repo", `${owner}/${repo}`);
+      url.searchParams.set("path", path);
+      window.history.replaceState(null, "", url.toString());
+    } catch {
+      /* ignore */
+    }
+    try {
       const text = await fetchRaw(owner, repo, branch, path);
       setSpec({ path, text });
       setExcerpts((p) => ({ ...p, [path]: text }));
