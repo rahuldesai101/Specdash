@@ -13,9 +13,12 @@ import {
 } from "@/lib/github-db";
 import { loadAiConfig, saveAiConfig, type AiConfig } from "@/lib/ai-engine";
 import { AiConfigDrawer } from "@/components/ai/AiConfigDrawer";
-import { CommandBar } from "@/components/ai/CommandBar";
+import { SearchModal } from "@/components/search/SearchModal";
+import { useSearchIndex } from "@/hooks/use-search-index";
+import { installHotkeys, onHotkey } from "@/lib/hotkeys";
 import { SpecAssistant } from "@/components/ai/SpecAssistant";
 import { MarkdownView } from "@/components/md/MarkdownView";
+import { SkillPills } from "@/components/md/SkillPills";
 import { DiagramCanvas } from "@/components/md/DiagramCanvas";
 import { isWorkflowPath, parseWorkflow } from "@/lib/workflow-graph";
 import { isDatasetPath, datasetKind } from "@/lib/dataset";
@@ -105,6 +108,8 @@ function Index() {
   const [agentLoading, setAgentLoading] = useState(false);
   const [agentErr, setAgentErr] = useState<string | null>(null);
   const [agentOpen, setAgentOpen] = useState(false);
+  const [sideBySide, setSideBySide] = useState(false);
+  const [seed, setSeed] = useState<{ text: string; nonce: number } | null>(null);
 
   useEffect(() => {
     const dl = parseDeepLink(window.location.search);
