@@ -900,11 +900,14 @@ function Index() {
       )}
 
       {cmdOpen && (
-        <CommandBar
-          cfg={aiCfg}
-          index={files.map((f) => ({ path: f.path, dir: f.dir, name: f.name, excerpt: excerpts[f.path] }))}
+        <SearchModal
+          state={searchState}
           onClose={() => setCmdOpen(false)}
           onOpen={openSpec}
+          onRunSnippet={(code, lang, path) => {
+            if (path !== spec?.path) openSpec(path);
+            runSnippet(code, lang);
+          }}
         />
       )}
 
