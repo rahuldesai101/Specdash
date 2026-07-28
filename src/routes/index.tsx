@@ -21,6 +21,8 @@ import { SpecToc } from "@/components/layout/SpecToc";
 import { ShortcutsModal } from "@/components/layout/ShortcutsModal";
 import { ReadmeModal } from "@/components/layout/ReadmeModal";
 import { editFileIntentUrl } from "@/lib/git-intent";
+import { detectRootSpecs, parseAgentSpec, type RootSpec } from "@/lib/agents-spec";
+import { AgentOsBanner, AgentOsPanel } from "@/components/agents/AgentOsPanel";
 import {
   appPermalink,
   ghBlobUrl as buildBlobUrl,
@@ -93,6 +95,12 @@ function Index() {
   const [headSha, setHeadSha] = useState<string | null>(null);
   const [pendingPath, setPendingPath] = useState<string | null>(null);
   const [pinnedBranch, setPinnedBranch] = useState<string | null>(null);
+  const [rootSpecs, setRootSpecs] = useState<RootSpec[]>([]);
+  const [agentPath, setAgentPath] = useState<string | null>(null);
+  const [agentRaw, setAgentRaw] = useState<string | null>(null);
+  const [agentLoading, setAgentLoading] = useState(false);
+  const [agentErr, setAgentErr] = useState<string | null>(null);
+  const [agentOpen, setAgentOpen] = useState(false);
 
   useEffect(() => {
     const dl = parseDeepLink(window.location.search);
@@ -130,6 +138,7 @@ function Index() {
       if (e.key === "Escape") {
         setKeysOpen(false);
         setCmdOpen(false);
+        setAgentOpen(false);
         setAiOpen(false);
         setPatOpen(false);
         setNewOpen(false);
@@ -200,6 +209,11 @@ function Index() {
         .sort((a, b) => a.path.localeCompare(b.path));
       setFiles(rowsAll);
       setStatus("SYNCED");
+      const detected = detectRootSpecs(
+        tree.data.tree.filter((i) => i.type === "blob").map((i) => i.path),
+      );
+      setRootSpecs(detected);
+      setAgentPath((prev) => (prev && detected.some((d) => d.path === prev) ? prev : detected[0]?.path ?? null));
       try {
         const head = await ghFetch<Array<{ sha: string }>>(
           `/repos/${owner}/${repo}/commits?sha=${encodeURIComponent(br)}&per_page=1`,
@@ -217,6 +231,32 @@ function Index() {
   useEffect(() => {
     if (owner && repo) sync();
   }, [sync, owner, repo]);
+
+  // load the detected root AI spec (AGENTS.md / llms.txt / agents.txt / .cursorrules)
+  useEffect(() => {
+    if (!owner || !repo || !agentPath) {
+      setAgentRaw(null);
+      return;
+    }
+    let cancelled = false;
+    setAgentLoading(true);
+    setAgentErr(null);
+    fetchRaw(owner, repo, branch, agentPath)
+      .then((t) => {
+        if (!cancelled) setAgentRaw(t);
+      })
+      .catch((e) => {
+        if (!cancelled) setAgentErr(e instanceof Error ? e.message : "RAW_ERR");
+      })
+      .finally(() => {
+        if (!cancelled) setAgentLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [owner, repo, branch, agentPath]);
+
+  const agentSpec = useMemo(() => (agentRaw ? parseAgentSpec(agentRaw) : null), [agentRaw]);
 
   const groups = useMemo(() => {
     const m = new Map<string, FileRow[]>();
@@ -533,6 +573,16 @@ function Index() {
               <button onClick={() => setCmdOpen(true)} className={btn} title="Search (Ctrl+K)" aria-label="Search specs (Ctrl+K)">
                 🔍<span className="hidden md:inline ml-1">SEARCH ⌘K</span>
               </button>
+              {rootSpecs.length > 0 && (
+                <button
+                  onClick={() => setAgentOpen(true)}
+                  className={`${btn} border-[#ff5500] text-[#ff5500] hover:border-[#ff5500] hover:text-black hover:bg-[#ff5500]`}
+                  title="AI operating system directives detected in this repo"
+                  aria-label="Open AI operating system directives panel"
+                >
+                  🤖<span className="hidden md:inline ml-1">{rootSpecs[0].name.toUpperCase()}</span>
+                </button>
+              )}
               <button
                 onClick={() => setNewOpen(true)}
                 disabled={!owner}
@@ -607,6 +657,7 @@ function Index() {
 
         {/* CENTER */}
         <main className="min-w-0 flex-1">
+          <AgentOsBanner specs={rootSpecs} onOpen={() => setAgentOpen(true)} onOpenFile={openSpec} />
           <div className="grid grid-cols-2 border-b border-hard bg-black sm:grid-cols-4 lg:sticky lg:top-[89px] lg:z-20">
             <Stat label="MD_RECORDS" value={files.length} accent="#00ff66" />
             <Stat label="DIRECTORIES" value={groups.length} />
@@ -795,6 +846,19 @@ function Index() {
       )}
 
       {keysOpen && <ShortcutsModal onClose={() => setKeysOpen(false)} />}
+      {agentOpen && (
+        <AgentOsPanel
+          specs={rootSpecs}
+          activeSpecPath={agentPath}
+          spec={agentSpec}
+          raw={agentRaw}
+          loading={agentLoading}
+          error={agentErr}
+          onSelect={setAgentPath}
+          onClose={() => setAgentOpen(false)}
+          onOpenFile={(p) => openSpec(p)}
+        />
+      )}
       <ReadmeModal open={readmeOpen} onClose={() => setReadmeOpen(false)} />
 
       {aiOpen && (

@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **Changelog Timeline:** Dedicated `/changelog` route parsing root `CHANGELOG.md` into version/date badges and category-tagged timeline blocks, linked from the header.
 - **Dynamic Tab Titles:** `document.title` now tracks the active repo, folder, and file (`📄 file.md — SPEC DASH`).
 - **Shareable Deep Links:** `🔗 SHARE` copies `/?repo={owner}/{repo}&path={file}`; direct loads restore the repo, folder, and open spec.
+- **AI Operating System Detector:** Auto-detects root `AGENTS.md`, `llms.txt`, `agents.txt`, `.cursorrules` (plus `CLAUDE.md`/`CURSOR.md`), renders a `[ 🤖 AI OPERATING SYSTEM DETECTED ]` banner, a sticky nav pill, and a side panel parsing agent boundaries, style guides, and 1-click `📋 COPY COMMAND` build/test commands.
 
 ### Fixed
 - **Broken GitHub Permalinks:** Permalinks used the blob SHA (404). Links now use the head commit SHA with strict `blob/{ref}/{path}` and `tree/{ref}/{path}` formation, slash normalization, and per-segment URL encoding.
