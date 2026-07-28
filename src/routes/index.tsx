@@ -573,6 +573,16 @@ function Index() {
               <button onClick={() => setCmdOpen(true)} className={btn} title="Search (Ctrl+K)" aria-label="Search specs (Ctrl+K)">
                 🔍<span className="hidden md:inline ml-1">SEARCH ⌘K</span>
               </button>
+              {rootSpecs.length > 0 && (
+                <button
+                  onClick={() => setAgentOpen(true)}
+                  className={`${btn} border-[#ff5500] text-[#ff5500] hover:border-[#ff5500] hover:text-black hover:bg-[#ff5500]`}
+                  title="AI operating system directives detected in this repo"
+                  aria-label="Open AI operating system directives panel"
+                >
+                  🤖<span className="hidden md:inline ml-1">{rootSpecs[0].name.toUpperCase()}</span>
+                </button>
+              )}
               <button
                 onClick={() => setNewOpen(true)}
                 disabled={!owner}
