@@ -92,12 +92,16 @@ function Index() {
   const [readmeOpen, setReadmeOpen] = useState(false);
   const [headSha, setHeadSha] = useState<string | null>(null);
   const [pendingPath, setPendingPath] = useState<string | null>(null);
+  const [pinnedBranch, setPinnedBranch] = useState<string | null>(null);
 
   useEffect(() => {
     const dl = parseDeepLink(window.location.search);
     const o = dl.owner ?? localStorage.getItem("activeOwner") ?? "";
     const r = dl.repo ?? localStorage.getItem("activeRepo") ?? "sandbox";
-    if (dl.branch) setBranch(dl.branch);
+    if (dl.branch) {
+      setBranch(dl.branch);
+      setPinnedBranch(dl.branch);
+    }
     if (dl.path) setPendingPath(dl.path);
     setOwner(o);
     setRepo(r);
@@ -177,7 +181,7 @@ function Index() {
     setError(null);
     try {
       const meta = await ghFetch<{ default_branch: string }>(`/repos/${owner}/${repo}`);
-      const br = meta.data.default_branch || "main";
+      const br = pinnedBranch || meta.data.default_branch || "main";
       setBranch(br);
       const tree = await ghFetch<{ tree: TreeItem[]; truncated: boolean }>(
         `/repos/${owner}/${repo}/git/trees/${br}?recursive=1`,
@@ -196,11 +200,19 @@ function Index() {
         .sort((a, b) => a.path.localeCompare(b.path));
       setFiles(rowsAll);
       setStatus("SYNCED");
+      try {
+        const head = await ghFetch<Array<{ sha: string }>>(
+          `/repos/${owner}/${repo}/commits?sha=${encodeURIComponent(br)}&per_page=1`,
+        );
+        setHeadSha(head.data?.[0]?.sha ?? null);
+      } catch {
+        setHeadSha(null);
+      }
     } catch (e) {
       setStatus("ERROR");
       setError(e instanceof Error ? e.message : "UNKNOWN_ERR");
     }
-  }, [owner, repo]);
+  }, [owner, repo, pinnedBranch]);
 
   useEffect(() => {
     if (owner && repo) sync();
@@ -230,12 +242,9 @@ function Index() {
   const dot =
     status === "SYNCED" ? "#00ff66" : status === "SYNCING" ? "#ffaa00" : status === "ERROR" ? "#ff5500" : "#666";
 
-  const ghBlobUrl = (path: string, ref: string) =>
-    `https://github.com/${owner}/${repo}/blob/${ref}/${path.split("/").map(encodeURIComponent).join("/")}`;
-  const ghTreeUrl = (dir: string) =>
-    dir === "root"
-      ? `https://github.com/${owner}/${repo}/tree/${branch}`
-      : `https://github.com/${owner}/${repo}/tree/${branch}/${dir.split("/").map(encodeURIComponent).join("/")}`;
+  const ghBlobUrl = (path: string, ref?: string | null) =>
+    buildBlobUrl(owner, repo, ref ?? branch, path);
+  const ghTreeUrl = (dir: string) => buildTreeUrl(owner, repo, branch, dir);
 
   const openSpec = async (path: string) => {
     setCmdOpen(false);
