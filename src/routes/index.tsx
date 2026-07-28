@@ -19,6 +19,7 @@ import { MarkdownView } from "@/components/md/MarkdownView";
 import { NewSpecModal } from "@/components/git/NewSpecModal";
 import { SpecToc } from "@/components/layout/SpecToc";
 import { ShortcutsModal } from "@/components/layout/ShortcutsModal";
+import { ReadmeModal } from "@/components/layout/ReadmeModal";
 import { editFileIntentUrl } from "@/lib/git-intent";
 import { toast } from "sonner";
 
@@ -75,6 +76,7 @@ function Index() {
   const [mobileNav, setMobileNav] = useState(false);
   const [readerOpen, setReaderOpen] = useState(true);
   const [keysOpen, setKeysOpen] = useState(false);
+  const [readmeOpen, setReadmeOpen] = useState(false);
 
   useEffect(() => {
     const o = localStorage.getItem("activeOwner") ?? "";
@@ -447,6 +449,13 @@ function Index() {
             </div>
 
             <div className="flex shrink-0 items-center gap-2 text-[10px] uppercase tracking-widest">
+              <button
+                onClick={() => setReadmeOpen(true)}
+                className={btn}
+                title="Read Me — how this app works"
+              >
+                📖<span className="hidden md:inline ml-1">READ ME</span>
+              </button>
               <button onClick={() => setCmdOpen(true)} className={btn} title="Search (Ctrl+K)">
                 🔍<span className="hidden md:inline ml-1">SEARCH ⌘K</span>
               </button>
@@ -704,6 +713,7 @@ function Index() {
       )}
 
       {keysOpen && <ShortcutsModal onClose={() => setKeysOpen(false)} />}
+      <ReadmeModal open={readmeOpen} onClose={() => setReadmeOpen(false)} />
 
       {aiOpen && (
         <AiConfigDrawer

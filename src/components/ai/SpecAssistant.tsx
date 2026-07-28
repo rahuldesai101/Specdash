@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { streamBudgeted, TOO_LARGE_MESSAGE, type AiConfig } from "@/lib/ai-engine";
 import { DEFAULT_BUDGET, TokenLimitError, truncateToTokenBudget } from "@/lib/token-budget";
+import { SpecPlayground } from "./SpecPlayground";
 
 const SYSTEM_PROMPT =
   "You are an expert technical editor. Your analysis MUST be strictly confined to the SPEC CONTENT provided. " +
@@ -42,6 +43,7 @@ export function SpecAssistant({
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const [playgroundOpen, setPlaygroundOpen] = useState(false);
 
   const run = async (k: TaskKey) => {
     setOpen(true);
@@ -99,6 +101,14 @@ export function SpecAssistant({
             [ {TASKS[k].label} ]
           </button>
         ))}
+        <button
+          onClick={() => setPlaygroundOpen(true)}
+          disabled={!text}
+          title="Run this markdown as system prompt in a chat playground"
+          className="border border-[#333] px-3 py-1.5 hover:border-[#00ff66] hover:text-[#00ff66] disabled:opacity-40 disabled:hover:border-[#333] disabled:hover:text-inherit"
+        >
+          [ 🎮 RUN_AS_SYSTEM_PROMPT ]
+        </button>
         <span className="ml-auto" style={{ color: cfg ? "#00ff66" : "#ff5500" }}>
           {cfg ? `[ AI: ACTIVE (${cfg.provider.toUpperCase()}) ]` : "[ AI: DISABLED ]"}
         </span>
@@ -123,6 +133,13 @@ export function SpecAssistant({
           )}
         </div>
       )}
+      <SpecPlayground
+        cfg={cfg}
+        path={path}
+        text={text}
+        open={playgroundOpen}
+        onClose={() => setPlaygroundOpen(false)}
+      />
     </>
   );
 }
