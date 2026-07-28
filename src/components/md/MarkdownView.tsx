@@ -2,6 +2,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
 import { Mermaid } from "./Mermaid";
+import { DiagramCanvas } from "./DiagramCanvas";
+import { parseWorkflow } from "@/lib/workflow-graph";
 import { RepoImage } from "./RepoImage";
 import { blobUrl, isExternal, rawUrl, resolveRelativePath, slugify } from "@/lib/path-resolve";
 
@@ -137,6 +139,18 @@ export function MarkdownView({ source, ctx }: { source: string; ctx?: MdRepoCtx 
             const text = String(children ?? "").replace(/\n$/, "");
             const lang = /language-(\w+)/.exec(className ?? "")?.[1];
             if (lang === "mermaid") return <Mermaid chart={text} />;
+            if (lang && /^(ya?ml|json)$/i.test(lang)) {
+              const wf = parseWorkflow(text);
+              if (wf)
+                return (
+                  <DiagramCanvas
+                    chart={wf.mermaid}
+                    label={`${wf.kind.toUpperCase()} // ${wf.title}`}
+                    raw={text}
+                    rawLang={lang}
+                  />
+                );
+            }
             if (!className) {
               return (
                 <code className="border border-hard bg-[#0a0a0a] px-1 py-0.5 text-[#00ff66]" {...props}>
