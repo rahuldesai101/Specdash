@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { streamBudgeted, TOO_LARGE_MESSAGE, type AiConfig } from "@/lib/ai-engine";
+import { normalizeAiMarkdown } from "@/lib/md-normalize";
 import { buildRepoManifest, DEFAULT_BUDGET, TokenLimitError } from "@/lib/token-budget";
 
 export type IndexedRecord = { path: string; dir: string; name: string; excerpt?: string };
@@ -55,7 +56,8 @@ export function CommandBar({
     try {
       await streamBudgeted(
         cfg,
-        "You are a concise engineering assistant. Keep responses brief and bulleted. Output ONLY a JSON array of file paths.",
+        "You are a concise engineering assistant. Output ONLY a raw JSON array of file path strings. " +
+          "No markdown, no code fences, no backticks, no prose, no explanation.",
         (budget) =>
           `Given this repo file index (path | folder | headings):\n${buildRepoManifest(index, budget - q.length - 200)}\n\nIdentify which 3 file paths best answer the query: ${q}\nOutput JSON array of paths only.`,
         (d) => setOut((p) => p + d),
@@ -134,7 +136,7 @@ export function CommandBar({
           {out && (
             <div>
               <div className="text-[10px] uppercase tracking-widest text-[#666] mb-2">&gt; AI_RESPONSE</div>
-              <pre className="whitespace-pre-wrap text-[#ccc]">{out}</pre>
+              <pre className="whitespace-pre-wrap text-[#ccc]">{normalizeAiMarkdown(out)}</pre>
             </div>
           )}
 
