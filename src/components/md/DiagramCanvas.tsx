@@ -235,6 +235,12 @@ function DiagramCanvasImpl({ chart, label = "MERMAID", raw, rawLang = "mermaid" 
     return () => window.removeEventListener("keydown", onKey);
   }, [full]);
 
+  // Alt+D toggles every mounted diagram between visual and raw source.
+  useEffect(
+    () => onHotkey("specToggleDiagram", () => setMode((m) => (m === "visual" ? "raw" : "visual"))),
+    [],
+  );
+
   const rawText = raw ?? chart;
 
   const ctl =
