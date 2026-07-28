@@ -6,6 +6,13 @@ A brutalist, terminal-styled reader and editor that turns any GitHub repository 
 
 ## 1. WHAT THIS APP IS
 
+**Feature set:** AI Playground (spec-as-system-prompt chat), free-tier External Deep-Link Studio (ChatGPT / Claude / Gemini / Kimi), native AGENTS.md & llms.txt parser, dataset / eval file inspector, visual workflow renderer (Mermaid + YAML/JSON graphs), in-memory full-text search, and an interactive snippet / SKILL.md extractor.
+
+\`\`\`text
+[ GITHUB TREE ] -> [ ETAG CACHE ] -> [ RAW CDN CRAWL ] -> [ MINISEARCH INDEX (browser) ]
+                                                   \\-> [ SNIPPET EXTRACTOR ] -> [ PLAYGROUND | EXTERNAL AI DEEP-LINK ]
+\`\`\`
+
 **Sandbox** is a zero-backend workspace for teams that treat markdown as source of truth (specs, ideas, research, agent prompts, playbooks). It:
 
 - Points at any GitHub repo (public or private via PAT).

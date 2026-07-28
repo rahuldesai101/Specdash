@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+
+### Added
+- In-memory full-text search engine (MiniSearch) indexing file names, paths, headings, frontmatter tags and raw content, with fuzzy/prefix matching, highlighted line snippets and All/Specs/Agent Rules/Code Snippets filter tabs.
+- Interactive code-block toolbar: Run in Playground (with `{{var}}` detection), Copy Command, Test in External AI; plus 1-click SKILL.md executable skill pills.
+- Global keyboard shortcut engine (Ctrl+K, `?`, G-chord navigation, Alt+P/E/D/V/C/G, Ctrl+Enter) with a terminal-styled cheat-sheet overlay.
+
+### Changed
+- README / How It Works center rewritten to document the new search, snippet and hotkey systems.
 ### Added
 - **Dataset Inspector:** `.csv`, `.tsv`, `.jsonl`/`.ndjson`/`.eval`, and array-shaped `.json` files in data/eval/benchmark dirs are indexed and open in a virtual data grid — global row search, click-to-sort column headers, `VIEWING x-y OF n ROWS` badge, pagination with rows-per-page, `📥 EXPORT CSV` / `📋 COPY JSON`, and auto prompt/completion pair cards with eval score badges.
 - **Changelog Timeline:** Dedicated `/changelog` route parsing root `CHANGELOG.md` into version/date badges and category-tagged timeline blocks, linked from the header.
