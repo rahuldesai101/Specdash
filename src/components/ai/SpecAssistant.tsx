@@ -130,10 +130,10 @@ export function SpecAssistant({
           </div>
           {err ? (
             <div className="text-[#ff5500] break-all">ERR: {err}</div>
+          ) : clean ? (
+            <MarkdownView source={clean} />
           ) : (
-            <pre className="whitespace-pre-wrap text-[13px] leading-relaxed text-[#ddd]">
-              {out || "> AWAITING_TOKENS..."}
-            </pre>
+            <pre className="whitespace-pre-wrap text-[13px] leading-relaxed text-[#ddd]">&gt; AWAITING_TOKENS...</pre>
           )}
         </div>
       )}
