@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 let seq = 0;
 
@@ -217,6 +217,11 @@ export function DiagramCanvas({ chart, label = "MERMAID", raw, rawLang = "mermai
     };
   }, [applyTransform, setZoom]);
 
+  // re-assert the transform after any structural re-render (fullscreen / mode)
+  useLayoutEffect(() => {
+    applyTransform();
+  }, [applyTransform, full, mode, ready]);
+
   const reset = useCallback(() => {
     view.current = { x: 0, y: 0, z: 1 };
     applyTransform();
@@ -290,7 +295,6 @@ export function DiagramCanvas({ chart, label = "MERMAID", raw, rawLang = "mermai
         <div
           ref={stage}
           className="origin-top-left p-4 will-change-transform [&_svg]:max-w-none [&_svg]:h-auto"
-          style={{ transform: "translate3d(0px, 0px, 0) scale(1)" }}
         >
           <div ref={host} />
         </div>
