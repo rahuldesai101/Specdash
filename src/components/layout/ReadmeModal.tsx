@@ -27,7 +27,7 @@ export function ReadmeModal({ open, onClose }: { open: boolean; onClose: () => v
       >
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-hard bg-black px-4 py-3">
           <div className="text-[12px] uppercase tracking-widest text-[#00ff66]">
-            📖 README // SANDBOX_GITHUB_DB_INTERFACE
+            📖 README // SPEC_DASH_GITHUB_AS_A_DATABASE
           </div>
           <div className="flex items-center gap-2">
             <button

@@ -1,4 +1,4 @@
-export const README_CONTENT = `# SANDBOX // GITHUB_DB_INTERFACE_v1.0
+export const README_CONTENT = `# ⚡ SPEC DASH // GITHUB_AS_A_DATABASE
 
 A brutalist, terminal-styled reader and editor that turns any GitHub repository into a live markdown "database". Browse, search, read, edit, and pipe spec files into LLMs (Groq / OpenAI / Claude / Gemini) — all client-side, using your own API keys.
 
