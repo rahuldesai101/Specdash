@@ -21,6 +21,8 @@ export function ExternalAiMenu({
   directive,
   dropUp = false,
   className = "",
+  compact = false,
+  openSignal = 0,
 }: {
   path: string;
   text: string | null;
@@ -28,12 +30,20 @@ export function ExternalAiMenu({
   directive?: string;
   dropUp?: boolean;
   className?: string;
+  /** Renders a minimal icon-sized trigger (used in code-block toolbars). */
+  compact?: boolean;
+  /** Increment to open the menu programmatically (Alt+E hotkey). */
+  openSignal?: number;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [pos, setPos] = useState<{ top: number; left: number; maxH: number } | null>(null);
+
+  useEffect(() => {
+    if (openSignal > 0) setOpen(true);
+  }, [openSignal]);
 
   const place = useCallback(() => {
     const btn = btnRef.current;
@@ -108,9 +118,13 @@ export function ExternalAiMenu({
         onClick={() => setOpen((v) => !v)}
         disabled={!text}
         title="No API key needed — opens the spec + prompt in a free AI web chat"
-        className="border border-[#333] px-3 py-1.5 text-[11px] uppercase tracking-widest hover:border-[#00ff66] hover:text-[#00ff66] disabled:opacity-40 disabled:hover:border-[#333] disabled:hover:text-inherit"
+        className={
+          compact
+            ? "border border-[#333] px-2 py-1 text-[9px] uppercase tracking-widest text-[#888] hover:border-[#00ff66] hover:text-[#00ff66] disabled:opacity-40"
+            : "border border-[#333] px-3 py-1.5 text-[11px] uppercase tracking-widest hover:border-[#00ff66] hover:text-[#00ff66] disabled:opacity-40 disabled:hover:border-[#333] disabled:hover:text-inherit"
+        }
       >
-        [ 🌐 OPEN IN EXTERNAL AI ▾ ]
+        {compact ? "🌐 TEST IN EXTERNAL AI" : "[ 🌐 OPEN IN EXTERNAL AI (ALT+E) ▾ ]"}
       </button>
       {open &&
         typeof document !== "undefined" &&
