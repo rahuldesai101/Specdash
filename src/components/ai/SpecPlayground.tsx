@@ -22,12 +22,15 @@ export function SpecPlayground({
   text,
   open,
   onClose,
+  seed,
 }: {
   cfg: AiConfig | null;
   path: string;
   text: string | null;
   open: boolean;
   onClose: () => void;
+  /** Snippet transported from a code block; `nonce` retriggers prefill. */
+  seed?: { text: string; nonce: number } | null;
 }) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState("");
@@ -47,6 +50,10 @@ export function SpecPlayground({
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [turns, open]);
+
+  useEffect(() => {
+    if (seed?.nonce && seed.text) setInput(seed.text);
+  }, [seed?.nonce, seed?.text]);
 
   if (!open) return null;
 
@@ -186,12 +193,21 @@ export function SpecPlayground({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
+                if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                  e.preventDefault();
+                  void send();
+                  return;
+                }
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   void send();
                 }
               }}
-              placeholder={cfg ? "Message the spec... (Enter to send, Shift+Enter for newline)" : "Configure AI in [AI_CFG] first"}
+              placeholder={
+                cfg
+                  ? "Message the spec... (Enter or Ctrl/⌘+Enter to run, Shift+Enter for newline)"
+                  : "Configure AI in [AI_CFG] first"
+              }
               disabled={!cfg || !text}
               rows={2}
               className="min-h-[44px] flex-1 resize-y border border-hard bg-[#0a0a0a] p-2 text-[13px] text-[#ddd] outline-none focus:border-[#00ff66] disabled:opacity-40"
