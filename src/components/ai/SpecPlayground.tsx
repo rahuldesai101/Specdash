@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { streamCompletion, TOO_LARGE_MESSAGE, type AiConfig } from "@/lib/ai-engine";
+import { sanitizeLlmOutput, streamCompletion, TOO_LARGE_MESSAGE, type AiConfig } from "@/lib/ai-engine";
 import { TokenLimitError, truncateToTokenBudget } from "@/lib/token-budget";
 import { DEFAULT_BUDGET } from "@/lib/token-budget";
 
@@ -155,7 +155,8 @@ export function SpecPlayground({
                 {t.role === "user" ? "> USER" : "> ASSISTANT"}
               </div>
               <pre className="whitespace-pre-wrap break-words text-[13px] leading-relaxed text-[#ddd]">
-                {t.content || (busy && i === turns.length - 1 ? "> AWAITING_TOKENS..." : "")}
+                {(t.role === "assistant" ? sanitizeLlmOutput(t.content) : t.content) ||
+                  (busy && i === turns.length - 1 ? "> AWAITING_TOKENS..." : "")}
               </pre>
             </div>
           ))}
