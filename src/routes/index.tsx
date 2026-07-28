@@ -138,6 +138,7 @@ function Index() {
       if (e.key === "Escape") {
         setKeysOpen(false);
         setCmdOpen(false);
+        setAgentOpen(false);
         setAiOpen(false);
         setPatOpen(false);
         setNewOpen(false);
