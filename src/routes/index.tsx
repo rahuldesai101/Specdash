@@ -278,6 +278,20 @@ function Index() {
     }
   };
 
+  // deep-link: open the requested spec once the tree is loaded
+  useEffect(() => {
+    if (!pendingPath || status !== "SYNCED" || !files.length) return;
+    const match = files.find((f) => f.path === pendingPath);
+    setPendingPath(null);
+    if (match) {
+      setActiveDir(match.dir);
+      openSpec(match.path);
+    } else {
+      toast.error(`SPEC_NOT_FOUND: /${pendingPath}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingPath, status, files]);
+
   const btn =
     "min-h-11 sm:min-h-9 inline-flex items-center justify-center border border-[#333] px-3 text-[10px] uppercase tracking-widest hover:border-[#00ff66] hover:text-[#00ff66]";
 
