@@ -271,6 +271,24 @@ function Index() {
     });
   }, []);
 
+  // spec-scoped hotkeys (Alt+C copy raw, Alt+G open on GitHub)
+  useEffect(() => {
+    const offs = [
+      onHotkey("specCopyRaw", () => {
+        if (!spec?.text) return;
+        navigator.clipboard
+          .writeText(spec.text)
+          .then(() => toast.success("RAW_MARKDOWN_COPIED"))
+          .catch(() => toast.error("CLIPBOARD_BLOCKED"));
+      }),
+      onHotkey("specOpenGithub", () => {
+        if (!spec?.path || !owner) return;
+        window.open(buildBlobUrl(owner, repo, branch, spec.path), "_blank", "noopener,noreferrer");
+      }),
+    ];
+    return () => offs.forEach((off) => off());
+  }, [spec?.text, spec?.path, owner, repo, branch]);
+
   const groups = useMemo(() => {
     const m = new Map<string, FileRow[]>();
     for (const f of files) {
@@ -538,14 +556,6 @@ function Index() {
                 </div>
               </details>
               <SkillPills source={spec.text} onRun={runSnippet} />
-              <details className="hidden">
-                <summary className="cursor-pointer text-[10px] uppercase tracking-widest text-[#666]">
-                  [ TABLE_OF_CONTENTS ]
-                </summary>
-                <div className="mt-3">
-                  <SpecToc source={spec.text} />
-                </div>
-              </details>
               <MarkdownView
                 source={spec.text}
                 ctx={{
