@@ -1,6 +1,14 @@
 /** Detection + parsing of open AI repo standards at the repository root. */
 
-export const ROOT_SPEC_NAMES = ["agents.md", "llms.txt", "agents.txt", ".cursorrules"] as const;
+export const ROOT_SPEC_NAMES = [
+  "agents.md",
+  "llms.txt",
+  "agents.txt",
+  ".cursorrules",
+  // adjacent vendor standards, same purpose
+  "claude.md",
+  "cursor.md",
+] as const;
 
 export type RootSpec = { path: string; name: string };
 
