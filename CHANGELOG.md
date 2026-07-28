@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 ### Added
 - **Changelog Timeline:** Dedicated `/changelog` route parsing root `CHANGELOG.md` into version/date badges and category-tagged timeline blocks, linked from the header.
+- **Dynamic Tab Titles:** `document.title` now tracks the active repo, folder, and file (`📄 file.md — SPEC DASH`).
+
+### Changed
+- **Rebrand to SPEC DASH:** Replaced all SANDBOX branding across metadata, navbar, README modal, and console banner (`[ SPEC_DASH // GITHUB_AS_A_DATABASE ]`); new ⚡ SVG favicon and OpenGraph/Twitter social cards for `https://specdash.lovable.app`.
 
 ## [1.2.0] - 2026-07-27
 ### Added
