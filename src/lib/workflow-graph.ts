@@ -1,4 +1,4 @@
-import yaml from "js-yaml";
+import { load as yamlLoad } from "js-yaml";
 
 /**
  * Workflow interception: turn GitHub Actions / LangGraph / CrewAI / AutoGen
@@ -54,10 +54,10 @@ function parseAny(src: string): unknown {
   const t = src.trim();
   if (!t) return null;
   try {
-    return t.startsWith("{") || t.startsWith("[") ? JSON.parse(t) : yaml.load(t);
+    return t.startsWith("{") || t.startsWith("[") ? JSON.parse(t) : yamlLoad(t);
   } catch {
     try {
-      return yaml.load(t);
+      return yamlLoad(t);
     } catch {
       return null;
     }
