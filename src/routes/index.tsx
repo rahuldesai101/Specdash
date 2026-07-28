@@ -500,6 +500,24 @@ function Index() {
             <pre className="text-[11px] text-[#666]">&gt; LOADING_FROM_RAW_CDN...</pre>
           ) : (
             <>
+              {!/\.md$/i.test(spec.path) ? (
+                (() => {
+                  const wf = parseWorkflow(spec.text);
+                  return wf ? (
+                    <DiagramCanvas
+                      chart={wf.mermaid}
+                      label={`${wf.kind.toUpperCase()} // ${wf.title}`}
+                      raw={spec.text}
+                      rawLang={spec.path.split(".").pop() ?? "yaml"}
+                    />
+                  ) : (
+                    <pre className="overflow-auto border border-hard bg-[#050505] p-3 text-[11px] whitespace-pre text-[#ccc]">
+                      {spec.text}
+                    </pre>
+                  );
+                })()
+              ) : (
+              <>
               <details className="mb-4 border border-hard p-3 xl:hidden">
                 <summary className="cursor-pointer text-[10px] uppercase tracking-widest text-[#666]">
                   [ TABLE_OF_CONTENTS ]
@@ -519,10 +537,12 @@ function Index() {
                   onOpen: (p) => openSpec(p),
                 }}
               />
+              </>
+              )}
             </>
           )}
         </div>
-        {spec.text && (
+        {spec.text && /\.md$/i.test(spec.path) && (
           <aside className="hidden xl:block w-56 shrink-0 overflow-y-auto border-l border-hard px-3 py-5">
             <SpecToc source={spec.text} />
           </aside>
