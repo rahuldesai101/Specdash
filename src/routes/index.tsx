@@ -13,9 +13,12 @@ import {
 } from "@/lib/github-db";
 import { loadAiConfig, saveAiConfig, type AiConfig } from "@/lib/ai-engine";
 import { AiConfigDrawer } from "@/components/ai/AiConfigDrawer";
-import { CommandBar } from "@/components/ai/CommandBar";
+import { SearchModal } from "@/components/search/SearchModal";
+import { useSearchIndex } from "@/hooks/use-search-index";
+import { installHotkeys, onHotkey } from "@/lib/hotkeys";
 import { SpecAssistant } from "@/components/ai/SpecAssistant";
 import { MarkdownView } from "@/components/md/MarkdownView";
+import { SkillPills } from "@/components/md/SkillPills";
 import { DiagramCanvas } from "@/components/md/DiagramCanvas";
 import { isWorkflowPath, parseWorkflow } from "@/lib/workflow-graph";
 import { isDatasetPath, datasetKind } from "@/lib/dataset";
@@ -105,6 +108,8 @@ function Index() {
   const [agentLoading, setAgentLoading] = useState(false);
   const [agentErr, setAgentErr] = useState<string | null>(null);
   const [agentOpen, setAgentOpen] = useState(false);
+  const [sideBySide, setSideBySide] = useState(false);
+  const [seed, setSeed] = useState<{ text: string; nonce: number } | null>(null);
 
   useEffect(() => {
     const dl = parseDeepLink(window.location.search);
@@ -122,24 +127,22 @@ function Index() {
     setAiCfg(loadAiConfig());
   }, []);
 
-  // global keyboard shortcuts
+  // global hotkey engine
   useEffect(() => {
-    const h = (e: KeyboardEvent) => {
-      const el = e.target as HTMLElement | null;
-      const typing =
-        !!el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable);
-      const mod = e.ctrlKey || e.metaKey;
-      if (mod && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        setCmdOpen((v) => !v);
-        return;
-      }
-      if (mod && e.key === "/") {
-        e.preventDefault();
-        setKeysOpen((v) => !v);
-        return;
-      }
-      if (e.key === "Escape") {
+    const uninstall = installHotkeys();
+    const offs = [
+      onHotkey("search", () => setCmdOpen((v) => !v)),
+      onHotkey("help", () => setKeysOpen((v) => !v)),
+      onHotkey("toggleRail", () => setRailOpen((v) => !v)),
+      onHotkey("toggleReader", () => setReaderOpen((v) => !v)),
+      onHotkey("goReadme", () => setReadmeOpen(true)),
+      onHotkey("goHome", () => {
+        setSpec(null);
+        setReadmeOpen(false);
+        setCmdOpen(false);
+      }),
+      onHotkey("specToggleSideBySide", () => setSideBySide((v) => !v)),
+      onHotkey("escape", () => {
         setKeysOpen(false);
         setCmdOpen(false);
         setAgentOpen(false);
@@ -147,21 +150,14 @@ function Index() {
         setPatOpen(false);
         setNewOpen(false);
         setMobileNav(false);
+        setReadmeOpen(false);
         setSpec(null);
-        return;
-      }
-      if (typing || mod || e.altKey) return;
-      if (e.key === "[") {
-        e.preventDefault();
-        setRailOpen((v) => !v);
-      }
-      if (e.key === "]") {
-        e.preventDefault();
-        setReaderOpen((v) => !v);
-      }
+      }),
+    ];
+    return () => {
+      uninstall();
+      offs.forEach((off) => off());
     };
-    window.addEventListener("keydown", h);
-    return () => window.removeEventListener("keydown", h);
   }, []);
 
   useEffect(() => {
@@ -265,6 +261,33 @@ function Index() {
   }, [owner, repo, branch, agentPath]);
 
   const agentSpec = useMemo(() => (agentRaw ? parseAgentSpec(agentRaw) : null), [agentRaw]);
+
+  const searchState = useSearchIndex(owner, repo, branch, files, excerpts);
+
+  const runSnippet = useCallback((code: string, lang: string) => {
+    setSeed({
+      text: `Run / evaluate this ${lang} snippet:\n\n\`\`\`${lang}\n${code}\n\`\`\``,
+      nonce: Date.now(),
+    });
+  }, []);
+
+  // spec-scoped hotkeys (Alt+C copy raw, Alt+G open on GitHub)
+  useEffect(() => {
+    const offs = [
+      onHotkey("specCopyRaw", () => {
+        if (!spec?.text) return;
+        navigator.clipboard
+          .writeText(spec.text)
+          .then(() => toast.success("RAW_MARKDOWN_COPIED"))
+          .catch(() => toast.error("CLIPBOARD_BLOCKED"));
+      }),
+      onHotkey("specOpenGithub", () => {
+        if (!spec?.path || !owner) return;
+        window.open(buildBlobUrl(owner, repo, branch, spec.path), "_blank", "noopener,noreferrer");
+      }),
+    ];
+    return () => offs.forEach((off) => off());
+  }, [spec?.text, spec?.path, owner, repo, branch]);
 
   const groups = useMemo(() => {
     const m = new Map<string, FileRow[]>();
@@ -532,6 +555,7 @@ function Index() {
                   <SpecToc source={spec.text} />
                 </div>
               </details>
+              <SkillPills source={spec.text} onRun={runSnippet} />
               <MarkdownView
                 source={spec.text}
                 ctx={{
@@ -541,8 +565,14 @@ function Index() {
                   currentPath: spec.path,
                   exists: (p) => files.some((f) => f.path === p),
                   onOpen: (p) => openSpec(p),
+                  onRunSnippet: runSnippet,
                 }}
               />
+              {sideBySide && (
+                <pre className="mt-4 max-h-[50vh] overflow-auto border border-hard bg-[#050505] p-3 text-[11px] whitespace-pre-wrap text-[#888]">
+                  {spec.text}
+                </pre>
+              )}
               </>
               )}
             </>
@@ -555,7 +585,7 @@ function Index() {
         )}
       </div>
 
-      <SpecAssistant cfg={aiCfg} path={spec.path} text={spec.text} />
+      <SpecAssistant cfg={aiCfg} path={spec.path} text={spec.text} seed={seed} />
     </div>
   );
 
@@ -904,11 +934,14 @@ function Index() {
       )}
 
       {cmdOpen && (
-        <CommandBar
-          cfg={aiCfg}
-          index={files.map((f) => ({ path: f.path, dir: f.dir, name: f.name, excerpt: excerpts[f.path] }))}
+        <SearchModal
+          state={searchState}
           onClose={() => setCmdOpen(false)}
           onOpen={openSpec}
+          onRunSnippet={(code, lang, path) => {
+            if (path !== spec?.path) openSpec(path);
+            runSnippet(code, lang);
+          }}
         />
       )}
 

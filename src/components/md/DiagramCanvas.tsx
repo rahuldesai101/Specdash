@@ -1,4 +1,5 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { onHotkey } from "@/lib/hotkeys";
 
 let seq = 0;
 
@@ -234,6 +235,12 @@ function DiagramCanvasImpl({ chart, label = "MERMAID", raw, rawLang = "mermaid" 
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [full]);
+
+  // Alt+D toggles every mounted diagram between visual and raw source.
+  useEffect(
+    () => onHotkey("specToggleDiagram", () => setMode((m) => (m === "visual" ? "raw" : "visual"))),
+    [],
+  );
 
   const rawText = raw ?? chart;
 

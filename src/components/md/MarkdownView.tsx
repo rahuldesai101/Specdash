@@ -6,6 +6,7 @@ import { Mermaid } from "./Mermaid";
 import { DiagramCanvas } from "./DiagramCanvas";
 import { parseWorkflow } from "@/lib/workflow-graph";
 import { RepoImage } from "./RepoImage";
+import { CodeBlock } from "./CodeBlock";
 import { blobUrl, isExternal, rawUrl, resolveRelativePath, slugify } from "@/lib/path-resolve";
 
 export type MdRepoCtx = {
@@ -15,6 +16,8 @@ export type MdRepoCtx = {
   currentPath: string;
   exists: (path: string) => boolean;
   onOpen: (path: string) => void;
+  /** Sends a fenced snippet into the AI playground. */
+  onRunSnippet?: (code: string, lang: string) => void;
 };
 
 function textOf(children: React.ReactNode): string {
@@ -160,10 +163,12 @@ function MarkdownViewImpl({ source, ctx }: { source: string; ctx?: MdRepoCtx }) 
               );
             }
             return (
-              <pre className="border border-hard bg-[#0a0a0a] p-3 overflow-x-auto">
-                <div className="text-[9px] uppercase tracking-widest text-[#555] mb-2">[ CODE{lang ? `: ${lang}` : ""} ]</div>
-                <code className="text-[11px] text-[#ccc] whitespace-pre">{text}</code>
-              </pre>
+              <CodeBlock
+                code={text}
+                lang={lang}
+                path={ctx?.currentPath ?? "snippet"}
+                onRun={ctx?.onRunSnippet}
+              />
             );
           },
         }}
