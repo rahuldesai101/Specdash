@@ -38,6 +38,9 @@ export function DiagramCanvas({ chart, label = "MERMAID", raw, rawLang = "mermai
 
   // transform lives in a ref: mutating it never re-renders React
   const view = useRef({ x: 0, y: 0, z: 1 });
+  useEffect(() => {
+    (window as any).__dcMounts = ((window as any).__dcMounts ?? 0) + 1;
+  }, []);
   const drag = useRef<{ x: number; y: number; px: number; py: number } | null>(null);
 
   const applyTransform = useCallback(() => {
