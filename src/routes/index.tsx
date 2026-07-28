@@ -18,6 +18,8 @@ import { SpecAssistant } from "@/components/ai/SpecAssistant";
 import { MarkdownView } from "@/components/md/MarkdownView";
 import { DiagramCanvas } from "@/components/md/DiagramCanvas";
 import { isWorkflowPath, parseWorkflow } from "@/lib/workflow-graph";
+import { isDatasetPath, datasetKind } from "@/lib/dataset";
+import { DatasetInspector } from "@/components/data/DatasetInspector";
 import { NewSpecModal } from "@/components/git/NewSpecModal";
 import { SpecToc } from "@/components/layout/SpecToc";
 import { ShortcutsModal } from "@/components/layout/ShortcutsModal";
@@ -201,7 +203,9 @@ function Index() {
       setCacheStatus(tree.status);
       const rowsAll: FileRow[] = tree.data.tree
         .filter(
-          (i) => i.type === "blob" && (i.path.toLowerCase().endsWith(".md") || isWorkflowPath(i.path)),
+          (i) =>
+            i.type === "blob" &&
+            (i.path.toLowerCase().endsWith(".md") || isWorkflowPath(i.path) || isDatasetPath(i.path)),
         )
         .map((i) => ({
           path: i.path,
@@ -500,7 +504,9 @@ function Index() {
             <pre className="text-[11px] text-[#666]">&gt; LOADING_FROM_RAW_CDN...</pre>
           ) : (
             <>
-              {!/\.md$/i.test(spec.path) ? (
+              {datasetKind(spec.path) && !isWorkflowPath(spec.path) ? (
+                <DatasetInspector path={spec.path} text={spec.text} />
+              ) : !/\.md$/i.test(spec.path) ? (
                 (() => {
                   const wf = parseWorkflow(spec.text);
                   return wf ? (
