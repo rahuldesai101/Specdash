@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 let seq = 0;
 
@@ -24,7 +24,7 @@ type Props = {
  *  - fullscreen + raw/visual toggles are CSS class swaps; the canvas node is
  *    never unmounted, so transform state and the injected SVG persist.
  */
-export function DiagramCanvas({ chart, label = "MERMAID", raw, rawLang = "mermaid" }: Props) {
+function DiagramCanvasImpl({ chart, label = "MERMAID", raw, rawLang = "mermaid" }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const zoomLabel = useRef<HTMLSpanElement>(null);
@@ -38,9 +38,6 @@ export function DiagramCanvas({ chart, label = "MERMAID", raw, rawLang = "mermai
 
   // transform lives in a ref: mutating it never re-renders React
   const view = useRef({ x: 0, y: 0, z: 1 });
-  useEffect(() => {
-    (window as any).__dcMounts = ((window as any).__dcMounts ?? 0) + 1;
-  }, []);
   const drag = useRef<{ x: number; y: number; px: number; py: number } | null>(null);
 
   const applyTransform = useCallback(() => {
@@ -321,3 +318,9 @@ export function DiagramCanvas({ chart, label = "MERMAID", raw, rawLang = "mermai
     </div>
   );
 }
+
+/** Identical props (same diagram source) must never remount the canvas. */
+export const DiagramCanvas = memo(
+  DiagramCanvasImpl,
+  (a, b) => a.chart === b.chart && a.raw === b.raw && a.label === b.label && a.rawLang === b.rawLang,
+);
