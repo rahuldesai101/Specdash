@@ -48,7 +48,12 @@ src/
 ├── components/
 │   ├── ai/
 │   │   ├── AiConfigDrawer.tsx    Provider + API key + model picker
-│   │   ├── CommandBar.tsx        Ctrl+K fuzzy search across all specs
+│   │   ├── SpecPlayground.tsx    Chat with the open spec as SYSTEM prompt
+│   │   └── ExternalAiMenu.tsx    Zero-cost deep-links into ChatGPT/Claude/Gemini/Kimi
+├── components/search/
+│   └── SearchModal.tsx           Ctrl+K in-memory full-text search (MiniSearch)
+├── hooks/
+│   └── use-search-index.ts       Background raw-CDN crawl + index rebuild
 │   │   ├── SpecAssistant.tsx     Bottom drawer: SUMMARIZE / ACTIONS / CRITIQUE / PLAYGROUND
 │   │   └── SpecPlayground.tsx    Full chat UI using the open md as SYSTEM prompt
 │   ├── git/
