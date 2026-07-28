@@ -121,8 +121,18 @@ At the bottom of the reader:
 
 All streaming happens over SSE directly from your browser to the provider. Large files are truncated to fit the model's token budget.
 
-### Step 8 — Search everything
-**Ctrl+K** (⌘K) opens the **CommandBar**: fuzzy search across every indexed markdown path. Enter opens the file in the reader.
+### Step 8 — Search everything (full-text)
+**Ctrl+K** (⌘K) opens the **Search Modal**, backed by an in-memory **MiniSearch** index built in the browser:
+
+- Indexed fields: \`fileName\`, \`filePath\`, \`headings\` (#, ##, ###), frontmatter \`tags\`, and full \`rawContent\`.
+- Fuzzy + prefix matching ("auth" → Authentication, oauth_token, author).
+- Matching lines are shown under each result with hit terms highlighted.
+- Filter tabs: **[ All ] [ 📄 Specs ] [ 🤖 Agent Rules ] [ ⚡ Code Snippets ]**.
+- Every fenced code block is indexed as its own snippet document — hitting Enter on a snippet result launches it in the Playground.
+- File bodies stream in from the raw CDN in the background; the header shows index progress.
+
+### Step 8b — Snippet & Skill builders
+Hovering any code block in the reader reveals: **⚡ RUN IN PLAYGROUND** (with \`{{variable}}\` detection), **📋 COPY COMMAND**, and **🌐 TEST IN EXTERNAL AI**. SKILL.md-style frontmatter (\`commands:\` / \`prompt:\`) renders 1-click executable skill pills at the top of the spec.
 
 ### Step 9 — 📖 README
 Any time you want this document again — top bar, left of the Search button.
@@ -144,15 +154,39 @@ Any time you want this document again — top bar, left of the Search button.
 
 ---
 
-## 6. KEYBOARD SHORTCUTS
+## 6. KEYBOARD CHEAT SHEET
+
+### Global & navigation
 
 | Key | Action |
 | --- | --- |
-| \`Ctrl/⌘ + K\` | Toggle command bar (search) |
-| \`Ctrl/⌘ + /\` | Toggle shortcuts modal |
-| \`[\` | Collapse / expand left rail |
-| \`]\` | Collapse / expand reader |
-| \`Esc\` | Close any open drawer / modal / reader |
+| \`Ctrl/⌘ + K\` | Open full-text search |
+| \`?\` or \`Ctrl/⌘ + /\` | Toggle keyboard shortcuts overlay |
+| \`G\` then \`H\` | Home / repository root |
+| \`G\` then \`P\` | AI Playground |
+| \`G\` then \`R\` | README / How It Works |
+| \`[\` / \`]\` | Toggle left rail / reader |
+| \`Esc\` | Close any drawer, modal or reader |
+
+### Spec viewer actions
+
+| Key | Action |
+| --- | --- |
+| \`Alt + P\` | Open active spec in the AI Playground |
+| \`Alt + E\` | Open the External AI deep-link studio |
+| \`Alt + D\` | Toggle visual workflow / raw diagram source |
+| \`Alt + V\` | Toggle side-by-side raw markdown |
+| \`Alt + C\` | Copy raw file content |
+| \`Alt + G\` | Open the active file on GitHub |
+
+### AI Playground
+
+| Key | Action |
+| --- | --- |
+| \`Ctrl/⌘ + Enter\` | Execute active prompt |
+| \`Enter\` / \`Shift + Enter\` | Send / newline |
+
+All hotkeys are suppressed while typing in inputs, textareas or editable regions.
 
 ---
 
