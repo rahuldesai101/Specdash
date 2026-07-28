@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { streamBudgeted, TOO_LARGE_MESSAGE, type AiConfig } from "@/lib/ai-engine";
+import { sanitizeLlmOutput, streamBudgeted, TOO_LARGE_MESSAGE, type AiConfig } from "@/lib/ai-engine";
 import { buildRepoManifest, DEFAULT_BUDGET, TokenLimitError } from "@/lib/token-budget";
 
 export type IndexedRecord = { path: string; dir: string; name: string; excerpt?: string };
@@ -134,7 +134,7 @@ export function CommandBar({
           {out && (
             <div>
               <div className="text-[10px] uppercase tracking-widest text-[#666] mb-2">&gt; AI_RESPONSE</div>
-              <pre className="whitespace-pre-wrap text-[#ccc]">{out}</pre>
+              <pre className="whitespace-pre-wrap text-[#ccc]">{sanitizeLlmOutput(out)}</pre>
             </div>
           )}
 
