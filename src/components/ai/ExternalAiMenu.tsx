@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import {
   EXTERNAL_PROVIDERS,
@@ -30,11 +31,48 @@ export function ExternalAiMenu({
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
+  const btnRef = useRef<HTMLButtonElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const [pos, setPos] = useState<{ top: number; left: number; maxH: number } | null>(null);
+
+  const place = useCallback(() => {
+    const btn = btnRef.current;
+    if (!btn) return;
+    const r = btn.getBoundingClientRect();
+    const pad = 16;
+    const width = 290;
+    const menuH = menuRef.current?.offsetHeight ?? 220;
+    const below = window.innerHeight - r.bottom - pad;
+    const above = r.top - pad;
+    // Auto-flip: drop up when there isn't room below but there is above.
+    const flip = dropUp || (below < Math.min(menuH, 220) && above > below);
+    const maxH = Math.min(window.innerHeight - 32, flip ? above : below);
+    const top = flip ? Math.max(pad, r.top - 4 - Math.min(menuH, maxH)) : r.bottom + 4;
+    const left = Math.min(
+      Math.max(pad, r.right - width),
+      Math.max(pad, window.innerWidth - width - pad),
+    );
+    setPos({ top, left, maxH: Math.max(140, maxH) });
+  }, [dropUp]);
+
+  useLayoutEffect(() => {
+    if (!open) return setPos(null);
+    place();
+    const on = () => place();
+    window.addEventListener("resize", on);
+    window.addEventListener("scroll", on, true);
+    return () => {
+      window.removeEventListener("resize", on);
+      window.removeEventListener("scroll", on, true);
+    };
+  }, [open, place]);
 
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      if (ref.current?.contains(t) || menuRef.current?.contains(t)) return;
+      setOpen(false);
     };
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
     document.addEventListener("mousedown", onDown);
@@ -66,6 +104,7 @@ export function ExternalAiMenu({
   return (
     <div ref={ref} className={`relative ${className}`}>
       <button
+        ref={btnRef}
         onClick={() => setOpen((v) => !v)}
         disabled={!text}
         title="No API key needed — opens the spec + prompt in a free AI web chat"
@@ -73,8 +112,19 @@ export function ExternalAiMenu({
       >
         [ 🌐 OPEN IN EXTERNAL AI ▾ ]
       </button>
-      {open && (
-        <div className={`absolute right-0 z-[70] w-[290px] border border-hard bg-black ${dropUp ? "bottom-full mb-1" : "top-full mt-1"}`}>
+      {open &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            ref={menuRef}
+            className="fixed z-[200] w-[290px] overflow-y-auto border border-hard bg-black"
+            style={{
+              top: pos?.top ?? -9999,
+              left: pos?.left ?? -9999,
+              maxHeight: pos ? Math.min(pos.maxH, window.innerHeight - 32) : undefined,
+              visibility: pos ? "visible" : "hidden",
+            }}
+          >
           <div className="border-b border-[#222] px-3 py-2 text-[10px] uppercase tracking-widest text-[#666]">
             ZERO-COST // NO API KEY REQUIRED
           </div>
@@ -104,8 +154,9 @@ export function ExternalAiMenu({
           >
             [ 📋 COPY PAYLOAD ONLY ]
           </button>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }
