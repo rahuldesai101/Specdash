@@ -657,6 +657,7 @@ function Index() {
 
         {/* CENTER */}
         <main className="min-w-0 flex-1">
+          <AgentOsBanner specs={rootSpecs} onOpen={() => setAgentOpen(true)} onOpenFile={openSpec} />
           <div className="grid grid-cols-2 border-b border-hard bg-black sm:grid-cols-4 lg:sticky lg:top-[89px] lg:z-20">
             <Stat label="MD_RECORDS" value={files.length} accent="#00ff66" />
             <Stat label="DIRECTORIES" value={groups.length} />
@@ -845,6 +846,19 @@ function Index() {
       )}
 
       {keysOpen && <ShortcutsModal onClose={() => setKeysOpen(false)} />}
+      {agentOpen && (
+        <AgentOsPanel
+          specs={rootSpecs}
+          activeSpecPath={agentPath}
+          spec={agentSpec}
+          raw={agentRaw}
+          loading={agentLoading}
+          error={agentErr}
+          onSelect={setAgentPath}
+          onClose={() => setAgentOpen(false)}
+          onOpenFile={(p) => openSpec(p)}
+        />
+      )}
       <ReadmeModal open={readmeOpen} onClose={() => setReadmeOpen(false)} />
 
       {aiOpen && (
