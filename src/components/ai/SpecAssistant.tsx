@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { streamBudgeted, TOO_LARGE_MESSAGE, withFormatRules, type AiConfig } from "@/lib/ai-engine";
 import { DEFAULT_BUDGET, TokenLimitError, truncateToTokenBudget } from "@/lib/token-budget";
@@ -6,6 +6,7 @@ import { normalizeAiMarkdown } from "@/lib/md-normalize";
 import { MarkdownView } from "@/components/md/MarkdownView";
 import { SpecPlayground } from "./SpecPlayground";
 import { ExternalAiMenu } from "./ExternalAiMenu";
+import { onHotkey } from "@/lib/hotkeys";
 
 const SYSTEM_PROMPT = withFormatRules(
   "You are an expert technical editor. Your analysis MUST be strictly confined to the SPEC CONTENT provided. " +
@@ -36,10 +37,13 @@ export function SpecAssistant({
   cfg,
   path,
   text,
+  seed,
 }: {
   cfg: AiConfig | null;
   path: string;
   text: string | null;
+  /** Snippet handed over from a code block / search hit. */
+  seed?: { text: string; nonce: number } | null;
 }) {
   const [open, setOpen] = useState(false);
   const [task, setTask] = useState<TaskKey | null>(null);
@@ -48,7 +52,22 @@ export function SpecAssistant({
   const [err, setErr] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const [playgroundOpen, setPlaygroundOpen] = useState(false);
+  const [externalSignal, setExternalSignal] = useState(0);
   const clean = normalizeAiMarkdown(out);
+
+  useEffect(() => {
+    if (seed?.nonce) setPlaygroundOpen(true);
+  }, [seed?.nonce]);
+
+  useEffect(() => {
+    const offs = [
+      onHotkey("specPlayground", () => setPlaygroundOpen(true)),
+      onHotkey("goPlayground", () => setPlaygroundOpen(true)),
+      onHotkey("specExternalAi", () => setExternalSignal((n) => n + 1)),
+      onHotkey("escape", () => setPlaygroundOpen(false)),
+    ];
+    return () => offs.forEach((off) => off());
+  }, []);
 
   const run = async (k: TaskKey) => {
     setOpen(true);
@@ -112,11 +131,12 @@ export function SpecAssistant({
           title="Run this markdown as system prompt in a chat playground"
           className="border border-[#333] px-3 py-1.5 hover:border-[#00ff66] hover:text-[#00ff66] disabled:opacity-40 disabled:hover:border-[#333] disabled:hover:text-inherit"
         >
-          [ 🎮 RUN_AS_SYSTEM_PROMPT ]
+          [ 🎮 RUN_AS_SYSTEM_PROMPT (ALT+P) ]
         </button>
         <ExternalAiMenu
           path={path}
           text={text}
+          openSignal={externalSignal}
           action={task ? TASKS[task].prompt : "Review this spec and report anything notable."}
         />
         <span className="ml-auto" style={{ color: cfg ? "#00ff66" : "#ff5500" }}>
@@ -147,6 +167,7 @@ export function SpecAssistant({
         cfg={cfg}
         path={path}
         text={text}
+        seed={seed}
         open={playgroundOpen}
         onClose={() => setPlaygroundOpen(false)}
       />
