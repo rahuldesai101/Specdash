@@ -453,10 +453,11 @@ function Index() {
                 onClick={() => setReadmeOpen(true)}
                 className={btn}
                 title="Read Me — how this app works"
+                aria-label="Read me — how this app works"
               >
                 📖<span className="hidden md:inline ml-1">READ ME</span>
               </button>
-              <button onClick={() => setCmdOpen(true)} className={btn} title="Search (Ctrl+K)">
+              <button onClick={() => setCmdOpen(true)} className={btn} title="Search (Ctrl+K)" aria-label="Search specs (Ctrl+K)">
                 🔍<span className="hidden md:inline ml-1">SEARCH ⌘K</span>
               </button>
               <button
@@ -464,6 +465,7 @@ function Index() {
                 disabled={!owner}
                 className={`${btn} border-[#00ff66] text-[#00ff66] disabled:opacity-40`}
                 title="New spec"
+                aria-label="Create new spec"
               >
                 +<span className="hidden md:inline ml-1">NEW SPEC</span>
               </button>
@@ -472,6 +474,7 @@ function Index() {
                 className={btn}
                 style={{ borderColor: aiCfg ? "#00ff66" : "#333", color: aiCfg ? "#00ff66" : "#fff" }}
                 title={aiCfg ? `AI ACTIVE (${aiCfg.provider})` : "AI disabled"}
+                aria-label={aiCfg ? `AI engine config — active (${aiCfg.provider})` : "AI engine config — disabled"}
               >
                 ⚡<span className="hidden md:inline ml-1">{aiCfg ? aiCfg.provider.toUpperCase() : "AI CFG"}</span>
               </button>
@@ -480,14 +483,20 @@ function Index() {
                 className={btn}
                 style={{ borderColor: hasPat ? "#00ff66" : "#ff5500", color: hasPat ? "#00ff66" : "#ff5500" }}
                 title={hasPat ? "PAT connected" : "No PAT"}
+                aria-label={hasPat ? "GitHub token settings — connected" : "GitHub token settings — not connected"}
               >
                 {hasPat ? "🟢" : "🔴"}
                 <span className="hidden md:inline ml-1">PAT</span>
               </button>
-              <button onClick={() => setKeysOpen(true)} className={`${btn} hidden lg:inline-flex`} title="Shortcuts (Ctrl+/)">
+              <button
+                onClick={() => setKeysOpen(true)}
+                className={`${btn} hidden lg:inline-flex`}
+                title="Shortcuts (Ctrl+/)"
+                aria-label="Keyboard shortcuts (Ctrl+/)"
+              >
                 ⌨
               </button>
-              <Link to="/changelog" className={btn} title="Changelog timeline">
+              <Link to="/changelog" className={btn} title="Changelog timeline" aria-label="Changelog timeline">
                 📜<span className="hidden md:inline ml-1">CHANGELOG</span>
               </Link>
             </div>

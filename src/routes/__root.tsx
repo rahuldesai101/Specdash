@@ -78,11 +78,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "SANDBOX — GitHub Repo Spec Dashboard" },
+      {
+        name: "description",
+        content:
+          "SANDBOX is a brutalist R&D dashboard that indexes a GitHub repo as a database: browse markdown specs, run AI summaries, and commit new records.",
+      },
+      { name: "author", content: "SANDBOX" },
+      { property: "og:title", content: "SANDBOX — GitHub Repo Spec Dashboard" },
+      {
+        property: "og:description",
+        content:
+          "Index any GitHub repo as a live spec database: terminal-style data grid, markdown spec reader, AI analysis, and one-click Git commits.",
+      },
+      { property: "og:site_name", content: "SANDBOX" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
