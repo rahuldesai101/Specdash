@@ -127,24 +127,22 @@ function Index() {
     setAiCfg(loadAiConfig());
   }, []);
 
-  // global keyboard shortcuts
+  // global hotkey engine
   useEffect(() => {
-    const h = (e: KeyboardEvent) => {
-      const el = e.target as HTMLElement | null;
-      const typing =
-        !!el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable);
-      const mod = e.ctrlKey || e.metaKey;
-      if (mod && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        setCmdOpen((v) => !v);
-        return;
-      }
-      if (mod && e.key === "/") {
-        e.preventDefault();
-        setKeysOpen((v) => !v);
-        return;
-      }
-      if (e.key === "Escape") {
+    const uninstall = installHotkeys();
+    const offs = [
+      onHotkey("search", () => setCmdOpen((v) => !v)),
+      onHotkey("help", () => setKeysOpen((v) => !v)),
+      onHotkey("toggleRail", () => setRailOpen((v) => !v)),
+      onHotkey("toggleReader", () => setReaderOpen((v) => !v)),
+      onHotkey("goReadme", () => setReadmeOpen(true)),
+      onHotkey("goHome", () => {
+        setSpec(null);
+        setReadmeOpen(false);
+        setCmdOpen(false);
+      }),
+      onHotkey("specToggleSideBySide", () => setSideBySide((v) => !v)),
+      onHotkey("escape", () => {
         setKeysOpen(false);
         setCmdOpen(false);
         setAgentOpen(false);
@@ -152,21 +150,14 @@ function Index() {
         setPatOpen(false);
         setNewOpen(false);
         setMobileNav(false);
+        setReadmeOpen(false);
         setSpec(null);
-        return;
-      }
-      if (typing || mod || e.altKey) return;
-      if (e.key === "[") {
-        e.preventDefault();
-        setRailOpen((v) => !v);
-      }
-      if (e.key === "]") {
-        e.preventDefault();
-        setReaderOpen((v) => !v);
-      }
+      }),
+    ];
+    return () => {
+      uninstall();
+      offs.forEach((off) => off());
     };
-    window.addEventListener("keydown", h);
-    return () => window.removeEventListener("keydown", h);
   }, []);
 
   useEffect(() => {
