@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **Cross-Platform Responsiveness:** Layout scaling across Mobile (<640px), Tablet, Desktop, and Ultra-Wide displays.
 
 ### Fixed
+- **LLM Output Hygiene:** Every AI call now prepends a strict output-rules system wrapper (no fluff openers, no stray backticks/escaped asterisks, clean header hierarchy) and all responses pass through a `sanitizeLlmOutput` normalizer before rendering.
 - **Markdown 404 Links:** Added relative link interceptor to resolve `./` and `../` paths internally without page reloads.
 
 ## [1.1.0] - 2026-07-25
