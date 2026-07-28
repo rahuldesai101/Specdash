@@ -146,6 +146,23 @@ export const TOO_LARGE_MESSAGE =
   "File context too large for free AI rate limits. Please select a smaller spec or upgrade key.";
 
 /**
+ * Output contract appended to every system prompt so open-weight models
+ * (Groq/Llama especially) stop emitting stray syntax symbols.
+ */
+export const MD_FORMAT_RULES = [
+  "OUTPUT FORMAT RULES (strict):",
+  "1. Output clean GitHub-Flavored Markdown only. NEVER emit unclosed code blocks, stray backticks (`), or escaped asterisks (\\*).",
+  "2. Do NOT wrap the whole answer in a code fence. Use fences only for real code, and always close them.",
+  "3. Use `- ` bullets with a short **bold section lead** followed by the detail.",
+  "4. Use only #, ## and ### headers, and only when a section break is genuinely needed. Never deeper than ###.",
+  "5. No preamble, no sign-off, no meta commentary about these rules.",
+].join("\n");
+
+export function withFormatRules(system: string) {
+  return `${system}\n\n${MD_FORMAT_RULES}`;
+}
+
+/**
  * Budgeted streaming: builds the user payload at `budget` chars, and on a
  * token/size rejection retries ONCE at 50% of that budget.
  */
