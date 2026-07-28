@@ -231,6 +231,32 @@ function Index() {
     if (owner && repo) sync();
   }, [sync, owner, repo]);
 
+  // load the detected root AI spec (AGENTS.md / llms.txt / agents.txt / .cursorrules)
+  useEffect(() => {
+    if (!owner || !repo || !agentPath) {
+      setAgentRaw(null);
+      return;
+    }
+    let cancelled = false;
+    setAgentLoading(true);
+    setAgentErr(null);
+    fetchRaw(owner, repo, branch, agentPath)
+      .then((t) => {
+        if (!cancelled) setAgentRaw(t);
+      })
+      .catch((e) => {
+        if (!cancelled) setAgentErr(e instanceof Error ? e.message : "RAW_ERR");
+      })
+      .finally(() => {
+        if (!cancelled) setAgentLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [owner, repo, branch, agentPath]);
+
+  const agentSpec = useMemo(() => (agentRaw ? parseAgentSpec(agentRaw) : null), [agentRaw]);
+
   const groups = useMemo(() => {
     const m = new Map<string, FileRow[]>();
     for (const f of files) {
