@@ -422,8 +422,7 @@ function Index() {
             </button>
             <button
               onClick={() => {
-                const sha = files.find((f) => f.path === spec.path)?.sha ?? branch;
-                copy(ghBlobUrl(spec.path, sha), "PERMALINK_COPIED").then(() => {
+                copy(ghBlobUrl(spec.path, headSha ?? branch), "PERMALINK_COPIED").then(() => {
                   setCopied(true);
                   setTimeout(() => setCopied(false), 1500);
                 });
@@ -431,6 +430,13 @@ function Index() {
               className={btn}
             >
               {copied ? "[ COPIED ]" : "🔗 PERMALINK"}
+            </button>
+            <button
+              onClick={() => copy(appPermalink(owner, repo, spec.path, branch), "SHARE_LINK_COPIED")}
+              className={btn}
+              title="Copy a SPEC DASH share link to this file"
+            >
+              🔗 SHARE
             </button>
             <button
               onClick={() => setSpec(null)}
