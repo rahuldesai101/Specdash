@@ -537,6 +537,15 @@ function Index() {
                   <SpecToc source={spec.text} />
                 </div>
               </details>
+              <SkillPills source={spec.text} onRun={runSnippet} />
+              <details className="hidden">
+                <summary className="cursor-pointer text-[10px] uppercase tracking-widest text-[#666]">
+                  [ TABLE_OF_CONTENTS ]
+                </summary>
+                <div className="mt-3">
+                  <SpecToc source={spec.text} />
+                </div>
+              </details>
               <MarkdownView
                 source={spec.text}
                 ctx={{
@@ -546,8 +555,14 @@ function Index() {
                   currentPath: spec.path,
                   exists: (p) => files.some((f) => f.path === p),
                   onOpen: (p) => openSpec(p),
+                  onRunSnippet: runSnippet,
                 }}
               />
+              {sideBySide && (
+                <pre className="mt-4 max-h-[50vh] overflow-auto border border-hard bg-[#050505] p-3 text-[11px] whitespace-pre-wrap text-[#888]">
+                  {spec.text}
+                </pre>
+              )}
               </>
               )}
             </>
@@ -560,7 +575,7 @@ function Index() {
         )}
       </div>
 
-      <SpecAssistant cfg={aiCfg} path={spec.path} text={spec.text} />
+      <SpecAssistant cfg={aiCfg} path={spec.path} text={spec.text} seed={seed} />
     </div>
   );
 
