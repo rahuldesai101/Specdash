@@ -154,9 +154,11 @@ export function AgentOsPanel({
                     <div key={s.title} className="mb-3 last:mb-0">
                       <div className="text-[11px] uppercase tracking-widest text-[#ff5500]">{s.title}</div>
                       <ul className="mt-1 list-disc pl-5 text-[#ccc]">
-                        {(s.bullets.length ? s.bullets : [s.body.slice(0, 300)]).map((b, i) => (
-                          <li key={i}>{b}</li>
-                        ))}
+                        {(s.bullets.length ? s.bullets : [s.body.slice(0, 300)])
+                          .filter((b) => b.trim())
+                          .map((b, i) => (
+                            <li key={i}>{b}</li>
+                          ))}
                       </ul>
                     </div>
                   ))
@@ -171,9 +173,11 @@ export function AgentOsPanel({
                     <div key={s.title} className="mb-3 last:mb-0">
                       <div className="text-[11px] uppercase tracking-widest text-[#00ff66]">{s.title}</div>
                       <ul className="mt-1 list-disc pl-5 text-[#ccc]">
-                        {(s.bullets.length ? s.bullets : [s.body.slice(0, 300)]).map((b, i) => (
-                          <li key={i}>{b}</li>
-                        ))}
+                        {(s.bullets.length ? s.bullets : [s.body.slice(0, 300)])
+                          .filter((b) => b.trim())
+                          .map((b, i) => (
+                            <li key={i}>{b}</li>
+                          ))}
                       </ul>
                     </div>
                   ))
