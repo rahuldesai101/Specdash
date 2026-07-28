@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **Agent Workflow Visualizer:** `.github/workflows/*.yml` and LangGraph/CrewAI/AutoGen YAML+JSON configs are now indexed and auto-compiled into Mermaid agent graphs, with role icons (🤖 router, ⚡ executor, 🔍 evaluator, 💾 storage). Diagrams (including in-markdown ```mermaid blocks) render on an interactive canvas with zoom `+ / − / RESET`, drag-pan, `⛶ EXPAND` fullscreen, node-click pathway tracing, and a `📊 VISUAL | 💻 RAW CODE` toggle.
 
 ### Fixed
+- **Diagram Canvas Stability:** Mermaid now compiles once per unique source (module-level SVG cache) instead of re-rendering on every interaction; pan/zoom mutate a CSS transform on a wrapper via refs and pointer capture (no React re-renders, `touch-action: none`, no text selection); `⛶ EXPAND`, `📊 VISUAL | 💻 RAW CODE`, and parent re-renders are now CSS toggles that keep the canvas mounted and retain zoom level and pan coordinates.
 - **Broken GitHub Permalinks:** Permalinks used the blob SHA (404). Links now use the head commit SHA with strict `blob/{ref}/{path}` and `tree/{ref}/{path}` formation, slash normalization, and per-segment URL encoding.
 
 ### Changed

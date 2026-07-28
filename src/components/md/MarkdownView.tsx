@@ -1,3 +1,4 @@
+import { memo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
@@ -24,7 +25,7 @@ function textOf(children: React.ReactNode): string {
   return "";
 }
 
-export function MarkdownView({ source, ctx }: { source: string; ctx?: MdRepoCtx }) {
+function MarkdownViewImpl({ source, ctx }: { source: string; ctx?: MdRepoCtx }) {
   const resolve = (href: string) => resolveRelativePath(ctx?.currentPath ?? "", href.split(/[?#]/)[0]);
 
   return (
@@ -172,3 +173,18 @@ export function MarkdownView({ source, ctx }: { source: string; ctx?: MdRepoCtx 
     </div>
   );
 }
+
+/**
+ * Re-render guard: the markdown component map is recreated on every render, so
+ * any parent re-render would remount heavy children (mermaid canvases) and wipe
+ * their zoom/pan state. Only re-render when the source or repo context changes.
+ */
+export const MarkdownView = memo(
+  MarkdownViewImpl,
+  (a, b) =>
+    a.source === b.source &&
+    a.ctx?.owner === b.ctx?.owner &&
+    a.ctx?.repo === b.ctx?.repo &&
+    a.ctx?.branch === b.ctx?.branch &&
+    a.ctx?.currentPath === b.ctx?.currentPath,
+);
