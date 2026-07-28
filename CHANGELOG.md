@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 ### Added
+- **Dataset Inspector:** `.csv`, `.tsv`, `.jsonl`/`.ndjson`/`.eval`, and array-shaped `.json` files in data/eval/benchmark dirs are indexed and open in a virtual data grid — global row search, click-to-sort column headers, `VIEWING x-y OF n ROWS` badge, pagination with rows-per-page, `📥 EXPORT CSV` / `📋 COPY JSON`, and auto prompt/completion pair cards with eval score badges.
 - **Changelog Timeline:** Dedicated `/changelog` route parsing root `CHANGELOG.md` into version/date badges and category-tagged timeline blocks, linked from the header.
 - **Dynamic Tab Titles:** `document.title` now tracks the active repo, folder, and file (`📄 file.md — SPEC DASH`).
 - **Shareable Deep Links:** `🔗 SHARE` copies `/?repo={owner}/{repo}&path={file}`; direct loads restore the repo, folder, and open spec.
