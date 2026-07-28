@@ -78,30 +78,31 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "SANDBOX — GitHub Repo Spec Dashboard" },
+      { title: "SPEC DASH — AI-Native Repository Dashboard" },
       {
         name: "description",
         content:
-          "SANDBOX is a brutalist R&D dashboard that indexes a GitHub repo as a database: browse markdown specs, run AI summaries, and commit new records.",
+          "An ultra-fast, zero-cost control center for AI-native GitHub repositories, AGENTS.md operating specs, and prompt libraries.",
       },
-      { name: "author", content: "SANDBOX" },
-      { property: "og:title", content: "SANDBOX — GitHub Repo Spec Dashboard" },
+      { name: "application-name", content: "SPEC DASH" },
+      { name: "author", content: "SPEC DASH" },
+      { property: "og:title", content: "SPEC DASH — AI-Native Repository Dashboard" },
       {
         property: "og:description",
         content:
-          "Index any GitHub repo as a live spec database: terminal-style data grid, markdown spec reader, AI analysis, and one-click Git commits.",
+          "An ultra-fast, zero-cost control center for AI-native GitHub repositories, AGENTS.md specs, and prompt libraries.",
       },
-      { property: "og:site_name", content: "SANDBOX" },
+      { property: "og:site_name", content: "SPEC DASH" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {

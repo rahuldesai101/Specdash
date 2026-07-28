@@ -6,20 +6,24 @@ import { KIND_META, parseChangelog, plain, type ChangeKind } from "@/lib/changel
 export const Route = createFileRoute("/changelog")({
   head: () => ({
     meta: [
-      { title: "SANDBOX // CHANGELOG_TIMELINE" },
+      { title: "📜 Changelog — SPEC DASH" },
       {
         name: "description",
         content:
-          "Release timeline for the SANDBOX repo database interface, parsed live from the repository root CHANGELOG.md.",
+          "Release timeline for SPEC DASH, parsed live from the repository root CHANGELOG.md.",
       },
-      { property: "og:title", content: "SANDBOX // CHANGELOG_TIMELINE" },
+      { property: "og:title", content: "📜 Changelog — SPEC DASH" },
       {
         property: "og:description",
         content: "Keep-a-Changelog release timeline parsed straight from the repo root.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://specdash.lovable.app/changelog" },
+      { property: "og:image", content: "https://specdash.lovable.app/og-preview.png" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: "https://specdash.lovable.app/og-preview.png" },
     ],
+    links: [{ rel: "canonical", href: "https://specdash.lovable.app/changelog" }],
   }),
   component: ChangelogPage,
 });
@@ -65,7 +69,7 @@ function ChangelogPage() {
             ← DB
           </Link>
           <h1 className="text-[12px] font-bold tracking-wider sm:text-[13px]">
-            SANDBOX <span className="text-[#333]">//</span>{" "}
+            ⚡ SPEC DASH <span className="text-[#333]">//</span>{" "}
             <span className="text-[#00ff66]">CHANGELOG_TIMELINE</span>
           </h1>
           <span className="ml-auto truncate text-[10px] uppercase tracking-widest text-[#666]">

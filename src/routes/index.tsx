@@ -26,23 +26,30 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "SANDBOX // GITHUB_DB_INTERFACE_v1.0" },
+      { title: "SPEC DASH — AI-Native Repository Dashboard" },
       {
         name: "description",
         content:
-          "Brutalist repo indexer: dynamic markdown tree discovery, PAT auth, ETag caching and raw CDN spec reads.",
+          "An ultra-fast, zero-cost control center for AI-native GitHub repositories, AGENTS.md operating specs, and prompt libraries.",
       },
-      { property: "og:title", content: "SANDBOX // GITHUB_DB_INTERFACE_v1.0" },
+      { property: "og:title", content: "SPEC DASH — AI-Native Repository Dashboard" },
       {
         property: "og:description",
-        content: "GitHub-as-a-DB indexer with ETag caching and raw CDN pipeline.",
+        content:
+          "An ultra-fast, zero-cost control center for AI-native GitHub repositories, AGENTS.md specs, and prompt libraries.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://specdash.lovable.app/" },
+      { property: "og:image", content: "https://specdash.lovable.app/og-preview.png" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: "https://specdash.lovable.app/og-preview.png" },
     ],
+    links: [{ rel: "canonical", href: "https://specdash.lovable.app/" }],
   }),
   component: Index,
 });
+
+const BASE_TITLE = "SPEC DASH — AI-Native Repository Dashboard";
 
 type FileRow = { path: string; name: string; sha: string; size: number; dir: string };
 
@@ -134,6 +141,24 @@ function Index() {
     setNow(new Date().toISOString());
     return () => clearInterval(t);
   }, []);
+
+  // ASCII startup banner
+  useEffect(() => {
+    console.log("%c[ SPEC_DASH // GITHUB_AS_A_DATABASE ]", "color:#00ff66;font-weight:bold");
+  }, []);
+
+  // dynamic browser tab title
+  useEffect(() => {
+    if (spec?.path) {
+      document.title = `📄 ${spec.path.split("/").pop()} — SPEC DASH`;
+    } else if (activeDir) {
+      document.title = `📁 ${activeDir} — SPEC DASH`;
+    } else if (owner && repo) {
+      document.title = `${owner}/${repo} — SPEC DASH`;
+    } else {
+      document.title = BASE_TITLE;
+    }
+  }, [spec?.path, activeDir, owner, repo]);
 
   const sync = useCallback(async () => {
     if (!owner || !repo) return;
@@ -439,8 +464,8 @@ function Index() {
                 {railOpen ? "◧" : "▢"}
               </button>
               <h1 className="truncate text-[12px] font-bold tracking-wider sm:text-[13px]">
-                SANDBOX <span className="text-[#333]">//</span>{" "}
-                <span className="text-[#00ff66]">GITHUB_DB_INTERFACE_v1.0</span>
+                ⚡ SPEC DASH <span className="text-[#333]">//</span>{" "}
+                <span className="text-[#00ff66]">GITHUB_AS_A_DATABASE</span>
               </h1>
               <span className="hidden sm:flex items-center gap-2 text-[10px] uppercase tracking-widest text-[#888]">
                 <span className="inline-block h-2 w-2 shrink-0 animate-pulse" style={{ backgroundColor: dot }} />
