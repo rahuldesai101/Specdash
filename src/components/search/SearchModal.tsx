@@ -29,17 +29,19 @@ export function SearchModal({
   onOpen,
   onRunSnippet,
   repoLabel = "repo",
+  initialPack = false,
 }: {
   state: IndexState;
   onClose: () => void;
   onOpen: (path: string) => void;
   onRunSnippet?: (code: string, lang: string, path: string) => void;
   repoLabel?: string;
+  initialPack?: boolean;
 }) {
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [cursor, setCursor] = useState(0);
-  const [packMode, setPackMode] = useState(false);
+  const [packMode, setPackMode] = useState(initialPack);
   const [picked, setPicked] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
