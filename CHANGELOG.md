@@ -5,6 +5,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Security
+- **URL safety perimeter** — new `src/lib/url-safety.ts` centralises scheme allow-listing (`http`, `https`, `mailto`, `tel`); markdown links are now sanitised through `safeHref` and images through `safeImageSrc`, blocking `javascript:`/`data:` payloads embedded in untrusted specs.
+- **PAT exfiltration guard** — the GitHub token is only ever attached to `raw.githubusercontent.com` requests; any other image host renders without credentials.
+- **CLI Bridge lockdown** — the local daemon URL is validated as loopback-only on read, write, and every request, preventing a crafted bridge URL from shipping repo contents to a remote host.
+- **API Sandbox protocol check** — requests are restricted to `http(s)` endpoints.
+
+### Changed
+- **Cache hygiene** — GitHub ETag cache entries expire after 24h and prune themselves under storage pressure; the Mermaid SVG cache is now a bounded LRU (40 entries) instead of an unbounded map.
+- **Dependency + dead-code sweep** — removed 37 unreferenced UI component files and 30 unused npm packages (Radix primitives, `recharts`, `zod`, `date-fns`, `react-hook-form`, `cmdk`, `vaul`, others), shrinking the install and client graph.
+- **Search responsiveness** — the full-text query now runs on a deferred value so typing stays smooth on large repositories.
+
 ### Added
 - **🔌 Local Workspace CLI Bridge** — optional `localhost:4321` daemon connection (`Alt+L`) that streams live `git status`/`git diff` into the dashboard, runs build/test/lint commands parsed from `AGENTS.md`, and writes generated Infinity Loop artifacts straight to disk. A `[ 🔌 LOCAL SYNC ]` header pill reports link state.
 - **🎯 Text-Selection Action Bar** — highlight any text in a spec to get a floating toolbar: `⚡ Explain` (AI Playground), `🎒 Add to Pack` (token-budgeted context pack), `🌐 Test in External AI`, and `♾️ Refine` (seeds the Infinity Loop goal).
