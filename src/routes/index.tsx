@@ -32,6 +32,7 @@ import { detectRootSpecs, parseAgentSpec, type RootSpec } from "@/lib/agents-spe
 import { AgentOsBanner, AgentOsPanel } from "@/components/agents/AgentOsPanel";
 import { DriftInspector } from "@/components/drift/DriftInspector";
 import { SddCompilerPanel } from "@/components/sdd/SddCompilerPanel";
+import { InfinityLoopModal } from "@/components/infinity/InfinityLoopModal";
 import { isSpecifyPath } from "@/lib/sdd-compiler";
 import { isRuleSource } from "@/lib/spec-drift";
 import { fmtTokens, tokensFromBytes, tokensOf } from "@/lib/context-pack";
@@ -117,6 +118,7 @@ function Index() {
   const [seed, setSeed] = useState<{ text: string; nonce: number } | null>(null);
   const [driftOpen, setDriftOpen] = useState(false);
   const [sddOpen, setSddOpen] = useState(false);
+  const [loopOpen, setLoopOpen] = useState(false);
 
   useEffect(() => {
     const dl = parseDeepLink(window.location.search);
@@ -155,6 +157,7 @@ function Index() {
         setAgentOpen(false);
         setDriftOpen(false);
         setSddOpen(false);
+        setLoopOpen(false);
         setAiOpen(false);
         setPatOpen(false);
         setNewOpen(false);
