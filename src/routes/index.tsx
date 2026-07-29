@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   dirOf,
@@ -15,7 +15,8 @@ import { loadAiConfig, saveAiConfig, type AiConfig } from "@/lib/ai-engine";
 import { AiConfigDrawer } from "@/components/ai/AiConfigDrawer";
 import { SearchModal } from "@/components/search/SearchModal";
 import { useSearchIndex } from "@/hooks/use-search-index";
-import { installHotkeys, onHotkey } from "@/lib/hotkeys";
+import { emitHotkey, installHotkeys, onHotkey } from "@/lib/hotkeys";
+import { HeaderMenu, type MenuItem } from "@/components/layout/HeaderMenu";
 import { SpecAssistant } from "@/components/ai/SpecAssistant";
 import { MarkdownView } from "@/components/md/MarkdownView";
 import { SkillPills } from "@/components/md/SkillPills";
@@ -119,6 +120,8 @@ function Index() {
   const [driftOpen, setDriftOpen] = useState(false);
   const [sddOpen, setSddOpen] = useState(false);
   const [loopOpen, setLoopOpen] = useState(false);
+  const [packOpen, setPackOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const dl = parseDeepLink(window.location.search);
@@ -391,6 +394,70 @@ function Index() {
   const btn =
     "min-h-11 sm:min-h-9 inline-flex items-center justify-center border border-[#333] px-3 text-[10px] uppercase tracking-widest hover:border-[#00ff66] hover:text-[#00ff66]";
 
+  const needSpec = (fn: () => void) => () => {
+    if (!spec) {
+      toast.error("OPEN_A_SPEC_FIRST");
+      return;
+    }
+    fn();
+  };
+
+  const workbenchItems: MenuItem[] = [
+    {
+      icon: "🤖",
+      label: `${rootSpecs[0]?.name ?? "AGENTS.md"} RULES`,
+      accent: "#ff5500",
+      disabled: rootSpecs.length === 0,
+      onSelect: () => setAgentOpen(true),
+    },
+    { icon: "⚡", label: "AI PLAYGROUND", keys: "ALT+P", onSelect: needSpec(() => emitHotkey("specPlayground")) },
+    { icon: "🌐", label: "EXTERNAL DEEP-LINK STUDIO", keys: "ALT+E", onSelect: needSpec(() => emitHotkey("specExternalAi")) },
+    { icon: "📊", label: "VISUAL WORKFLOW DIAGRAM", keys: "ALT+D", onSelect: needSpec(() => emitHotkey("specToggleDiagram")) },
+    {
+      icon: "🎒",
+      label: "PACK CONTEXT WINDOW",
+      accent: "#00ff66",
+      onSelect: () => {
+        setPackOpen(true);
+        setCmdOpen(true);
+      },
+    },
+  ];
+
+  const buildItems: MenuItem[] = [
+    {
+      icon: "♾️",
+      label: "RUN INFINITY LOOP",
+      accent: "#c07cff",
+      disabled: !owner,
+      onSelect: () => setLoopOpen(true),
+    },
+    { icon: "⚡", label: "COMPILE SPEC TO CODE", disabled: !owner, onSelect: () => setSddOpen(true) },
+    { icon: "⚠️", label: "CHECK SPEC DRIFT / ADRs", accent: "#ff5500", disabled: !owner, onSelect: () => setDriftOpen(true) },
+    { icon: "+", label: "NEW SPEC", accent: "#00ff66", disabled: !owner, onSelect: () => setNewOpen(true) },
+  ];
+
+  const moreItems: MenuItem[] = [
+    { icon: "📖", label: "READ ME / HOW IT WORKS", onSelect: () => setReadmeOpen(true) },
+    { icon: "⌨", label: "KEYBOARD SHORTCUTS", keys: "CTRL+/", onSelect: () => setKeysOpen(true) },
+    {
+      icon: aiCfg ? "🟢" : "⚡",
+      label: aiCfg ? `AI ENGINE: ${aiCfg.provider.toUpperCase()}` : "AI ENGINE CONFIG",
+      accent: aiCfg ? "#00ff66" : undefined,
+      onSelect: () => setAiOpen(true),
+    },
+    {
+      icon: hasPat ? "🟢" : "🔴",
+      label: hasPat ? "GITHUB PAT: CONNECTED" : "GITHUB PAT: NOT SET",
+      accent: hasPat ? "#00ff66" : "#ff5500",
+      onSelect: () => setPatOpen(true),
+    },
+    { icon: "⇄", label: "SWITCH REPOSITORY", onSelect: () => setCfgOpen(true) },
+    { icon: "🐙", label: "OPEN FILE ON GITHUB", keys: "ALT+G", disabled: !spec, onSelect: needSpec(() => emitHotkey("specOpenGithub")) },
+    { icon: "📋", label: "COPY RAW CONTENT", keys: "ALT+C", disabled: !spec?.text, onSelect: needSpec(() => emitHotkey("specCopyRaw")) },
+    { icon: "📜", label: "CHANGELOG TIMELINE", onSelect: () => navigate({ to: "/changelog" }) },
+  ];
+
   const rail = (
     <div className="flex h-full flex-col text-[11px]">
       <div className="border-b border-hard px-3 py-3">
@@ -636,13 +703,15 @@ function Index() {
     <div className="min-h-screen bg-black text-white flex flex-col">
       {/* TOP BAR */}
       <header className="sticky top-0 z-30 border-b border-hard bg-black">
-        <div className="mx-auto w-full max-w-[2200px] px-3 py-2 sm:px-4 sm:py-3 2xl:px-10">
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+        <div className="mx-auto w-full max-w-[2200px] px-3 py-2 sm:px-4 2xl:px-10">
+          {/* ZONE 1 / 2 / 3 */}
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,34rem)_auto] lg:gap-4">
+            {/* ZONE 1 — brand + repo context */}
             <div className="flex min-w-0 items-center gap-2">
               <button
                 onClick={() => setMobileNav(true)}
                 aria-label="Open navigation"
-                className="lg:hidden min-h-11 min-w-11 grid place-items-center border border-hard text-[#00ff66]"
+                className="lg:hidden min-h-9 min-w-9 grid shrink-0 place-items-center border border-hard text-[#00ff66]"
               >
                 ☰
               </button>
@@ -650,120 +719,118 @@ function Index() {
                 onClick={() => setRailOpen((v) => !v)}
                 aria-label="Toggle left rail"
                 title="Toggle left rail  [  ]"
-                className="hidden lg:grid min-h-9 min-w-9 place-items-center border border-hard text-[#666] hover:text-[#00ff66]"
+                className="hidden lg:grid min-h-8 min-w-8 shrink-0 place-items-center border border-hard text-[#666] hover:text-[#00ff66]"
               >
                 {railOpen ? "◧" : "▢"}
               </button>
-              <h1 className="truncate text-[12px] font-bold tracking-wider sm:text-[13px]">
-                ⚡ SPEC DASH <span className="text-[#333]">//</span>{" "}
-                <span className="text-[#00ff66]">GITHUB_AS_A_DATABASE</span>
+              <h1 className="shrink-0 text-[12px] font-bold tracking-wider sm:text-[13px]">
+                ⚡ <span className="hidden sm:inline">SPEC DASH</span>
               </h1>
-              <span className="hidden sm:flex items-center gap-2 text-[10px] uppercase tracking-widest text-[#888]">
-                <span className="inline-block h-2 w-2 shrink-0 animate-pulse" style={{ backgroundColor: dot }} />
-                {status}
-              </span>
+              <span className="hidden sm:inline text-[#222]">|</span>
+              <button
+                onClick={() => setCfgOpen(true)}
+                title="Switch repository"
+                aria-label="Switch repository"
+                className="flex min-w-0 flex-1 items-center gap-1 border border-hard px-2 py-1 text-[10px] sm:max-w-[18rem] tracking-widest text-[#00ff66] hover:border-[#00ff66]"
+              >
+                <span className="shrink-0">🐙</span>
+                <span className="truncate">{owner ? `${owner}/${repo}` : "BIND_REPO"}</span>
+                <span className="shrink-0 text-[#444]">⇄</span>
+              </button>
+              <span
+                className="hidden xl:inline-block h-2 w-2 shrink-0 animate-pulse"
+                style={{ backgroundColor: dot }}
+                title={status}
+              />
             </div>
 
-            <div className="flex shrink-0 items-center gap-2 text-[10px] uppercase tracking-widest">
-              <button
-                onClick={() => setReadmeOpen(true)}
-                className={btn}
-                title="Read Me — how this app works"
-                aria-label="Read me — how this app works"
-              >
-                📖<span className="hidden md:inline ml-1">READ ME</span>
-              </button>
-              <button onClick={() => setCmdOpen(true)} className={btn} title="Search (Ctrl+K)" aria-label="Search specs (Ctrl+K)">
-                🔍<span className="hidden md:inline ml-1">SEARCH ⌘K</span>
-              </button>
-              {rootSpecs.length > 0 && (
-                <button
-                  onClick={() => setAgentOpen(true)}
-                  className={`${btn} border-[#ff5500] text-[#ff5500] hover:border-[#ff5500] hover:text-black hover:bg-[#ff5500]`}
-                  title="AI operating system directives detected in this repo"
-                  aria-label="Open AI operating system directives panel"
-                >
-                  🤖<span className="hidden md:inline ml-1">{rootSpecs[0].name.toUpperCase()}</span>
-                </button>
-              )}
-              <button
-                onClick={() => setDriftOpen(true)}
-                disabled={!owner}
-                className={`${btn} border-[#ff5500] text-[#ff5500] disabled:opacity-40`}
-                title="Spec Drift Inspector — compare recent commits against AGENTS.md / constitution.md / ADRs"
-                aria-label="Open spec drift inspector"
-              >
-                ⚠️<span className="hidden md:inline ml-1">DRIFT</span>
-              </button>
-              <button
-                onClick={() => setLoopOpen(true)}
-                disabled={!owner}
-                className={`${btn} border-[#c07cff] text-[#c07cff] hover:border-[#c07cff] hover:text-black hover:bg-[#c07cff] disabled:opacity-40`}
-                title="Infinity Loop — synthesize all project specs and self-improve"
-                aria-label="Open infinity loop self-improving spec engine"
-              >
-                ♾️<span className="hidden md:inline ml-1">INFINITY LOOP</span>
-              </button>
-              <button
-                onClick={() => setNewOpen(true)}
-                disabled={!owner}
-                className={`${btn} border-[#00ff66] text-[#00ff66] disabled:opacity-40`}
-                title="New spec"
-                aria-label="Create new spec"
-              >
-                +<span className="hidden md:inline ml-1">NEW SPEC</span>
-              </button>
-              <button
-                onClick={() => setAiOpen(true)}
-                className={btn}
-                style={{ borderColor: aiCfg ? "#00ff66" : "#333", color: aiCfg ? "#00ff66" : "#fff" }}
-                title={aiCfg ? `AI ACTIVE (${aiCfg.provider})` : "AI disabled"}
-                aria-label={aiCfg ? `AI engine config — active (${aiCfg.provider})` : "AI engine config — disabled"}
-              >
-                ⚡<span className="hidden md:inline ml-1">{aiCfg ? aiCfg.provider.toUpperCase() : "AI CFG"}</span>
-              </button>
-              <button
-                onClick={() => setPatOpen(true)}
-                className={btn}
-                style={{ borderColor: hasPat ? "#00ff66" : "#ff5500", color: hasPat ? "#00ff66" : "#ff5500" }}
-                title={hasPat ? "PAT connected" : "No PAT"}
-                aria-label={hasPat ? "GitHub token settings — connected" : "GitHub token settings — not connected"}
-              >
-                {hasPat ? "🟢" : "🔴"}
-                <span className="hidden md:inline ml-1">PAT</span>
-              </button>
+            {/* ZONE 2 — command center search */}
+            <button
+              onClick={() => setCmdOpen(true)}
+              aria-label="Search specs and code (Ctrl+K)"
+              title={`Search specs & code · ~${fmtTokens(totalTokens)} tokens indexed`}
+              className="group order-last col-span-2 flex min-w-0 items-center gap-2 border border-hard px-3 py-1.5 text-left text-[11px] text-[#666] hover:border-[#00ff66] hover:text-[#ccc] lg:order-none lg:col-span-1"
+            >
+              <span className="shrink-0">🔍</span>
+              <span className="min-w-0 flex-1 truncate">Search specs &amp; code…</span>
+              <span className="hidden shrink-0 border border-[#222] px-1 text-[9px] tracking-widest text-[#00ff66] group-hover:hidden sm:inline">
+                CTRL+K
+              </span>
+              <span className="hidden shrink-0 border border-[#222] px-1 text-[9px] tracking-widest text-[#ff5500] group-hover:sm:inline">
+                🎒 ~{fmtTokens(totalTokens)} TOK
+              </span>
+            </button>
+
+            {/* ZONE 3 — collapsed action menus */}
+            <div className="flex shrink-0 items-center gap-1.5 text-[10px] uppercase tracking-widest sm:gap-2">
+              <HeaderMenu
+                icon="⚡"
+                label="WORKBENCH"
+                ariaLabel="Workbench tools menu"
+                items={workbenchItems}
+              />
+              <HeaderMenu
+                icon="♾️"
+                label="BUILD"
+                accent="#c07cff"
+                ariaLabel="Infinity and build tools menu"
+                items={buildItems}
+              />
+              <span className="hidden items-center gap-2 lg:flex">
               <button
                 onClick={() => setKeysOpen(true)}
-                className={`${btn} hidden lg:inline-flex`}
-                title="Shortcuts (Ctrl+/)"
-                aria-label="Keyboard shortcuts (Ctrl+/)"
+                className={`${btn}`}
+                title="Keyboard shortcuts (Ctrl+/)"
+                aria-label="Keyboard shortcuts"
               >
                 ⌨
               </button>
-              <Link to="/changelog" className={btn} title="Changelog timeline" aria-label="Changelog timeline">
-                📜<span className="hidden md:inline ml-1">CHANGELOG</span>
-              </Link>
+              <button
+                onClick={() => spec && window.open(ghBlobUrl(spec.path, headSha ?? branch), "_blank", "noopener,noreferrer")}
+                disabled={!spec}
+                className={`${btn} disabled:opacity-30`}
+                title="Open current file on GitHub (Alt+G)"
+                aria-label="Open current file on GitHub"
+              >
+                🐙
+              </button>
+              <button
+                onClick={() => spec?.text && copy(spec.text, "RAW_MARKDOWN_COPIED")}
+                disabled={!spec?.text}
+                className={`${btn} disabled:opacity-30`}
+                title="Copy raw content (Alt+C)"
+                aria-label="Copy raw content"
+              >
+                📋
+              </button>
+              </span>
+              <HeaderMenu
+                icon="•••"
+                ariaLabel="More actions"
+                accent="#888"
+                items={moreItems}
+              />
             </div>
           </div>
 
-          {/* BREADCRUMBS */}
-          <nav aria-label="Breadcrumb" className="mt-2 flex flex-wrap items-center gap-1 text-[10px] uppercase tracking-widest">
-            <Crumb label={owner || "___"} onClick={() => setCfgOpen(true)} />
-            <span className="text-[#333]">/</span>
-            <Crumb label={repo || "___"} onClick={() => setCfgOpen(true)} />
-            {activeDir && (
-              <>
-                <span className="text-[#333]">/</span>
-                <Crumb label={`📁 ${activeDir}`} onClick={() => setSpec(null)} />
-              </>
+          {/* SLIM STATUS SUB-HEADER */}
+          <div className="mt-1.5 flex h-7 items-center gap-1.5 overflow-x-auto text-[9px] uppercase tracking-widest whitespace-nowrap">
+            <Pill tone={status === "SYNCED" ? "#00ff66" : status === "ERROR" ? "#ff5500" : "#ffaa00"}>
+              ● DB_{status}
+            </Pill>
+            {rootSpecs[0] && (
+              <Pill tone="#ff5500">📄 {rootSpecs[0].name}: ACTIVE</Pill>
             )}
-            {spec && (
-              <>
-                <span className="text-[#333]">/</span>
-                <span className="max-w-[45vw] truncate text-[#00ff66]">📄 {spec.path.split("/").pop()}</span>
-              </>
+            {ruleFiles.some((f) => /constitution/i.test(f)) && <Pill tone="#c07cff">📜 CONSTITUTION: VERIFIED</Pill>}
+            <Pill tone="#00ff66">🎒 CONTEXT: ~{fmtTokens(totalTokens)} TOK</Pill>
+            <Pill tone="#666">⑂ {branch}</Pill>
+            {spec && <Pill tone="#00ff66">📄 {spec.path.split("/").pop()}</Pill>}
+            {!spec && activeDir && (
+              <button onClick={() => setSpec(null)} className="shrink-0">
+                <Pill tone="#888">📁 {activeDir}</Pill>
+              </button>
             )}
-          </nav>
+          </div>
         </div>
       </header>
 
@@ -1003,7 +1070,11 @@ function Index() {
         <SearchModal
           state={searchState}
           repoLabel={`${owner}/${repo}`}
-          onClose={() => setCmdOpen(false)}
+          initialPack={packOpen}
+          onClose={() => {
+            setCmdOpen(false);
+            setPackOpen(false);
+          }}
           onOpen={openSpec}
           onRunSnippet={(code, lang, path) => {
             if (path !== spec?.path) openSpec(path);
@@ -1055,22 +1126,23 @@ function Index() {
   );
 }
 
-function Crumb({ label, onClick }: { label: string; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="max-w-[35vw] truncate border border-hard px-2 py-1 text-[#888] hover:border-[#00ff66] hover:text-[#00ff66]"
-    >
-      {label}
-    </button>
-  );
-}
 
 function Th({ children }: { children: React.ReactNode }) {
   return <th className="border border-hard px-3 py-2 text-left font-normal">{children}</th>;
 }
 function Td({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return <td className={`border border-hard px-3 py-2 ${className}`}>{children}</td>;
+}
+
+function Pill({ tone, children }: { tone: string; children: React.ReactNode }) {
+  return (
+    <span
+      className="inline-flex shrink-0 items-center border px-1.5 py-0.5"
+      style={{ borderColor: `${tone}44`, color: tone }}
+    >
+      {children}
+    </span>
+  );
 }
 
 function Stat({ label, value, accent }: { label: string; value: string | number; accent?: string }) {

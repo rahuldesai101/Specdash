@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Global keyboard shortcut engine (Ctrl+K, `?`, G-chord navigation, Alt+P/E/D/V/C/G, Ctrl+Enter) with a terminal-styled cheat-sheet overlay.
 
 ### Changed
+- **Header restructured into a compact 3-zone command shell:** brand + 1-click repo switcher pill (left), consolidated `Ctrl+K` search bar with a live context-token badge (center), and collapsed dropdown command centers (right) — `⚡ Workbench` (AGENTS rules, AI Playground `Alt+P`, External Deep-Link Studio `Alt+E`, Visual Workflow Diagram `Alt+D`, Pack Context Window), `♾️ Build` (Infinity Loop, Compile Spec to Code, Spec Drift/ADRs, New Spec), plus a `•••` overflow drawer. Added a slim 28px sticky status sub-header with metadata pills (DB status, AGENTS.md active, constitution verified, context tokens, branch, active file) and responsive collapse of utility icons on small screens.
 - README / How It Works center rewritten to document the new search, snippet and hotkey systems.
 ### Added
 - **Dataset Inspector:** `.csv`, `.tsv`, `.jsonl`/`.ndjson`/`.eval`, and array-shaped `.json` files in data/eval/benchmark dirs are indexed and open in a virtual data grid — global row search, click-to-sort column headers, `VIEWING x-y OF n ROWS` badge, pagination with rows-per-page, `📥 EXPORT CSV` / `📋 COPY JSON`, and auto prompt/completion pair cards with eval score badges.
