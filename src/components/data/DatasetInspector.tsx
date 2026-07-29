@@ -187,7 +187,7 @@ export function DatasetInspector({ path, text }: { path: string; text: string })
             </thead>
             <tbody>
               {slice.map((r, i) => (
-                <tr key={start + i} className="border-b border-[var(--t-surface-2)] align-top hover:bg-[#0b0b0b]">
+                <tr key={start + i} className="border-b border-[var(--t-surface-2)] align-top hover:bg-[var(--t-surface-2)]">
                   <td className="px-2 py-1 text-[10px] text-[var(--t-line)]">{start + i + 1}</td>
                   {parsed.columns.map((c) => (
                     <td key={c} className="max-w-[380px] border-l border-[var(--t-surface-2)] px-2 py-1 text-[var(--t-fg-2)]">

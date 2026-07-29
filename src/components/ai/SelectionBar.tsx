@@ -158,7 +158,7 @@ function BarBtn({
   return (
     <button
       onClick={onClick}
-      className="whitespace-nowrap px-3 py-2 hover:bg-[#0f0f0f]"
+      className="whitespace-nowrap px-3 py-2 hover:bg-[var(--t-surface-2)]"
       style={{ color }}
     >
       {children}

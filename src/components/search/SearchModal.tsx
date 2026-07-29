@@ -293,7 +293,7 @@ export function SearchModal({
                   <div className="mt-1 truncate text-[11px] text-[var(--t-dim)]">
                     {segs.map((s, k) =>
                       s.hit ? (
-                        <mark key={k} className="bg-[#00ffcc] text-[var(--t-on-accent)]">
+                        <mark key={k} className="bg-[var(--t-mark)] text-[var(--t-on-accent)]">
                           {s.text}
                         </mark>
                       ) : (

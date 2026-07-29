@@ -12,7 +12,7 @@ export const KIND_META: Record<ChangeKind, { icon: string; color: string }> = {
   Added: { icon: "🟢", color: "var(--t-green)" },
   Changed: { icon: "🟡", color: "var(--t-amber)" },
   Fixed: { icon: "🔴", color: "var(--t-orange)" },
-  Security: { icon: "🔒", color: "#00bfff" },
+  Security: { icon: "🔒", color: "var(--t-cyan)" },
   Removed: { icon: "⚪", color: "var(--t-dim)" },
   Deprecated: { icon: "⚪", color: "var(--t-dim)" },
   Other: { icon: "▪", color: "var(--t-dim)" },
