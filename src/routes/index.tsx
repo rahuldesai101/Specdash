@@ -739,7 +739,10 @@ function Index() {
           <div className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-widest">
             {spec.text && isSpecifyPath(spec.path) && (
               <button
-                onClick={() => setSddOpen(true)}
+                onClick={() => {
+                  setSddDoc({ path: spec.path, text: spec.text as string });
+                  setSddOpen(true);
+                }}
                 className="min-h-11 sm:min-h-9 inline-flex items-center border border-[#00ff66] bg-[#00ff66] px-3 text-black"
                 title="Compile this spec into tasks.md, test skeletons and agent prompt chains"
               >
