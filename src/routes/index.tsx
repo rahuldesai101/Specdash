@@ -103,6 +103,7 @@ function Index() {
   const [hasPat, setHasPat] = useState(false);
   const [spec, setSpec] = useState<{ path: string; text: string | null; err?: string } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [rawCopied, setRawCopied] = useState(false);
   const [now, setNow] = useState("");
   const [aiCfg, setAiCfg] = useState<AiConfig | null>(null);
   const [aiOpen, setAiOpen] = useState(false);
