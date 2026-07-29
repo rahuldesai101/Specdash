@@ -32,6 +32,7 @@ import { detectRootSpecs, parseAgentSpec, type RootSpec } from "@/lib/agents-spe
 import { AgentOsBanner, AgentOsPanel } from "@/components/agents/AgentOsPanel";
 import { DriftInspector } from "@/components/drift/DriftInspector";
 import { SddCompilerPanel } from "@/components/sdd/SddCompilerPanel";
+import { InfinityLoopModal } from "@/components/infinity/InfinityLoopModal";
 import { isSpecifyPath } from "@/lib/sdd-compiler";
 import { isRuleSource } from "@/lib/spec-drift";
 import { fmtTokens, tokensFromBytes, tokensOf } from "@/lib/context-pack";
@@ -117,6 +118,7 @@ function Index() {
   const [seed, setSeed] = useState<{ text: string; nonce: number } | null>(null);
   const [driftOpen, setDriftOpen] = useState(false);
   const [sddOpen, setSddOpen] = useState(false);
+  const [loopOpen, setLoopOpen] = useState(false);
 
   useEffect(() => {
     const dl = parseDeepLink(window.location.search);
@@ -155,6 +157,7 @@ function Index() {
         setAgentOpen(false);
         setDriftOpen(false);
         setSddOpen(false);
+        setLoopOpen(false);
         setAiOpen(false);
         setPatOpen(false);
         setNewOpen(false);
@@ -323,6 +326,14 @@ function Index() {
     [rootSpecs, files],
   );
   const totalTokens = useMemo(() => files.reduce((n, f) => n + tokensFromBytes(f.size), 0), [files]);
+  // Infinity Loop scans .md records plus root-level standards (.cursorrules, llms.txt…)
+  const loopFiles = useMemo(() => {
+    const seen = new Set(files.map((f) => f.path));
+    return [
+      ...files.map((f) => ({ path: f.path, size: f.size })),
+      ...rootSpecs.filter((s) => !seen.has(s.path)).map((s) => ({ path: s.path, size: 0 })),
+    ];
+  }, [files, rootSpecs]);
 
   const dot =
     status === "SYNCED" ? "#00ff66" : status === "SYNCING" ? "#ffaa00" : status === "ERROR" ? "#ff5500" : "#666";
@@ -685,6 +696,15 @@ function Index() {
                 ⚠️<span className="hidden md:inline ml-1">DRIFT</span>
               </button>
               <button
+                onClick={() => setLoopOpen(true)}
+                disabled={!owner}
+                className={`${btn} border-[#c07cff] text-[#c07cff] hover:border-[#c07cff] hover:text-black hover:bg-[#c07cff] disabled:opacity-40`}
+                title="Infinity Loop — synthesize all project specs and self-improve"
+                aria-label="Open infinity loop self-improving spec engine"
+              >
+                ♾️<span className="hidden md:inline ml-1">INFINITY LOOP</span>
+              </button>
+              <button
                 onClick={() => setNewOpen(true)}
                 disabled={!owner}
                 className={`${btn} border-[#00ff66] text-[#00ff66] disabled:opacity-40`}
@@ -1008,6 +1028,17 @@ function Index() {
 
       {sddOpen && spec?.text && (
         <SddCompilerPanel path={spec.path} text={spec.text} onClose={() => setSddOpen(false)} />
+      )}
+
+      {loopOpen && owner && (
+        <InfinityLoopModal
+          owner={owner}
+          repo={repo}
+          branch={branch}
+          files={loopFiles}
+          cfg={aiCfg}
+          onClose={() => setLoopOpen(false)}
+        />
       )}
 
       {newOpen && owner && (

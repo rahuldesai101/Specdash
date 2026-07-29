@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- **♾️ Infinity Loop (self-improving spec engine):** new header entry point that aggregates every system-defining document in the repo (`constitution.md`, `AGENTS.md`/`.cursorrules`/`agents.txt`, `llms.txt`/`llms-full.txt`, `memory.md`/`history.md`/ADRs) into one weighted knowledge base, runs a 4-stage SDD chain (`/constitution+/agents` guardrail audit → `/specify` → `/plan` → `/tasks`), and dispatches results via a 1-click execution matrix — run any atomic task in the AI Playground, hand the full loop to ChatGPT/Claude/Gemini/Kimi, or commit `.specify/**` artifacts straight back to GitHub to feed the next iteration.
 - **AI Context Tree:** directory rail and record table now show byte size plus estimated token count (`~1.2k tokens`) per file, per directory, and per repository.
 - **Pack Context Window:** `Ctrl+K` search gains a `[ 🎒 PACK CONTEXT WINDOW ]` mode — multi-select specs, live `tokens / 200,000 (x%)` budget meter, and 1-click copy of the packed prompt for Claude Code, Cursor, or ChatGPT.
 - **Spec Drift Inspector:** extracts non-negotiable rules from `AGENTS.md`, `constitution.md`, `.cursorrules` and `/docs/adr/*.md`, cross-references the last 10 commits' changed files, and flags `⚠️ Spec Drift Warning` violations with rule text, commit and author.
