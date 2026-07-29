@@ -34,6 +34,10 @@ import { AgentOsBanner, AgentOsPanel } from "@/components/agents/AgentOsPanel";
 import { DriftInspector } from "@/components/drift/DriftInspector";
 import { SddCompilerPanel } from "@/components/sdd/SddCompilerPanel";
 import { InfinityLoopModal } from "@/components/infinity/InfinityLoopModal";
+import { ApiSandbox } from "@/components/devtools/ApiSandbox";
+import { EnvGuard } from "@/components/devtools/EnvGuard";
+import { DependencyRadar } from "@/components/devtools/DependencyRadar";
+import { ReleaseStudio } from "@/components/devtools/ReleaseStudio";
 import { isSpecifyPath } from "@/lib/sdd-compiler";
 import { isRuleSource } from "@/lib/spec-drift";
 import { fmtTokens, tokensFromBytes, tokensOf } from "@/lib/context-pack";
@@ -121,6 +125,10 @@ function Index() {
   const [sddOpen, setSddOpen] = useState(false);
   const [loopOpen, setLoopOpen] = useState(false);
   const [packOpen, setPackOpen] = useState(false);
+  const [apiOpen, setApiOpen] = useState(false);
+  const [envOpen, setEnvOpen] = useState(false);
+  const [depsOpen, setDepsOpen] = useState(false);
+  const [relOpen, setRelOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -165,6 +173,10 @@ function Index() {
         setPatOpen(false);
         setNewOpen(false);
         setMobileNav(false);
+        setApiOpen(false);
+        setEnvOpen(false);
+        setDepsOpen(false);
+        setRelOpen(false);
         setReadmeOpen(false);
         setSpec(null);
       }),
@@ -435,6 +447,25 @@ function Index() {
     { icon: "⚡", label: "COMPILE SPEC TO CODE", disabled: !owner, onSelect: () => setSddOpen(true) },
     { icon: "⚠️", label: "CHECK SPEC DRIFT / ADRs", accent: "#ff5500", disabled: !owner, onSelect: () => setDriftOpen(true) },
     { icon: "+", label: "NEW SPEC", accent: "#00ff66", disabled: !owner, onSelect: () => setNewOpen(true) },
+  ];
+
+  const devToolItems: MenuItem[] = [
+    { icon: "🌐", label: "API SANDBOX", accent: "#66b3ff", onSelect: () => setApiOpen(true) },
+    {
+      icon: "🔐",
+      label: ".ENV & SECRET GUARD",
+      accent: "#ff5500",
+      disabled: !owner,
+      onSelect: () => setEnvOpen(true),
+    },
+    { icon: "📦", label: "DEPENDENCY RADAR", disabled: !owner, onSelect: () => setDepsOpen(true) },
+    {
+      icon: "📜",
+      label: "RELEASE CHANGELOG STUDIO",
+      accent: "#c07cff",
+      disabled: !owner,
+      onSelect: () => setRelOpen(true),
+    },
   ];
 
   const moreItems: MenuItem[] = [
@@ -776,6 +807,13 @@ function Index() {
                 ariaLabel="Infinity and build tools menu"
                 items={buildItems}
               />
+              <HeaderMenu
+                icon="🛠️"
+                label="DEV TOOLS"
+                accent="#66b3ff"
+                ariaLabel="Developer tools menu"
+                items={devToolItems}
+              />
               <span className="hidden items-center gap-2 lg:flex">
               <button
                 onClick={() => setKeysOpen(true)}
@@ -1110,6 +1148,37 @@ function Index() {
           cfg={aiCfg}
           onClose={() => setLoopOpen(false)}
         />
+      )}
+
+      {apiOpen && (
+        <ApiSandbox
+          owner={owner}
+          repo={repo}
+          branch={branch}
+          activeFile={spec}
+          onClose={() => setApiOpen(false)}
+        />
+      )}
+
+      {envOpen && owner && (
+        <EnvGuard
+          owner={owner}
+          repo={repo}
+          branch={branch}
+          onClose={() => setEnvOpen(false)}
+          onOpenFile={(p) => {
+            setEnvOpen(false);
+            openSpec(p);
+          }}
+        />
+      )}
+
+      {depsOpen && owner && (
+        <DependencyRadar owner={owner} repo={repo} branch={branch} onClose={() => setDepsOpen(false)} />
+      )}
+
+      {relOpen && owner && (
+        <ReleaseStudio owner={owner} repo={repo} branch={branch} onClose={() => setRelOpen(false)} />
       )}
 
       {newOpen && owner && (
