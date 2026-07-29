@@ -264,10 +264,9 @@ export function SearchModal({
                 data-index={i}
                 onMouseEnter={() => setCursor(i)}
                 onClick={() => activate(h)}
-                className="absolute left-0 top-0 block w-full border px-2 py-2 text-left"
+                className="absolute left-0 top-0 block w-full border px-2 pt-2 pb-3 text-left"
                 style={{
                   transform: `translateY(${row.start}px)`,
-                  marginBottom: 4,
                   borderColor: checked ? "#ff5500" : active ? "#00ff66" : "#1a1a1a",
                 }}
               >
