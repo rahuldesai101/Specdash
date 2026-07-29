@@ -265,13 +265,13 @@ export function SearchModal({
             return (
               <button
                 key={h.id}
-                ref={rows.measureElement}
                 data-index={i}
                 onMouseEnter={() => setCursor(i)}
                 onClick={() => activate(h)}
-                className="absolute left-0 top-0 block w-full border px-2 pt-2 pb-3 text-left"
+                className="absolute left-0 top-0 block w-full overflow-hidden border px-2 py-1.5 text-left"
                 style={{
                   transform: `translateY(${row.start}px)`,
+                  height: row.size - 4,
                   borderColor: checked ? "#ff5500" : active ? "#00ff66" : "#1a1a1a",
                 }}
               >
