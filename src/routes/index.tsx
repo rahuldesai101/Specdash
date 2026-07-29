@@ -895,9 +895,9 @@ function Index() {
       <header className="sticky top-0 z-30 border-b border-hard bg-black">
         <div className="mx-auto w-full max-w-[2200px] px-3 py-2 sm:px-4 2xl:px-10">
           {/* ZONE 1 / 2 / 3 */}
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,34rem)_auto] lg:gap-4">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 lg:flex lg:flex-nowrap lg:items-center lg:gap-3">
             {/* ZONE 1 — brand + repo context */}
-            <div className="flex min-w-0 items-center gap-2">
+            <div className="flex min-w-0 items-center gap-2 lg:flex-1">
               <button
                 onClick={() => setMobileNav(true)}
                 aria-label="Open navigation"
@@ -939,12 +939,12 @@ function Index() {
               onClick={() => setCmdOpen(true)}
               aria-label="Search specs and code (Ctrl+K)"
               title={`Search specs & code · ~${fmtTokens(totalTokens)} tokens indexed`}
-              className="group order-last col-span-2 flex min-w-0 items-center gap-2 border border-hard px-3 py-1.5 text-left text-[11px] text-[#666] hover:border-[#00ff66] hover:text-[#ccc] lg:order-none lg:col-span-1"
+              className="group order-last col-span-2 flex min-w-0 items-center gap-2 border border-hard px-3 py-1.5 text-left text-[11px] text-[#666] hover:border-[#00ff66] hover:text-[#ccc] lg:order-none lg:col-span-1 lg:w-[300px] lg:max-w-[300px] lg:shrink-0"
             >
               <span className="shrink-0">🔍</span>
               <span className="min-w-0 flex-1 truncate">Search specs &amp; code…</span>
-              <span className="hidden shrink-0 border border-[#222] px-1 text-[9px] tracking-widest text-[#00ff66] group-hover:hidden sm:inline">
-                CTRL+K
+              <span className="hidden shrink-0 border border-[#222] px-1 text-[9px] tracking-widest text-[#666] group-hover:hidden sm:inline">
+                CTRL K
               </span>
               <span className="hidden shrink-0 border border-[#222] px-1 text-[9px] tracking-widest text-[#ff5500] group-hover:sm:inline">
                 🎒 ~{fmtTokens(totalTokens)} TOK
