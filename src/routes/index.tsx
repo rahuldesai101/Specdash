@@ -731,7 +731,7 @@ function Index() {
                 onClick={() => setCfgOpen(true)}
                 title="Switch repository"
                 aria-label="Switch repository"
-                className="flex min-w-0 items-center gap-1 border border-hard px-2 py-1 text-[10px] tracking-widest text-[#00ff66] hover:border-[#00ff66]"
+                className="flex min-w-0 flex-1 items-center gap-1 border border-hard px-2 py-1 text-[10px] sm:max-w-[18rem] tracking-widest text-[#00ff66] hover:border-[#00ff66]"
               >
                 <span className="shrink-0">🐙</span>
                 <span className="truncate">{owner ? `${owner}/${repo}` : "BIND_REPO"}</span>
@@ -778,7 +778,7 @@ function Index() {
               />
               <button
                 onClick={() => setKeysOpen(true)}
-                className={`${btn} hidden sm:inline-flex`}
+                className={`${btn} hidden lg:inline-flex`}
                 title="Keyboard shortcuts (Ctrl+/)"
                 aria-label="Keyboard shortcuts"
               >
@@ -787,7 +787,7 @@ function Index() {
               <button
                 onClick={() => spec && window.open(ghBlobUrl(spec.path, headSha ?? branch), "_blank", "noopener,noreferrer")}
                 disabled={!spec}
-                className={`${btn} hidden md:inline-flex disabled:opacity-30`}
+                className={`${btn} hidden lg:inline-flex disabled:opacity-30`}
                 title="Open current file on GitHub (Alt+G)"
                 aria-label="Open current file on GitHub"
               >
@@ -796,7 +796,7 @@ function Index() {
               <button
                 onClick={() => spec?.text && copy(spec.text, "RAW_MARKDOWN_COPIED")}
                 disabled={!spec?.text}
-                className={`${btn} hidden md:inline-flex disabled:opacity-30`}
+                className={`${btn} hidden lg:inline-flex disabled:opacity-30`}
                 title="Copy raw content (Alt+C)"
                 aria-label="Copy raw content"
               >
