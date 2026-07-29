@@ -35,7 +35,6 @@ import { AgentOsBanner, AgentOsPanel } from "@/components/agents/AgentOsPanel";
 import { DriftInspector } from "@/components/drift/DriftInspector";
 import { SddCompilerPanel } from "@/components/sdd/SddCompilerPanel";
 import { InfinityLoopModal } from "@/components/infinity/InfinityLoopModal";
-import { ApiSandbox } from "@/components/devtools/ApiSandbox";
 import { BridgePanel, BridgePill } from "@/components/bridge/BridgePanel";
 import { useCliBridge } from "@/hooks/use-cli-bridge";
 import { SelectionBar, type SelectionPayload } from "@/components/ai/SelectionBar";
@@ -133,7 +132,6 @@ function Index() {
   const [mapOpen, setMapOpen] = useState(false);
   const [loopOpen, setLoopOpen] = useState(false);
   const [packOpen, setPackOpen] = useState(false);
-  const [apiOpen, setApiOpen] = useState(false);
   const [envOpen, setEnvOpen] = useState(false);
   const [depsOpen, setDepsOpen] = useState(false);
   const [relOpen, setRelOpen] = useState(false);
@@ -191,7 +189,6 @@ function Index() {
         setPatOpen(false);
         setNewOpen(false);
         setMobileNav(false);
-        setApiOpen(false);
         setEnvOpen(false);
         setDepsOpen(false);
         setRelOpen(false);
@@ -571,7 +568,24 @@ function Index() {
     },
   ];
 
-  const buildItems: MenuItem[] = [
+  const compilerItems: MenuItem[] = [
+    {
+      icon: "🎒",
+      label: "PACK CONTEXT BUNDLE",
+      accent: "#00ff66",
+      onSelect: () => {
+        setCmdTab("all");
+        setPackOpen(true);
+        setCmdOpen(true);
+      },
+    },
+    {
+      icon: "💻",
+      label: "EXPORT CLI PROMPT SNIPPETS",
+      accent: "#66b3ff",
+      disabled: !owner || (!spec?.text && !bestSpec),
+      onSelect: () => void openCompiler(),
+    },
     {
       icon: "♾️",
       label: "RUN INFINITY LOOP",
@@ -579,18 +593,17 @@ function Index() {
       disabled: !owner,
       onSelect: () => setLoopOpen(true),
     },
+    { icon: "⚠️", label: "CHECK SPEC DRIFT", accent: "#ff5500", disabled: !owner, onSelect: () => setDriftOpen(true) },
     {
-      icon: "⚡",
-      label: "COMPILE SPEC TO CODE",
-      disabled: !owner || (!spec?.text && !bestSpec),
-      onSelect: () => void openCompiler(),
+      icon: "🤖",
+      label: draftAgents ? "AGENTS.md & CONSTITUTION (DRAFT)" : "AGENTS.md & CONSTITUTION",
+      accent: "#ff5500",
+      onSelect: openDirectives,
     },
-    { icon: "⚠️", label: "CHECK SPEC DRIFT / ADRs", accent: "#ff5500", disabled: !owner, onSelect: () => setDriftOpen(true) },
     { icon: "+", label: "NEW SPEC", accent: "#00ff66", disabled: !owner, onSelect: () => setNewOpen(true) },
   ];
 
   const devToolItems: MenuItem[] = [
-    { icon: "🌐", label: "API SANDBOX", accent: "#66b3ff", onSelect: () => setApiOpen(true) },
     {
       icon: "🔌",
       label: bridge.state === "ACTIVE" ? "LOCAL SYNC: ACTIVE" : "LOCAL WORKSPACE CLI BRIDGE",
@@ -972,11 +985,11 @@ function Index() {
                 items={workbenchItems}
               />
               <HeaderMenu
-                icon="♾️"
-                label="BUILD"
+                icon="⚡"
+                label="SPEC COMPILER"
                 accent="#c07cff"
-                ariaLabel="Infinity and build tools menu"
-                items={buildItems}
+                ariaLabel="Spec compiler menu"
+                items={compilerItems}
               />
               <HeaderMenu
                 icon="🛠️"
@@ -1353,16 +1366,6 @@ function Index() {
         onAddToPack={selAddToPack}
         onRefine={selRefine}
       />
-
-      {apiOpen && (
-        <ApiSandbox
-          owner={owner}
-          repo={repo}
-          branch={branch}
-          activeFile={spec}
-          onClose={() => setApiOpen(false)}
-        />
-      )}
 
       {envOpen && owner && (
         <EnvGuard
