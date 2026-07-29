@@ -926,6 +926,18 @@ function Index() {
             )}
             {ruleFiles.some((f) => /constitution/i.test(f)) && <Pill tone="#c07cff">📜 CONSTITUTION: VERIFIED</Pill>}
             <Pill tone="#00ff66">🎒 CONTEXT: ~{fmtTokens(totalTokens)} TOK</Pill>
+            <BridgePill bridge={bridge} onOpen={() => setBridgeOpen(true)} />
+            {selPack.length > 0 && (
+              <button
+                onClick={() => {
+                  setCmdTab("all");
+                  setPackOpen(true);
+                  setCmdOpen(true);
+                }}
+              >
+                <Pill tone="#ffaa00">🎒 SELECTIONS: {selPack.length}</Pill>
+              </button>
+            )}
             <Pill tone="#666">⑂ {branch}</Pill>
             {spec && <Pill tone="#00ff66">📄 {spec.path.split("/").pop()}</Pill>}
             {!spec && activeDir && (
