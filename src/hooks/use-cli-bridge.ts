@@ -85,7 +85,13 @@ export function useCliBridge(): CliBridge {
   }, [enabled, state, url]);
 
   const connect = useCallback(async () => {
-    setBridgeUrl(url);
+    try {
+      setBridgeUrl(url);
+    } catch (e) {
+      setState("ERROR");
+      setError(e instanceof Error ? e.message : "BRIDGE_URL_REJECTED");
+      return;
+    }
     setBridgeEnabled(true);
     setEnabled(true);
     return probe(url);
@@ -114,7 +120,13 @@ export function useCliBridge(): CliBridge {
 
   const setUrl = useCallback((v: string) => {
     setUrlState(v);
-    setBridgeUrl(v);
+    // Persist only valid loopback targets; keep typing responsive otherwise.
+    try {
+      setBridgeUrl(v);
+      setError(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "BRIDGE_URL_REJECTED");
+    }
   }, []);
 
   return { url, enabled, state, info, status, error, setUrl, connect, disconnect, refresh, exec, write };
