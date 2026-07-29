@@ -126,6 +126,8 @@ function Index() {
   const [seed, setSeed] = useState<{ text: string; nonce: number } | null>(null);
   const [driftOpen, setDriftOpen] = useState(false);
   const [sddOpen, setSddOpen] = useState(false);
+  const [sddDoc, setSddDoc] = useState<{ path: string; text: string } | null>(null);
+  const [mapOpen, setMapOpen] = useState(false);
   const [loopOpen, setLoopOpen] = useState(false);
   const [packOpen, setPackOpen] = useState(false);
   const [apiOpen, setApiOpen] = useState(false);
