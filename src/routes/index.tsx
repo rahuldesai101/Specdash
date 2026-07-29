@@ -1022,6 +1022,17 @@ function Index() {
         <SddCompilerPanel path={spec.path} text={spec.text} onClose={() => setSddOpen(false)} />
       )}
 
+      {loopOpen && owner && (
+        <InfinityLoopModal
+          owner={owner}
+          repo={repo}
+          branch={branch}
+          files={files}
+          cfg={aiCfg}
+          onClose={() => setLoopOpen(false)}
+        />
+      )}
+
       {newOpen && owner && (
         <NewSpecModal
           owner={owner}
