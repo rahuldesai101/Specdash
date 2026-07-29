@@ -536,43 +536,21 @@ function Index() {
   );
   const draftSpec = useMemo(() => (draftAgents ? parseAgentSpec(draftRaw) : null), [draftAgents, draftRaw]);
 
-  const workbenchItems: MenuItem[] = [
+  const specEngineItems: MenuItem[] = [
+    {
+      icon: "📜",
+      label: "SPEC KIT PIPELINE",
+      hint: "specs · plans · tasks",
+      accent: "#66b3ff",
+      disabled: !owner || (!spec?.text && !bestSpec),
+      onSelect: () => void openCompiler(),
+    },
     {
       icon: "🤖",
-      label: draftAgents ? "AGENTS.md — DRAFT TEMPLATE" : `${rootSpecs[0].name} RULES`,
+      label: draftAgents ? "AGENTS.md & CONSTITUTION (DRAFT)" : "AGENTS.md & CONSTITUTION",
       accent: "#ff5500",
       onSelect: openDirectives,
     },
-    {
-      icon: "📊",
-      label: "REPO WORKFLOW DIAGRAM",
-      keys: "ALT+D",
-      accent: "#66b3ff",
-      onSelect: openDiagramGlobal,
-    },
-    {
-      icon: "🎒",
-      label: "PACK CONTEXT WINDOW",
-      accent: "#00ff66",
-      onSelect: () => {
-        setCmdTab("all");
-        setPackOpen(true);
-        setCmdOpen(true);
-      },
-    },
-    {
-      icon: "⚡",
-      label: "SAVED PROMPT SHELF",
-      keys: "ALT+S",
-      accent: "#c07cff",
-      onSelect: () => {
-        setCmdTab("prompts");
-        setCmdOpen(true);
-      },
-    },
-  ];
-
-  const compilerItems: MenuItem[] = [
     {
       icon: "🎒",
       label: "PACK CONTEXT BUNDLE",
@@ -584,36 +562,46 @@ function Index() {
       },
     },
     {
-      icon: "💻",
-      label: "EXPORT CLI PROMPT SNIPPETS",
-      accent: "#66b3ff",
-      disabled: !owner || (!spec?.text && !bestSpec),
-      onSelect: () => void openCompiler(),
-    },
-    {
       icon: "♾️",
       label: "RUN INFINITY LOOP",
       accent: "#c07cff",
       disabled: !owner,
       onSelect: () => setLoopOpen(true),
     },
-    { icon: "⚠️", label: "CHECK SPEC DRIFT", accent: "#ff5500", disabled: !owner, onSelect: () => setDriftOpen(true) },
     {
-      icon: "🤖",
-      label: draftAgents ? "AGENTS.md & CONSTITUTION (DRAFT)" : "AGENTS.md & CONSTITUTION",
-      accent: "#ff5500",
-      onSelect: openDirectives,
+      icon: "📊",
+      label: "WORKFLOW GRAPH",
+      keys: "ALT+D",
+      accent: "#66b3ff",
+      onSelect: openDiagramGlobal,
+    },
+    {
+      icon: "⚡",
+      label: "SAVED PROMPT SHELF",
+      keys: "ALT+S",
+      accent: "#c07cff",
+      onSelect: () => {
+        setCmdTab("prompts");
+        setCmdOpen(true);
+      },
     },
     { icon: "+", label: "NEW SPEC", accent: "#00ff66", disabled: !owner, onSelect: () => setNewOpen(true) },
   ];
 
-  const devToolItems: MenuItem[] = [
+  const toolsItems: MenuItem[] = [
     {
-      icon: "🔌",
-      label: bridge.state === "ACTIVE" ? "LOCAL SYNC: ACTIVE" : "LOCAL WORKSPACE CLI BRIDGE",
-      keys: "ALT+L",
-      accent: bridge.state === "ACTIVE" ? "#00ff66" : "#ffaa00",
-      onSelect: () => setBridgeOpen(true),
+      icon: "📜",
+      label: "RELEASE CHANGELOG STUDIO",
+      accent: "#c07cff",
+      disabled: !owner,
+      onSelect: () => setRelOpen(true),
+    },
+    {
+      icon: "⚠️",
+      label: "SPEC DRIFT INSPECTOR",
+      accent: "#ff5500",
+      disabled: !owner,
+      onSelect: () => setDriftOpen(true),
     },
     {
       icon: "🔐",
@@ -624,32 +612,15 @@ function Index() {
     },
     { icon: "📦", label: "DEPENDENCY RADAR", disabled: !owner, onSelect: () => setDepsOpen(true) },
     {
-      icon: "📜",
-      label: "RELEASE CHANGELOG STUDIO",
-      accent: "#c07cff",
-      disabled: !owner,
-      onSelect: () => setRelOpen(true),
+      icon: "🔌",
+      label: bridge.state === "ACTIVE" ? "LOCAL SYNC: ACTIVE" : "LOCAL WORKSPACE CLI BRIDGE",
+      keys: "ALT+L",
+      accent: bridge.state === "ACTIVE" ? "#00ff66" : "#ffaa00",
+      onSelect: () => setBridgeOpen(true),
     },
-  ];
-
-  const moreItems: MenuItem[] = [
-    { icon: "📖", label: "READ ME / HOW IT WORKS", onSelect: () => setReadmeOpen(true) },
-    { icon: "⌨", label: "KEYBOARD SHORTCUTS", keys: "CTRL+/", onSelect: () => setKeysOpen(true) },
-    {
-      icon: aiCfg ? "🟢" : "⚡",
-      label: aiCfg ? `AI ENGINE: ${aiCfg.provider.toUpperCase()}` : "AI ENGINE CONFIG",
-      accent: aiCfg ? "#00ff66" : undefined,
-      onSelect: () => setAiOpen(true),
-    },
-    {
-      icon: hasPat ? "🟢" : "🔴",
-      label: hasPat ? "GITHUB PAT: CONNECTED" : "GITHUB PAT: NOT SET",
-      accent: hasPat ? "#00ff66" : "#ff5500",
-      onSelect: () => setPatOpen(true),
-    },
-    { icon: "⇄", label: "SWITCH REPOSITORY", onSelect: () => setCfgOpen(true) },
     { icon: "📜", label: "CHANGELOG TIMELINE", onSelect: () => navigate({ to: "/changelog" }) },
   ];
+
 
   const rail = (
     <div className="flex h-full flex-col text-[11px]">
