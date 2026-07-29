@@ -1,7 +1,7 @@
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
-import type MiniSearch from "minisearch";
-import { snippetFor, type DocKind, type SearchDoc } from "@/lib/search-index";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import type { IndexState } from "@/hooks/use-search-index";
+import type { SearchHit } from "@/lib/search-worker-types";
 import { toast } from "sonner";
 import {
   CONTEXT_WINDOW,
@@ -24,7 +24,7 @@ const TABS: { id: Filter; label: string }[] = [
   { id: "prompts", label: "[ ⚡ SAVED PROMPTS ]" },
 ];
 
-type Hit = SearchDoc & { score: number };
+type Hit = SearchHit;
 
 export function SearchModal({
   state,
@@ -57,70 +57,66 @@ export function SearchModal({
   const [packMode, setPackMode] = useState(initialPack);
   const [picked, setPicked] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [hits, setHits] = useState<Hit[]>([]);
+  const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  // Keystrokes stay on the high-priority lane; the (expensive) MiniSearch pass
-  // and result highlighting run against a deferred copy of the query.
-  const dq = useDeferredValue(q);
-  const terms = useMemo(() => dq.trim().split(/\s+/).filter(Boolean), [dq]);
-
-  const hits = useMemo<Hit[]>(() => {
-    const mini = state.index as MiniSearch<SearchDoc> | null;
-    if (!mini) return [];
-    const pool: Hit[] = dq.trim()
-      ? (mini.search(dq) as unknown as Array<SearchDoc & { score: number }>).map((r) => ({ ...r }))
-      : state.docs.filter((d) => d.kind !== "snippet").slice(0, 40).map((d) => ({ ...d, score: 0 }));
-    const filtered = filter === "all" ? pool : pool.filter((d) => d.kind === filter);
-    return filtered.slice(0, 60);
-  }, [dq, filter, state.index, state.docs]);
+  // Keystrokes stay on the high-priority lane: querying, ranking AND snippet
+  // highlighting happen inside the search worker, debounced by 150ms.
+  const search = state.search;
+  useEffect(() => {
+    if (filter === "prompts") return;
+    let alive = true;
+    const t = setTimeout(() => {
+      void search(q, filter).then((r) => alive && setHits(r));
+    }, 150);
+    return () => {
+      alive = false;
+      clearTimeout(t);
+    };
+  }, [q, filter, search, state.docCount]);
 
   useEffect(() => setCursor(0), [q, filter]);
 
-  const counts = useMemo(() => {
-    const c: Record<DocKind | "all" | "prompts", number> = {
-      all: 0,
-      spec: 0,
-      agent: 0,
-      snippet: 0,
-      data: 0,
-      prompts: 0,
-    };
-    for (const d of state.docs) {
-      c.all += 1;
-      c[d.kind] += 1;
-    }
-    return c;
-  }, [state.docs]);
+  const counts = state.counts;
 
-  const activate = (h: Hit) => {
-    if (packMode) {
-      togglePick(h.path);
-      return;
-    }
-    if (h.kind === "snippet" && onRunSnippet) {
-      onRunSnippet(h.content, h.lang ?? "text", h.path);
-      onClose();
-      return;
-    }
-    onOpen(h.path);
-  };
+  const togglePick = useCallback(
+    (path: string) => setPicked((p) => (p.includes(path) ? p.filter((x) => x !== path) : [...p, path])),
+    [],
+  );
 
-  const togglePick = (path: string) =>
-    setPicked((p) => (p.includes(path) ? p.filter((x) => x !== path) : [...p, path]));
+  const activate = useCallback(
+    (h: Hit) => {
+      if (packMode) {
+        togglePick(h.path);
+        return;
+      }
+      if (h.kind === "snippet" && onRunSnippet) {
+        onRunSnippet(h.content, h.lang ?? "text", h.path);
+        onClose();
+        return;
+      }
+      onOpen(h.path);
+    },
+    [packMode, togglePick, onRunSnippet, onOpen, onClose],
+  );
 
-  const byPath = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const d of state.docs) if (d.kind !== "snippet" && !m.has(d.path)) m.set(d.path, d.content);
-    return m;
-  }, [state.docs]);
+  const byPath = useMemo(() => new Map(Object.entries(state.contents)), [state.contents]);
 
   const packFiles = useMemo(
     () => [...extraFiles, ...picked.map((p) => ({ path: p, content: byPath.get(p) ?? "" }))],
     [picked, byPath, extraFiles],
   );
+
+  const rows = useVirtualizer({
+    count: hits.length,
+    getScrollElement: () => listRef.current,
+    estimateSize: () => 78,
+    overscan: 8,
+  });
   const packTokens = useMemo(
     () => packFiles.reduce((n, f) => n + tokensOf(f.content), 0),
     [packFiles],
