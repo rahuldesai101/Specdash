@@ -623,8 +623,6 @@ function Index() {
       onSelect: () => setPatOpen(true),
     },
     { icon: "⇄", label: "SWITCH REPOSITORY", onSelect: () => setCfgOpen(true) },
-    { icon: "🐙", label: "OPEN FILE ON GITHUB", keys: "ALT+G", disabled: !spec, onSelect: needSpec(() => emitHotkey("specOpenGithub")) },
-    { icon: "📋", label: "COPY RAW CONTENT", keys: "ALT+C", disabled: !spec?.text, onSelect: needSpec(() => emitHotkey("specCopyRaw")) },
     { icon: "📜", label: "CHANGELOG TIMELINE", onSelect: () => navigate({ to: "/changelog" }) },
   ];
 
