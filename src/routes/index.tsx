@@ -1228,12 +1228,12 @@ function Index() {
       {keysOpen && <ShortcutsModal onClose={() => setKeysOpen(false)} />}
       {agentOpen && (
         <AgentOsPanel
-          specs={rootSpecs}
-          activeSpecPath={agentPath}
-          spec={agentSpec}
-          raw={agentRaw}
-          loading={agentLoading}
-          error={agentErr}
+          specs={draftAgents ? [{ path: "AGENTS.md", name: "AGENTS.md (DRAFT)" }] : rootSpecs}
+          activeSpecPath={draftAgents ? "AGENTS.md" : agentPath}
+          spec={draftAgents ? draftSpec : agentSpec}
+          raw={draftAgents ? draftRaw : agentRaw}
+          loading={draftAgents ? false : agentLoading}
+          error={draftAgents ? null : agentErr}
           onSelect={setAgentPath}
           onClose={() => setAgentOpen(false)}
           onOpenFile={(p) => openSpec(p)}
@@ -1261,13 +1261,10 @@ function Index() {
           initialTab={cmdTab}
           extraFiles={selPack}
           shelfCtx={shelfCtx}
-          onRunPreset={(prompt) => {
+          onRunPreset={async (prompt) => {
             setCmdOpen(false);
             setCmdTab("all");
-            if (!spec) {
-              toast.error("OPEN_A_SPEC_FIRST");
-              return;
-            }
+            if (!spec && bestSpec) await openSpec(bestSpec.path);
             setSeed({ text: prompt, nonce: Date.now() });
           }}
           onClose={() => {
@@ -1297,8 +1294,14 @@ function Index() {
         />
       )}
 
-      {sddOpen && spec?.text && (
-        <SddCompilerPanel path={spec.path} text={spec.text} onClose={() => setSddOpen(false)} />
+      {sddOpen && sddDoc && (
+        <SddCompilerPanel path={sddDoc.path} text={sddDoc.text} onClose={() => setSddOpen(false)} />
+      )}
+
+      {mapOpen && (
+        <DevModal title="REPOSITORY WORKFLOW MAP" accent="#66b3ff" wide onClose={() => setMapOpen(false)}>
+          <DiagramCanvas chart={repoMapChart} label="REPO MAP" />
+        </DevModal>
       )}
 
       {loopOpen && owner && (
