@@ -11,14 +11,17 @@ import {
   tokensOf,
   type PackTarget,
 } from "@/lib/context-pack";
+import { PromptShelf, type ShelfContext } from "@/components/ai/PromptShelf";
+import type { PromptPreset } from "@/lib/prompt-presets";
 
-type Filter = "all" | "spec" | "agent" | "snippet";
+type Filter = "all" | "spec" | "agent" | "snippet" | "prompts";
 
 const TABS: { id: Filter; label: string }[] = [
   { id: "all", label: "[ ALL ]" },
   { id: "spec", label: "[ 📄 SPECS ]" },
   { id: "agent", label: "[ 🤖 AGENT RULES ]" },
   { id: "snippet", label: "[ ⚡ CODE SNIPPETS ]" },
+  { id: "prompts", label: "[ ⚡ SAVED PROMPTS ]" },
 ];
 
 type Hit = SearchDoc & { score: number };
@@ -30,6 +33,10 @@ export function SearchModal({
   onRunSnippet,
   repoLabel = "repo",
   initialPack = false,
+  initialTab,
+  extraFiles = [],
+  shelfCtx = {},
+  onRunPreset,
 }: {
   state: IndexState;
   onClose: () => void;
@@ -37,9 +44,15 @@ export function SearchModal({
   onRunSnippet?: (code: string, lang: string, path: string) => void;
   repoLabel?: string;
   initialPack?: boolean;
+  /** Open straight onto a tab (e.g. the saved-prompt shelf). */
+  initialTab?: Filter;
+  /** Ad-hoc selections captured from the floating action bar. */
+  extraFiles?: { path: string; content: string }[];
+  shelfCtx?: ShelfContext;
+  onRunPreset?: (prompt: string, preset: PromptPreset) => void;
 }) {
   const [q, setQ] = useState("");
-  const [filter, setFilter] = useState<Filter>("all");
+  const [filter, setFilter] = useState<Filter>(initialTab ?? "all");
   const [cursor, setCursor] = useState(0);
   const [packMode, setPackMode] = useState(initialPack);
   const [picked, setPicked] = useState<string[]>([]);
@@ -64,7 +77,14 @@ export function SearchModal({
   useEffect(() => setCursor(0), [q, filter]);
 
   const counts = useMemo(() => {
-    const c: Record<DocKind | "all", number> = { all: 0, spec: 0, agent: 0, snippet: 0, data: 0 };
+    const c: Record<DocKind | "all" | "prompts", number> = {
+      all: 0,
+      spec: 0,
+      agent: 0,
+      snippet: 0,
+      data: 0,
+      prompts: 0,
+    };
     for (const d of state.docs) {
       c.all += 1;
       c[d.kind] += 1;
@@ -95,8 +115,8 @@ export function SearchModal({
   }, [state.docs]);
 
   const packFiles = useMemo(
-    () => picked.map((p) => ({ path: p, content: byPath.get(p) ?? "" })),
-    [picked, byPath],
+    () => [...extraFiles, ...picked.map((p) => ({ path: p, content: byPath.get(p) ?? "" }))],
+    [picked, byPath, extraFiles],
   );
   const packTokens = useMemo(
     () => packFiles.reduce((n, f) => n + tokensOf(f.content), 0),
@@ -167,7 +187,7 @@ export function SearchModal({
                   color: filter === t.id ? "#00ff66" : "#888",
                 }}
               >
-                {t.label} {String(counts[t.id === "all" ? "all" : t.id]).padStart(2, "0")}
+                {t.label} {t.id === "prompts" ? "" : String(counts[t.id]).padStart(2, "0")}
               </button>
             ))}
             <button
@@ -186,12 +206,12 @@ export function SearchModal({
           </div>
         </div>
 
-        {packMode && (
+        {packMode && filter !== "prompts" && (
           <div className="border-b border-hard px-4 py-2 text-[10px] uppercase tracking-widest">
             <div className="flex flex-wrap items-center gap-2">
               <span style={{ color: packPct > 100 ? "#ff5500" : "#00ff66" }}>
                 [ {packTokens.toLocaleString()} / {CONTEXT_WINDOW.toLocaleString()} TOKENS ({packPct.toFixed(1)}%) ·{" "}
-                {picked.length} FILES ]
+                {packFiles.length} FILES ]
               </span>
               <button onClick={() => setPicked([])} className="border border-[#333] px-2 py-1 text-[#888] hover:text-white">
                 CLEAR
@@ -222,6 +242,10 @@ export function SearchModal({
         )}
 
         <div className="min-h-0 flex-1 overflow-y-auto p-3 text-[11px]">
+          {filter === "prompts" ? (
+            <PromptShelf ctx={shelfCtx} onRun={onRunPreset} />
+          ) : (
+          <>
           {hits.length === 0 && (
             <div className="px-2 py-6 text-center text-[11px] uppercase tracking-widest text-[#555]">
               &gt; NO_MATCHES
@@ -271,10 +295,14 @@ export function SearchModal({
               </button>
             );
           })}
+          </>
+          )}
         </div>
 
         <div className="border-t border-hard px-4 py-2 text-[9px] uppercase tracking-widest text-[#555]">
-          ↑↓ NAVIGATE · ENTER {packMode ? "TOGGLE FILE" : "OPEN"} · SNIPPET HITS LAUNCH THE PLAYGROUND
+          {filter === "prompts"
+            ? "MUSTACHE {{VARIABLES}} AUTO-FILL FROM THE OPEN SPEC · SAVED LOCALLY"
+            : `↑↓ NAVIGATE · ENTER ${packMode ? "TOGGLE FILE" : "OPEN"} · SNIPPET HITS LAUNCH THE PLAYGROUND`}
         </div>
       </div>
     </div>

@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- **🔌 Local Workspace CLI Bridge** — optional `localhost:4321` daemon connection (`Alt+L`) that streams live `git status`/`git diff` into the dashboard, runs build/test/lint commands parsed from `AGENTS.md`, and writes generated Infinity Loop artifacts straight to disk. A `[ 🔌 LOCAL SYNC ]` header pill reports link state.
+- **🎯 Text-Selection Action Bar** — highlight any text in a spec to get a floating toolbar: `⚡ Explain` (AI Playground), `🎒 Add to Pack` (token-budgeted context pack), `🌐 Test in External AI`, and `♾️ Refine` (seeds the Infinity Loop goal).
+- **⚡ Prompt Preset Shelf** (`Alt+S`) — Mustache-templated saved prompts (`{{selection}}`, `{{file}}`, `{{repo}}`) with built-in edge-case, security-audit and test-scaffold presets, auto-filled from the open spec and launchable locally or into ChatGPT/Claude/Gemini/Kimi.
+
+### Added
 - **🛠️ Dev Tools command menu** in the header grouping four new control-center modules.
 - **🌐 API Sandbox** — browser-native REST client (GET/POST/PUT/PATCH/DELETE) with OpenAPI/Swagger endpoint auto-discovery, URL scraping from the open spec, header injection (incl. 1-click PAT auth), JSON payload editing, and a syntax-highlighted response inspector.
 - **🔐 .env & Secret Guard** — diffs `.env.example` against env keys referenced in code, flags hardcoded API keys/JWTs/private keys with masked values (`sk-****-1234`), and lists undeclared keys.

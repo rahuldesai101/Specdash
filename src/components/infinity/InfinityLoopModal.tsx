@@ -42,6 +42,8 @@ export function InfinityLoopModal({
   branch,
   files,
   cfg,
+  seedGoal,
+  bridge,
   onClose,
 }: {
   owner: string;
@@ -49,12 +51,16 @@ export function InfinityLoopModal({
   branch: string;
   files: { path: string; size?: number }[];
   cfg: AiConfig | null;
+  /** Prefills the goal box (e.g. from a text selection). */
+  seedGoal?: string;
+  /** Optional local CLI bridge — enables direct-to-disk writes. */
+  bridge?: { state: string; write: (files: { path: string; content: string }[]) => Promise<string[]> };
   onClose: () => void;
 }) {
   const sources = useMemo(() => detectSpecSources(files), [files]);
   const [loaded, setLoaded] = useState<LoadedSource[]>([]);
   const [loading, setLoading] = useState(true);
-  const [goal, setGoal] = useState("");
+  const [goal, setGoal] = useState(seedGoal ?? "");
   const [phase, setPhase] = useState<Phase>("idle");
   const [active, setActive] = useState<StageId | null>(null);
   const [outs, setOuts] = useState<StageOutputs>({});
@@ -164,6 +170,19 @@ export function InfinityLoopModal({
       "noopener,noreferrer",
     );
     toast.success(small ? `COMMIT_INTENT_OPENED → ${path}` : `CONTENT_COPIED — paste into ${path}`);
+  };
+
+  const writeLocal = async (path: string, content: string) => {
+    if (!bridge || bridge.state !== "ACTIVE") {
+      toast.error("LOCAL_SYNC_OFF — connect the CLI bridge first");
+      return;
+    }
+    try {
+      const written = await bridge.write([{ path, content }]);
+      toast.success(`WROTE_TO_DISK → ${written.join(", ") || path}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "BRIDGE_WRITE_ERR");
+    }
   };
 
   const handoff = buildHandoffPayload(goal.trim() || "(no goal set)", outs, context);
@@ -329,6 +348,14 @@ export function InfinityLoopModal({
                             className="border border-[#333] px-2 py-1 text-[#888] hover:border-[#00ff66] hover:text-[#00ff66] disabled:opacity-40"
                           >
                             [ 💾 COMMIT → {s.out(slug)} ]
+                          </button>
+                          <button
+                            onClick={() => void writeLocal(s.out(slug), value)}
+                            disabled={!bridge || bridge.state !== "ACTIVE"}
+                            title="Write straight to your local working copy via the CLI bridge"
+                            className="border border-[#ffaa00] px-2 py-1 text-[#ffaa00] hover:bg-[#ffaa00] hover:text-black disabled:opacity-30"
+                          >
+                            [ 🔌 WRITE TO DISK ]
                           </button>
                         </div>
                         <MarkdownView source={normalizeAiMarkdown(value)} />

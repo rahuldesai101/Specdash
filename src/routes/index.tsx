@@ -35,6 +35,9 @@ import { DriftInspector } from "@/components/drift/DriftInspector";
 import { SddCompilerPanel } from "@/components/sdd/SddCompilerPanel";
 import { InfinityLoopModal } from "@/components/infinity/InfinityLoopModal";
 import { ApiSandbox } from "@/components/devtools/ApiSandbox";
+import { BridgePanel, BridgePill } from "@/components/bridge/BridgePanel";
+import { useCliBridge } from "@/hooks/use-cli-bridge";
+import { SelectionBar, type SelectionPayload } from "@/components/ai/SelectionBar";
 import { EnvGuard } from "@/components/devtools/EnvGuard";
 import { DependencyRadar } from "@/components/devtools/DependencyRadar";
 import { ReleaseStudio } from "@/components/devtools/ReleaseStudio";
@@ -129,7 +132,12 @@ function Index() {
   const [envOpen, setEnvOpen] = useState(false);
   const [depsOpen, setDepsOpen] = useState(false);
   const [relOpen, setRelOpen] = useState(false);
+  const [bridgeOpen, setBridgeOpen] = useState(false);
+  const [selPack, setSelPack] = useState<{ path: string; content: string }[]>([]);
+  const [cmdTab, setCmdTab] = useState<"all" | "prompts">("all");
+  const [loopSeed, setLoopSeed] = useState<string>("");
   const navigate = useNavigate();
+  const bridge = useCliBridge();
 
   useEffect(() => {
     const dl = parseDeepLink(window.location.search);
@@ -152,6 +160,11 @@ function Index() {
     const uninstall = installHotkeys();
     const offs = [
       onHotkey("search", () => setCmdOpen((v) => !v)),
+      onHotkey("toggleBridge", () => setBridgeOpen((v) => !v)),
+      onHotkey("promptShelf", () => {
+        setCmdTab("prompts");
+        setCmdOpen(true);
+      }),
       onHotkey("help", () => setKeysOpen((v) => !v)),
       onHotkey("toggleRail", () => setRailOpen((v) => !v)),
       onHotkey("toggleReader", () => setReaderOpen((v) => !v)),
@@ -178,6 +191,7 @@ function Index() {
         setDepsOpen(false);
         setRelOpen(false);
         setReadmeOpen(false);
+        setBridgeOpen(false);
         setSpec(null);
       }),
     ];
@@ -297,6 +311,39 @@ function Index() {
       nonce: Date.now(),
     });
   }, []);
+
+  // --- text-selection floating actions --------------------------------------
+  const selExplain = useCallback((s: SelectionPayload) => {
+    setSeed({
+      text: `Explain the highlighted excerpt from \`${s.path}\` in plain terms, then flag anything ambiguous or under-specified.\n\n---\n${s.text}\n---`,
+      nonce: Date.now(),
+    });
+  }, []);
+
+  const selAddToPack = useCallback((s: SelectionPayload) => {
+    setSelPack((p) => [
+      ...p,
+      { path: `${s.path}#selection-${p.length + 1}`, content: s.text },
+    ]);
+    toast.success(`ADDED_TO_TOKEN_PACK — ~${fmtTokens(tokensOf(s.text))} tokens`);
+  }, []);
+
+  const selRefine = useCallback((s: SelectionPayload) => {
+    setLoopSeed(`Refine and evolve this excerpt from ${s.path}:\n\n${s.text}`);
+    setLoopOpen(true);
+  }, []);
+
+  const shelfCtx = useMemo(
+    () => ({
+      repo: owner ? `${owner}/${repo}` : "",
+      file: spec?.path ?? "",
+      branch,
+      framework: "vitest",
+      selection: spec?.text?.slice(0, 12000) ?? "",
+      content: spec?.text?.slice(0, 12000) ?? "",
+    }),
+    [owner, repo, branch, spec?.path, spec?.text],
+  );
 
   // spec-scoped hotkeys (Alt+C copy raw, Alt+G open on GitHub)
   useEffect(() => {
@@ -430,7 +477,18 @@ function Index() {
       label: "PACK CONTEXT WINDOW",
       accent: "#00ff66",
       onSelect: () => {
+        setCmdTab("all");
         setPackOpen(true);
+        setCmdOpen(true);
+      },
+    },
+    {
+      icon: "⚡",
+      label: "SAVED PROMPT SHELF",
+      keys: "ALT+S",
+      accent: "#c07cff",
+      onSelect: () => {
+        setCmdTab("prompts");
         setCmdOpen(true);
       },
     },
@@ -451,6 +509,13 @@ function Index() {
 
   const devToolItems: MenuItem[] = [
     { icon: "🌐", label: "API SANDBOX", accent: "#66b3ff", onSelect: () => setApiOpen(true) },
+    {
+      icon: "🔌",
+      label: bridge.state === "ACTIVE" ? "LOCAL SYNC: ACTIVE" : "LOCAL WORKSPACE CLI BRIDGE",
+      keys: "ALT+L",
+      accent: bridge.state === "ACTIVE" ? "#00ff66" : "#ffaa00",
+      onSelect: () => setBridgeOpen(true),
+    },
     {
       icon: "🔐",
       label: ".ENV & SECRET GUARD",
@@ -861,6 +926,18 @@ function Index() {
             )}
             {ruleFiles.some((f) => /constitution/i.test(f)) && <Pill tone="#c07cff">📜 CONSTITUTION: VERIFIED</Pill>}
             <Pill tone="#00ff66">🎒 CONTEXT: ~{fmtTokens(totalTokens)} TOK</Pill>
+            <BridgePill bridge={bridge} onOpen={() => setBridgeOpen(true)} />
+            {selPack.length > 0 && (
+              <button
+                onClick={() => {
+                  setCmdTab("all");
+                  setPackOpen(true);
+                  setCmdOpen(true);
+                }}
+              >
+                <Pill tone="#ffaa00">🎒 SELECTIONS: {selPack.length}</Pill>
+              </button>
+            )}
             <Pill tone="#666">⑂ {branch}</Pill>
             {spec && <Pill tone="#00ff66">📄 {spec.path.split("/").pop()}</Pill>}
             {!spec && activeDir && (
@@ -1109,9 +1186,22 @@ function Index() {
           state={searchState}
           repoLabel={`${owner}/${repo}`}
           initialPack={packOpen}
+          initialTab={cmdTab}
+          extraFiles={selPack}
+          shelfCtx={shelfCtx}
+          onRunPreset={(prompt) => {
+            setCmdOpen(false);
+            setCmdTab("all");
+            if (!spec) {
+              toast.error("OPEN_A_SPEC_FIRST");
+              return;
+            }
+            setSeed({ text: prompt, nonce: Date.now() });
+          }}
           onClose={() => {
             setCmdOpen(false);
             setPackOpen(false);
+            setCmdTab("all");
           }}
           onOpen={openSpec}
           onRunSnippet={(code, lang, path) => {
@@ -1146,9 +1236,29 @@ function Index() {
           branch={branch}
           files={loopFiles}
           cfg={aiCfg}
-          onClose={() => setLoopOpen(false)}
+          seedGoal={loopSeed}
+          bridge={bridge}
+          onClose={() => {
+            setLoopOpen(false);
+            setLoopSeed("");
+          }}
         />
       )}
+
+      {bridgeOpen && (
+        <BridgePanel
+          bridge={bridge}
+          commands={agentSpec?.commands ?? []}
+          onClose={() => setBridgeOpen(false)}
+        />
+      )}
+
+      <SelectionBar
+        sourcePath={spec?.path ?? null}
+        onExplain={selExplain}
+        onAddToPack={selAddToPack}
+        onRefine={selRefine}
+      />
 
       {apiOpen && (
         <ApiSandbox
