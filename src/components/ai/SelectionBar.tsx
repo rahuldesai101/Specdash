@@ -94,7 +94,11 @@ export function SelectionBar({
       action: "Explain and pressure-test the highlighted excerpt above. Flag anything ambiguous.",
     });
     const r = await launchExternalAi(p, payload);
-    toast.success(r.prefilled ? `PREFILLED → ${p.label}` : `COPIED → PASTE INTO ${p.label}`);
+    toast.success(
+      r.copied
+        ? `[ ⚡ Content copied & passed to ${p.label}. Press Ctrl+V if field isn't pre-filled ]`
+        : `[ ⚡ ${p.label} opened — copy the excerpt manually ]`,
+    );
     clear();
   };
 
