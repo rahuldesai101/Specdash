@@ -318,6 +318,11 @@ function Index() {
 
   const rows = groups.find(([d]) => d === activeDir)?.[1] ?? [];
   const agentsFile = files.find((f) => /^(agents\.md|llms\.txt)$/i.test(f.name));
+  const ruleFiles = useMemo(
+    () => [...new Set([...rootSpecs.map((s) => s.path), ...files.map((f) => f.path).filter(isRuleSource)])],
+    [rootSpecs, files],
+  );
+  const totalTokens = useMemo(() => files.reduce((n, f) => n + tokensFromBytes(f.size), 0), [files]);
 
   const dot =
     status === "SYNCED" ? "#00ff66" : status === "SYNCING" ? "#ffaa00" : status === "ERROR" ? "#ff5500" : "#666";
@@ -398,7 +403,7 @@ function Index() {
 
       <div className="flex-1 overflow-y-auto py-2">
         <div className="px-3 pb-2 text-[10px] uppercase tracking-widest text-[#666]">
-          [ DIRECTORIES: {String(groups.length).padStart(2, "0")} ]
+          [ AI_CONTEXT_TREE: {String(groups.length).padStart(2, "0")} DIRS · ~{fmtTokens(totalTokens)} TOK ]
         </div>
         {groups.map(([dir, list]) => (
           <div
@@ -411,10 +416,17 @@ function Index() {
                 setActiveDir(dir);
                 setMobileNav(false);
               }}
-              className="flex-1 min-w-0 min-h-11 px-3 text-left text-[11px] uppercase tracking-wider truncate"
+              className="flex-1 min-w-0 min-h-11 px-3 py-1 text-left text-[11px] uppercase tracking-wider"
               style={{ color: activeDir === dir ? "#000" : "#fff" }}
             >
-              📁 /{dir} ({String(list.length).padStart(2, "0")})
+              <span className="block truncate">📁 /{dir} ({String(list.length).padStart(2, "0")})</span>
+              <span
+                className="block text-[9px] tracking-widest"
+                style={{ color: activeDir === dir ? "#000" : "#666" }}
+              >
+                {fmtSize(list.reduce((n, f) => n + f.size, 0))} · ~
+                {fmtTokens(list.reduce((n, f) => n + tokensFromBytes(f.size), 0))} tokens
+              </span>
             </button>
             {owner && (
               <a
