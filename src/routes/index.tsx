@@ -39,6 +39,7 @@ import { BridgePanel, BridgePill } from "@/components/bridge/BridgePanel";
 import { useCliBridge } from "@/hooks/use-cli-bridge";
 import { SelectionBar, type SelectionPayload } from "@/components/ai/SelectionBar";
 import { EnvGuard } from "@/components/devtools/EnvGuard";
+import { DevModal } from "@/components/devtools/Shell";
 import { DependencyRadar } from "@/components/devtools/DependencyRadar";
 import { ReleaseStudio } from "@/components/devtools/ReleaseStudio";
 import { isSpecifyPath } from "@/lib/sdd-compiler";
