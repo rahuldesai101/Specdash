@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- **Performance overhaul** — full-text search now runs entirely off the main thread in a dedicated Web Worker (`src/lib/search.worker.ts`): indexing, prefix querying and snippet highlighting no longer block typing. Search results are DOM-virtualized with `@tanstack/react-virtual`, queries are debounced at 150ms, and markdown/code-block renderers are memoized. A live FPS + render-time meter sits in the footer.
+- **File actions relocated** — the remaining file-scoped buttons (Open on GitHub, Copy Raw) left the global header; the spec reader toolbar now owns them and adds a `🎒 PACK CONTEXT` action that pushes the open file (with its token cost) straight into the LLM context window.
+
 - Header actions are now repository-global: removed file-dependent dead-end buttons (AI Playground, External Deep-Link Studio, Open on GitHub, Copy Raw) from the top header — those live in the inline file view toolbar. AGENTS.md directives auto-draft a starter template when none exist, the workflow diagram resolves CI/CD files or falls back to a generated repo map, and Compile Spec to Code auto-selects the repo's primary spec.
 
 ### Security
