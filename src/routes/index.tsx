@@ -326,6 +326,14 @@ function Index() {
     [rootSpecs, files],
   );
   const totalTokens = useMemo(() => files.reduce((n, f) => n + tokensFromBytes(f.size), 0), [files]);
+  // Infinity Loop scans .md records plus root-level standards (.cursorrules, llms.txt…)
+  const loopFiles = useMemo(() => {
+    const seen = new Set(files.map((f) => f.path));
+    return [
+      ...files.map((f) => ({ path: f.path, size: f.size })),
+      ...rootSpecs.filter((s) => !seen.has(s.path)).map((s) => ({ path: s.path, size: 0 })),
+    ];
+  }, [files, rootSpecs]);
 
   const dot =
     status === "SYNCED" ? "#00ff66" : status === "SYNCING" ? "#ffaa00" : status === "ERROR" ? "#ff5500" : "#666";
