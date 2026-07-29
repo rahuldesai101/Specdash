@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- **🛠️ Dev Tools command menu** in the header grouping four new control-center modules.
+- **🌐 API Sandbox** — browser-native REST client (GET/POST/PUT/PATCH/DELETE) with OpenAPI/Swagger endpoint auto-discovery, URL scraping from the open spec, header injection (incl. 1-click PAT auth), JSON payload editing, and a syntax-highlighted response inspector.
+- **🔐 .env & Secret Guard** — diffs `.env.example` against env keys referenced in code, flags hardcoded API keys/JWTs/private keys with masked values (`sk-****-1234`), and lists undeclared keys.
+- **📦 Dependency Radar** — parses `package.json`, `requirements.txt`, `Cargo.toml`, `go.mod`, and `pyproject.toml`; shows direct/dev/peer/optional counts, license families with copyleft warnings, and unpinned/pre-1.0/open-range risk flags.
+- **📜 Release Changelog Studio** — groups recent commits into 🚀 Features / 🐛 Fixes / ⚡ Performance / ⚠️ Breaking Changes, suggests a semver bump from the latest tag, and emits release-ready Markdown with 1-click copy and a GitHub draft-release deep link.
+
+### Added
 - **♾️ Infinity Loop (self-improving spec engine):** new header entry point that aggregates every system-defining document in the repo (`constitution.md`, `AGENTS.md`/`.cursorrules`/`agents.txt`, `llms.txt`/`llms-full.txt`, `memory.md`/`history.md`/ADRs) into one weighted knowledge base, runs a 4-stage SDD chain (`/constitution+/agents` guardrail audit → `/specify` → `/plan` → `/tasks`), and dispatches results via a 1-click execution matrix — run any atomic task in the AI Playground, hand the full loop to ChatGPT/Claude/Gemini/Kimi, or commit `.specify/**` artifacts straight back to GitHub to feed the next iteration.
 - **AI Context Tree:** directory rail and record table now show byte size plus estimated token count (`~1.2k tokens`) per file, per directory, and per repository.
 - **Pack Context Window:** `Ctrl+K` search gains a `[ 🎒 PACK CONTEXT WINDOW ]` mode — multi-select specs, live `tokens / 200,000 (x%)` budget meter, and 1-click copy of the packed prompt for Claude Code, Cursor, or ChatGPT.
