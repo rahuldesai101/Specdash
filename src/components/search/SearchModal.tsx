@@ -200,7 +200,7 @@ export function SearchModal({
               [ 🎒 PACK CONTEXT WINDOW ]
             </button>
             <span className="ml-auto text-[10px] uppercase tracking-widest" style={{ color: state.ready ? "#00ff66" : "#ffaa00" }}>
-              [ INDEX: {state.ready ? "READY" : `${pct}%`} · {state.docs.length} DOCS ]
+              [ INDEX: {state.ready ? "READY" : `${pct}%`} · {state.docCount} DOCS · WORKER ]
             </span>
           </div>
         </div>
@@ -240,7 +240,7 @@ export function SearchModal({
           </div>
         )}
 
-        <div className="min-h-0 flex-1 overflow-y-auto p-3 text-[11px]">
+        <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto p-3 text-[11px]">
           {filter === "prompts" ? (
             <PromptShelf ctx={shelfCtx} onRun={onRunPreset} />
           ) : (
@@ -250,17 +250,25 @@ export function SearchModal({
               &gt; NO_MATCHES
             </div>
           )}
-          {hits.map((h, i) => {
-            const segs = snippetFor(h.content, terms);
+          <div className="relative w-full" style={{ height: hits.length ? rows.getTotalSize() : 0 }}>
+          {rows.getVirtualItems().map((row) => {
+            const h = hits[row.index];
+            const i = row.index;
+            const segs = h.segs;
             const active = i === cursor;
             const checked = picked.includes(h.path);
             return (
               <button
                 key={h.id}
+                ref={rows.measureElement}
+                data-index={i}
                 onMouseEnter={() => setCursor(i)}
                 onClick={() => activate(h)}
-                className="mb-1 block w-full border px-2 py-2 text-left"
-                style={{ borderColor: checked ? "#ff5500" : active ? "#00ff66" : "#1a1a1a" }}
+                className="absolute left-0 top-0 mb-1 block w-full border px-2 py-2 text-left"
+                style={{
+                  transform: `translateY(${row.start}px)`,
+                  borderColor: checked ? "#ff5500" : active ? "#00ff66" : "#1a1a1a",
+                }}
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="truncate text-[11px] text-white">
@@ -269,7 +277,7 @@ export function SearchModal({
                     {h.name}
                   </span>
                   <span className="shrink-0 text-[9px] uppercase tracking-widest text-[#555]">
-                    {h.kind === "snippet" ? `RUN ${h.lang}` : `~${fmtTokens(tokensOf(h.content))} tok · /${h.dir}`}
+                    {h.kind === "snippet" ? `RUN ${h.lang}` : `~${fmtTokens(h.tokens)} tok · /${h.dir}`}
                   </span>
                 </div>
                 <div className="truncate text-[10px] text-[#666]">/{h.path}</div>
@@ -294,6 +302,7 @@ export function SearchModal({
               </button>
             );
           })}
+          </div>
           </>
           )}
         </div>
