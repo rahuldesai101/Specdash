@@ -1188,6 +1188,37 @@ function Index() {
       )}
 
       {keysOpen && <ShortcutsModal onClose={() => setKeysOpen(false)} />}
+      {ctrlOpen && (
+        <ControlCentre
+          hasPat={hasPat}
+          aiLabel={aiCfg ? `AI ENGINE: ${aiCfg.provider.toUpperCase()}` : "AI ENGINE CONFIG"}
+          onClose={() => setCtrlOpen(false)}
+          onOpenPat={() => {
+            setCtrlOpen(false);
+            setPatOpen(true);
+          }}
+          onOpenAi={() => {
+            setCtrlOpen(false);
+            setAiOpen(true);
+          }}
+          onSwitchRepo={() => {
+            setCtrlOpen(false);
+            setCfgOpen(true);
+          }}
+          onOpenBridge={() => {
+            setCtrlOpen(false);
+            setBridgeOpen(true);
+          }}
+          onOpenShortcuts={() => {
+            setCtrlOpen(false);
+            setKeysOpen(true);
+          }}
+          onOpenReadme={() => {
+            setCtrlOpen(false);
+            setReadmeOpen(true);
+          }}
+        />
+      )}
       {agentOpen && (
         <AgentOsPanel
           specs={draftAgents ? [{ path: "AGENTS.md", name: "AGENTS.md (DRAFT)" }] : rootSpecs}
