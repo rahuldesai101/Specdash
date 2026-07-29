@@ -776,9 +776,10 @@ function Index() {
                 ariaLabel="Infinity and build tools menu"
                 items={buildItems}
               />
+              <span className="hidden items-center gap-2 lg:flex">
               <button
                 onClick={() => setKeysOpen(true)}
-                className={`${btn} hidden lg:inline-flex`}
+                className={`${btn}`}
                 title="Keyboard shortcuts (Ctrl+/)"
                 aria-label="Keyboard shortcuts"
               >
@@ -787,7 +788,7 @@ function Index() {
               <button
                 onClick={() => spec && window.open(ghBlobUrl(spec.path, headSha ?? branch), "_blank", "noopener,noreferrer")}
                 disabled={!spec}
-                className={`${btn} hidden lg:inline-flex disabled:opacity-30`}
+                className={`${btn} disabled:opacity-30`}
                 title="Open current file on GitHub (Alt+G)"
                 aria-label="Open current file on GitHub"
               >
@@ -796,12 +797,13 @@ function Index() {
               <button
                 onClick={() => spec?.text && copy(spec.text, "RAW_MARKDOWN_COPIED")}
                 disabled={!spec?.text}
-                className={`${btn} hidden lg:inline-flex disabled:opacity-30`}
+                className={`${btn} disabled:opacity-30`}
                 title="Copy raw content (Alt+C)"
                 aria-label="Copy raw content"
               >
                 📋
               </button>
+              </span>
               <HeaderMenu
                 icon="•••"
                 ariaLabel="More actions"
