@@ -65,9 +65,28 @@ export const EXTERNAL_PROVIDERS: ExternalProvider[] = [
     dot: "🌙",
     color: "#ffaa00",
     urlLimit: 6000,
-    url: (p) => (p ? `https://www.kimi.com/?q=${encodeURIComponent(p)}` : "https://www.kimi.com/"),
+    url: (p) => (p ? `https://www.kimi.com/chat?q=${encodeURIComponent(p)}` : "https://www.kimi.com/"),
   },
 ];
+
+const PREF_KEY = "sd:externalAi";
+
+/** Default external AI target chosen in the Control Centre. */
+export function getPreferredProviderId(): ExternalProvider["id"] {
+  if (typeof localStorage === "undefined") return "chatgpt";
+  const v = localStorage.getItem(PREF_KEY);
+  return (EXTERNAL_PROVIDERS.find((p) => p.id === v)?.id ?? "chatgpt") as ExternalProvider["id"];
+}
+
+export function setPreferredProviderId(id: string) {
+  localStorage.setItem(PREF_KEY, id);
+}
+
+/** Providers ordered so the user's default target comes first. */
+export function orderedProviders(): ExternalProvider[] {
+  const pref = getPreferredProviderId();
+  return [...EXTERNAL_PROVIDERS].sort((a, b) => Number(b.id === pref) - Number(a.id === pref));
+}
 
 export const DEFAULT_DIRECTIVE =
   "You are an expert technical editor and documentation reviewer. Be precise, terse and cite the spec.";

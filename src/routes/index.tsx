@@ -28,6 +28,7 @@ import { DatasetInspector } from "@/components/data/DatasetInspector";
 import { NewSpecModal } from "@/components/git/NewSpecModal";
 import { SpecToc } from "@/components/layout/SpecToc";
 import { ShortcutsModal } from "@/components/layout/ShortcutsModal";
+import { ControlCentre, applyStoredTheme } from "@/components/layout/ControlCentre";
 import { ReadmeModal } from "@/components/layout/ReadmeModal";
 import { editFileIntentUrl } from "@/lib/git-intent";
 import { detectRootSpecs, parseAgentSpec, type RootSpec } from "@/lib/agents-spec";
@@ -35,7 +36,7 @@ import { AgentOsBanner, AgentOsPanel } from "@/components/agents/AgentOsPanel";
 import { DriftInspector } from "@/components/drift/DriftInspector";
 import { SddCompilerPanel } from "@/components/sdd/SddCompilerPanel";
 import { InfinityLoopModal } from "@/components/infinity/InfinityLoopModal";
-import { BridgePanel, BridgePill } from "@/components/bridge/BridgePanel";
+import { BridgePanel } from "@/components/bridge/BridgePanel";
 import { useCliBridge } from "@/hooks/use-cli-bridge";
 import { SelectionBar, type SelectionPayload } from "@/components/ai/SelectionBar";
 import { EnvGuard } from "@/components/devtools/EnvGuard";
@@ -136,6 +137,7 @@ function Index() {
   const [depsOpen, setDepsOpen] = useState(false);
   const [relOpen, setRelOpen] = useState(false);
   const [bridgeOpen, setBridgeOpen] = useState(false);
+  const [ctrlOpen, setCtrlOpen] = useState(false);
   const [selPack, setSelPack] = useState<{ path: string; content: string }[]>([]);
   const [cmdTab, setCmdTab] = useState<"all" | "prompts">("all");
   const [loopSeed, setLoopSeed] = useState<string>("");
@@ -156,6 +158,7 @@ function Index() {
     setHasPat(Boolean(getPat()));
     if (!o) setCfgOpen(true);
     setAiCfg(loadAiConfig());
+    applyStoredTheme();
   }, []);
 
   // global hotkey engine
@@ -194,6 +197,7 @@ function Index() {
         setRelOpen(false);
         setReadmeOpen(false);
         setBridgeOpen(false);
+        setCtrlOpen(false);
         setSpec(null);
       }),
     ];
@@ -532,43 +536,21 @@ function Index() {
   );
   const draftSpec = useMemo(() => (draftAgents ? parseAgentSpec(draftRaw) : null), [draftAgents, draftRaw]);
 
-  const workbenchItems: MenuItem[] = [
+  const specEngineItems: MenuItem[] = [
+    {
+      icon: "📜",
+      label: "SPEC KIT PIPELINE",
+      hint: "specs · plans · tasks",
+      accent: "#66b3ff",
+      disabled: !owner || (!spec?.text && !bestSpec),
+      onSelect: () => void openCompiler(),
+    },
     {
       icon: "🤖",
-      label: draftAgents ? "AGENTS.md — DRAFT TEMPLATE" : `${rootSpecs[0].name} RULES`,
+      label: draftAgents ? "AGENTS.md & CONSTITUTION (DRAFT)" : "AGENTS.md & CONSTITUTION",
       accent: "#ff5500",
       onSelect: openDirectives,
     },
-    {
-      icon: "📊",
-      label: "REPO WORKFLOW DIAGRAM",
-      keys: "ALT+D",
-      accent: "#66b3ff",
-      onSelect: openDiagramGlobal,
-    },
-    {
-      icon: "🎒",
-      label: "PACK CONTEXT WINDOW",
-      accent: "#00ff66",
-      onSelect: () => {
-        setCmdTab("all");
-        setPackOpen(true);
-        setCmdOpen(true);
-      },
-    },
-    {
-      icon: "⚡",
-      label: "SAVED PROMPT SHELF",
-      keys: "ALT+S",
-      accent: "#c07cff",
-      onSelect: () => {
-        setCmdTab("prompts");
-        setCmdOpen(true);
-      },
-    },
-  ];
-
-  const compilerItems: MenuItem[] = [
     {
       icon: "🎒",
       label: "PACK CONTEXT BUNDLE",
@@ -580,36 +562,46 @@ function Index() {
       },
     },
     {
-      icon: "💻",
-      label: "EXPORT CLI PROMPT SNIPPETS",
-      accent: "#66b3ff",
-      disabled: !owner || (!spec?.text && !bestSpec),
-      onSelect: () => void openCompiler(),
-    },
-    {
       icon: "♾️",
       label: "RUN INFINITY LOOP",
       accent: "#c07cff",
       disabled: !owner,
       onSelect: () => setLoopOpen(true),
     },
-    { icon: "⚠️", label: "CHECK SPEC DRIFT", accent: "#ff5500", disabled: !owner, onSelect: () => setDriftOpen(true) },
     {
-      icon: "🤖",
-      label: draftAgents ? "AGENTS.md & CONSTITUTION (DRAFT)" : "AGENTS.md & CONSTITUTION",
-      accent: "#ff5500",
-      onSelect: openDirectives,
+      icon: "📊",
+      label: "WORKFLOW GRAPH",
+      keys: "ALT+D",
+      accent: "#66b3ff",
+      onSelect: openDiagramGlobal,
+    },
+    {
+      icon: "⚡",
+      label: "SAVED PROMPT SHELF",
+      keys: "ALT+S",
+      accent: "#c07cff",
+      onSelect: () => {
+        setCmdTab("prompts");
+        setCmdOpen(true);
+      },
     },
     { icon: "+", label: "NEW SPEC", accent: "#00ff66", disabled: !owner, onSelect: () => setNewOpen(true) },
   ];
 
-  const devToolItems: MenuItem[] = [
+  const toolsItems: MenuItem[] = [
     {
-      icon: "🔌",
-      label: bridge.state === "ACTIVE" ? "LOCAL SYNC: ACTIVE" : "LOCAL WORKSPACE CLI BRIDGE",
-      keys: "ALT+L",
-      accent: bridge.state === "ACTIVE" ? "#00ff66" : "#ffaa00",
-      onSelect: () => setBridgeOpen(true),
+      icon: "📜",
+      label: "RELEASE CHANGELOG STUDIO",
+      accent: "#c07cff",
+      disabled: !owner,
+      onSelect: () => setRelOpen(true),
+    },
+    {
+      icon: "⚠️",
+      label: "SPEC DRIFT INSPECTOR",
+      accent: "#ff5500",
+      disabled: !owner,
+      onSelect: () => setDriftOpen(true),
     },
     {
       icon: "🔐",
@@ -620,32 +612,15 @@ function Index() {
     },
     { icon: "📦", label: "DEPENDENCY RADAR", disabled: !owner, onSelect: () => setDepsOpen(true) },
     {
-      icon: "📜",
-      label: "RELEASE CHANGELOG STUDIO",
-      accent: "#c07cff",
-      disabled: !owner,
-      onSelect: () => setRelOpen(true),
+      icon: "🔌",
+      label: bridge.state === "ACTIVE" ? "LOCAL SYNC: ACTIVE" : "LOCAL WORKSPACE CLI BRIDGE",
+      keys: "ALT+L",
+      accent: bridge.state === "ACTIVE" ? "#00ff66" : "#ffaa00",
+      onSelect: () => setBridgeOpen(true),
     },
-  ];
-
-  const moreItems: MenuItem[] = [
-    { icon: "📖", label: "READ ME / HOW IT WORKS", onSelect: () => setReadmeOpen(true) },
-    { icon: "⌨", label: "KEYBOARD SHORTCUTS", keys: "CTRL+/", onSelect: () => setKeysOpen(true) },
-    {
-      icon: aiCfg ? "🟢" : "⚡",
-      label: aiCfg ? `AI ENGINE: ${aiCfg.provider.toUpperCase()}` : "AI ENGINE CONFIG",
-      accent: aiCfg ? "#00ff66" : undefined,
-      onSelect: () => setAiOpen(true),
-    },
-    {
-      icon: hasPat ? "🟢" : "🔴",
-      label: hasPat ? "GITHUB PAT: CONNECTED" : "GITHUB PAT: NOT SET",
-      accent: hasPat ? "#00ff66" : "#ff5500",
-      onSelect: () => setPatOpen(true),
-    },
-    { icon: "⇄", label: "SWITCH REPOSITORY", onSelect: () => setCfgOpen(true) },
     { icon: "📜", label: "CHANGELOG TIMELINE", onSelect: () => navigate({ to: "/changelog" }) },
   ];
+
 
   const rail = (
     <div className="flex h-full flex-col text-[11px]">
@@ -920,9 +895,9 @@ function Index() {
       <header className="sticky top-0 z-30 border-b border-hard bg-black">
         <div className="mx-auto w-full max-w-[2200px] px-3 py-2 sm:px-4 2xl:px-10">
           {/* ZONE 1 / 2 / 3 */}
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,34rem)_auto] lg:gap-4">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 lg:flex lg:flex-nowrap lg:items-center lg:gap-3">
             {/* ZONE 1 — brand + repo context */}
-            <div className="flex min-w-0 items-center gap-2">
+            <div className="flex min-w-0 items-center gap-2 lg:flex-1">
               <button
                 onClick={() => setMobileNav(true)}
                 aria-label="Open navigation"
@@ -953,7 +928,7 @@ function Index() {
                 <span className="shrink-0 text-[#444]">⇄</span>
               </button>
               <span
-                className="hidden xl:inline-block h-2 w-2 shrink-0 animate-pulse"
+                className="inline-block h-2 w-2 shrink-0 animate-pulse"
                 style={{ backgroundColor: dot }}
                 title={status}
               />
@@ -964,12 +939,12 @@ function Index() {
               onClick={() => setCmdOpen(true)}
               aria-label="Search specs and code (Ctrl+K)"
               title={`Search specs & code · ~${fmtTokens(totalTokens)} tokens indexed`}
-              className="group order-last col-span-2 flex min-w-0 items-center gap-2 border border-hard px-3 py-1.5 text-left text-[11px] text-[#666] hover:border-[#00ff66] hover:text-[#ccc] lg:order-none lg:col-span-1"
+              className="group order-last col-span-2 flex min-w-0 items-center gap-2 border border-hard px-3 py-1.5 text-left text-[11px] text-[#666] hover:border-[#00ff66] hover:text-[#ccc] lg:order-none lg:col-span-1 lg:w-[300px] lg:max-w-[300px] lg:shrink-0"
             >
               <span className="shrink-0">🔍</span>
               <span className="min-w-0 flex-1 truncate">Search specs &amp; code…</span>
-              <span className="hidden shrink-0 border border-[#222] px-1 text-[9px] tracking-widest text-[#00ff66] group-hover:hidden sm:inline">
-                CTRL+K
+              <span className="hidden shrink-0 border border-[#222] px-1 text-[9px] tracking-widest text-[#666] group-hover:hidden sm:inline">
+                CTRL K
               </span>
               <span className="hidden shrink-0 border border-[#222] px-1 text-[9px] tracking-widest text-[#ff5500] group-hover:sm:inline">
                 🎒 ~{fmtTokens(totalTokens)} TOK
@@ -980,72 +955,27 @@ function Index() {
             <div className="flex shrink-0 items-center gap-1.5 text-[10px] uppercase tracking-widest sm:gap-2">
               <HeaderMenu
                 icon="⚡"
-                label="WORKBENCH"
-                ariaLabel="Workbench tools menu"
-                items={workbenchItems}
-              />
-              <HeaderMenu
-                icon="⚡"
-                label="SPEC COMPILER"
+                label="SPEC ENGINE"
                 accent="#c07cff"
-                ariaLabel="Spec compiler menu"
-                items={compilerItems}
+                ariaLabel="Spec engine menu"
+                items={specEngineItems}
               />
               <HeaderMenu
                 icon="🛠️"
-                label="DEV TOOLS"
+                label="TOOLS"
                 accent="#66b3ff"
-                ariaLabel="Developer tools menu"
-                items={devToolItems}
+                ariaLabel="Tools menu"
+                items={toolsItems}
               />
-              <span className="hidden items-center gap-2 lg:flex">
               <button
-                onClick={() => setKeysOpen(true)}
-                className={`${btn}`}
-                title="Keyboard shortcuts (Ctrl+/)"
-                aria-label="Keyboard shortcuts"
+                onClick={() => setCtrlOpen(true)}
+                className="inline-flex min-h-8 min-w-8 shrink-0 items-center justify-center border border-hard px-2 py-1.5 text-[12px] text-[#888] hover:border-[#00ff66] hover:text-[#00ff66]"
+                title="Control Centre — tokens, default LLM, appearance"
+                aria-label="Open control centre"
               >
-                ⌨
+                ⚙️
               </button>
-              </span>
-              <HeaderMenu
-                icon="•••"
-                ariaLabel="More actions"
-                accent="#888"
-                items={moreItems}
-              />
             </div>
-          </div>
-
-          {/* SLIM STATUS SUB-HEADER */}
-          <div className="mt-1.5 flex h-7 items-center gap-1.5 overflow-x-auto text-[9px] uppercase tracking-widest whitespace-nowrap">
-            <Pill tone={status === "SYNCED" ? "#00ff66" : status === "ERROR" ? "#ff5500" : "#ffaa00"}>
-              ● DB_{status}
-            </Pill>
-            {rootSpecs[0] && (
-              <Pill tone="#ff5500">📄 {rootSpecs[0].name}: ACTIVE</Pill>
-            )}
-            {ruleFiles.some((f) => /constitution/i.test(f)) && <Pill tone="#c07cff">📜 CONSTITUTION: VERIFIED</Pill>}
-            <Pill tone="#00ff66">🎒 CONTEXT: ~{fmtTokens(totalTokens)} TOK</Pill>
-            <BridgePill bridge={bridge} onOpen={() => setBridgeOpen(true)} />
-            {selPack.length > 0 && (
-              <button
-                onClick={() => {
-                  setCmdTab("all");
-                  setPackOpen(true);
-                  setCmdOpen(true);
-                }}
-              >
-                <Pill tone="#ffaa00">🎒 SELECTIONS: {selPack.length}</Pill>
-              </button>
-            )}
-            <Pill tone="#666">⑂ {branch}</Pill>
-            {spec && <Pill tone="#00ff66">📄 {spec.path.split("/").pop()}</Pill>}
-            {!spec && activeDir && (
-              <button onClick={() => setSpec(null)} className="shrink-0">
-                <Pill tone="#888">📁 {activeDir}</Pill>
-              </button>
-            )}
           </div>
         </div>
       </header>
@@ -1055,14 +985,14 @@ function Index() {
         {/* LEFT RAIL */}
         {railOpen && (
           <aside className="hidden lg:block w-60 shrink-0 border-r border-hard">
-            <div className="sticky top-[89px] h-[calc(100vh-89px)]">{rail}</div>
+            <div className="sticky top-[53px] h-[calc(100vh-53px)]">{rail}</div>
           </aside>
         )}
 
         {/* CENTER */}
         <main className="min-w-0 flex-1">
           <AgentOsBanner specs={rootSpecs} onOpen={() => setAgentOpen(true)} onOpenFile={openSpec} />
-          <div className="grid grid-cols-2 border-b border-hard bg-black sm:grid-cols-4 lg:sticky lg:top-[89px] lg:z-20">
+          <div className="grid grid-cols-2 border-b border-hard bg-black sm:grid-cols-4 lg:sticky lg:top-[53px] lg:z-20">
             <Stat label="MD_RECORDS" value={files.length} accent="#00ff66" />
             <Stat label="DIRECTORIES" value={groups.length} />
             <Stat label="ACTIVE_ROWS" value={rows.length} accent="#ff5500" />
@@ -1258,6 +1188,37 @@ function Index() {
       )}
 
       {keysOpen && <ShortcutsModal onClose={() => setKeysOpen(false)} />}
+      {ctrlOpen && (
+        <ControlCentre
+          hasPat={hasPat}
+          aiLabel={aiCfg ? `AI ENGINE: ${aiCfg.provider.toUpperCase()}` : "AI ENGINE CONFIG"}
+          onClose={() => setCtrlOpen(false)}
+          onOpenPat={() => {
+            setCtrlOpen(false);
+            setPatOpen(true);
+          }}
+          onOpenAi={() => {
+            setCtrlOpen(false);
+            setAiOpen(true);
+          }}
+          onSwitchRepo={() => {
+            setCtrlOpen(false);
+            setCfgOpen(true);
+          }}
+          onOpenBridge={() => {
+            setCtrlOpen(false);
+            setBridgeOpen(true);
+          }}
+          onOpenShortcuts={() => {
+            setCtrlOpen(false);
+            setKeysOpen(true);
+          }}
+          onOpenReadme={() => {
+            setCtrlOpen(false);
+            setReadmeOpen(true);
+          }}
+        />
+      )}
       {agentOpen && (
         <AgentOsPanel
           specs={draftAgents ? [{ path: "AGENTS.md", name: "AGENTS.md (DRAFT)" }] : rootSpecs}
@@ -1410,16 +1371,6 @@ function Td({ children, className = "" }: { children: React.ReactNode; className
   return <td className={`border border-hard px-3 py-2 ${className}`}>{children}</td>;
 }
 
-function Pill({ tone, children }: { tone: string; children: React.ReactNode }) {
-  return (
-    <span
-      className="inline-flex shrink-0 items-center border px-1.5 py-0.5"
-      style={{ borderColor: `${tone}44`, color: tone }}
-    >
-      {children}
-    </span>
-  );
-}
 
 function Stat({ label, value, accent }: { label: string; value: string | number; accent?: string }) {
   const v = typeof value === "number" ? String(value).padStart(4, "0") : value;

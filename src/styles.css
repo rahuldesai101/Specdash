@@ -171,3 +171,17 @@
     display: none;
   }
 }
+
+/* Light mode for the brutalist shell: a single global inversion keeps every
+   hardcoded terminal color legible without a second palette. Media is
+   re-inverted so screenshots and diagrams stay true to source. */
+html[data-theme="light"] {
+  filter: invert(1) hue-rotate(180deg);
+  background: #ffffff;
+}
+
+html[data-theme="light"] img,
+html[data-theme="light"] video,
+html[data-theme="light"] svg image {
+  filter: invert(1) hue-rotate(180deg);
+}
