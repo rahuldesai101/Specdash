@@ -122,6 +122,12 @@ export function SearchModal({
     },
     overscan: 8,
   });
+
+  // Row heights depend on each hit's snippet/heading lines, so recompute the
+  // offset map whenever a new result set arrives.
+  useEffect(() => {
+    rows.measure();
+  }, [hits, rows]);
   const packTokens = useMemo(
     () => packFiles.reduce((n, f) => n + tokensOf(f.content), 0),
     [packFiles],
