@@ -1035,7 +1035,7 @@ function Index() {
           owner={owner}
           repo={repo}
           branch={branch}
-          files={files}
+          files={loopFiles}
           cfg={aiCfg}
           onClose={() => setLoopOpen(false)}
         />
