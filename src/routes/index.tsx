@@ -477,7 +477,18 @@ function Index() {
       label: "PACK CONTEXT WINDOW",
       accent: "#00ff66",
       onSelect: () => {
+        setCmdTab("all");
         setPackOpen(true);
+        setCmdOpen(true);
+      },
+    },
+    {
+      icon: "⚡",
+      label: "SAVED PROMPT SHELF",
+      keys: "ALT+S",
+      accent: "#c07cff",
+      onSelect: () => {
+        setCmdTab("prompts");
         setCmdOpen(true);
       },
     },
@@ -498,6 +509,13 @@ function Index() {
 
   const devToolItems: MenuItem[] = [
     { icon: "🌐", label: "API SANDBOX", accent: "#66b3ff", onSelect: () => setApiOpen(true) },
+    {
+      icon: "🔌",
+      label: bridge.state === "ACTIVE" ? "LOCAL SYNC: ACTIVE" : "LOCAL WORKSPACE CLI BRIDGE",
+      keys: "ALT+L",
+      accent: bridge.state === "ACTIVE" ? "#00ff66" : "#ffaa00",
+      onSelect: () => setBridgeOpen(true),
+    },
     {
       icon: "🔐",
       label: ".ENV & SECRET GUARD",
