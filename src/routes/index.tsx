@@ -28,6 +28,7 @@ import { DatasetInspector } from "@/components/data/DatasetInspector";
 import { NewSpecModal } from "@/components/git/NewSpecModal";
 import { SpecToc } from "@/components/layout/SpecToc";
 import { ShortcutsModal } from "@/components/layout/ShortcutsModal";
+import { ControlCentre, applyStoredTheme } from "@/components/layout/ControlCentre";
 import { ReadmeModal } from "@/components/layout/ReadmeModal";
 import { editFileIntentUrl } from "@/lib/git-intent";
 import { detectRootSpecs, parseAgentSpec, type RootSpec } from "@/lib/agents-spec";
