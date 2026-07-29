@@ -14,6 +14,7 @@ import {
 import { loadAiConfig, saveAiConfig, type AiConfig } from "@/lib/ai-engine";
 import { AiConfigDrawer } from "@/components/ai/AiConfigDrawer";
 import { SearchModal } from "@/components/search/SearchModal";
+import { PerfPill } from "@/components/devtools/PerfPill";
 import { useSearchIndex } from "@/hooks/use-search-index";
 import { emitHotkey, installHotkeys, onHotkey } from "@/lib/hotkeys";
 import { HeaderMenu, type MenuItem } from "@/components/layout/HeaderMenu";
