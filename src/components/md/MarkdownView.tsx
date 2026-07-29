@@ -8,6 +8,7 @@ import { parseWorkflow } from "@/lib/workflow-graph";
 import { RepoImage } from "./RepoImage";
 import { CodeBlock } from "./CodeBlock";
 import { blobUrl, isExternal, rawUrl, resolveRelativePath, slugify } from "@/lib/path-resolve";
+import { safeHref } from "@/lib/url-safety";
 
 export type MdRepoCtx = {
   owner: string;
@@ -56,7 +57,7 @@ function MarkdownViewImpl({ source, ctx }: { source: string; ctx?: MdRepoCtx }) 
             const h = href ?? "";
             if (!h || isExternal(h)) {
               return (
-                <a href={h} target="_blank" rel="noopener noreferrer" className={cls}>
+                <a href={safeHref(h)} target="_blank" rel="noopener noreferrer" className={cls}>
                   {children}
                 </a>
               );
@@ -79,7 +80,7 @@ function MarkdownViewImpl({ source, ctx }: { source: string; ctx?: MdRepoCtx }) 
             }
             if (!ctx) {
               return (
-                <a href={h} target="_blank" rel="noopener noreferrer" className={cls}>
+                <a href={safeHref(h)} target="_blank" rel="noopener noreferrer" className={cls}>
                   {children}
                 </a>
               );

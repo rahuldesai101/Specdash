@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import type MiniSearch from "minisearch";
 import { snippetFor, type DocKind, type SearchDoc } from "@/lib/search-index";
 import type { IndexState } from "@/hooks/use-search-index";
@@ -62,17 +62,20 @@ export function SearchModal({
     inputRef.current?.focus();
   }, []);
 
-  const terms = useMemo(() => q.trim().split(/\s+/).filter(Boolean), [q]);
+  // Keystrokes stay on the high-priority lane; the (expensive) MiniSearch pass
+  // and result highlighting run against a deferred copy of the query.
+  const dq = useDeferredValue(q);
+  const terms = useMemo(() => dq.trim().split(/\s+/).filter(Boolean), [dq]);
 
   const hits = useMemo<Hit[]>(() => {
     const mini = state.index as MiniSearch<SearchDoc> | null;
     if (!mini) return [];
-    const pool: Hit[] = q.trim()
-      ? (mini.search(q) as unknown as Array<SearchDoc & { score: number }>).map((r) => ({ ...r }))
+    const pool: Hit[] = dq.trim()
+      ? (mini.search(dq) as unknown as Array<SearchDoc & { score: number }>).map((r) => ({ ...r }))
       : state.docs.filter((d) => d.kind !== "snippet").slice(0, 40).map((d) => ({ ...d, score: 0 }));
     const filtered = filter === "all" ? pool : pool.filter((d) => d.kind === filter);
     return filtered.slice(0, 60);
-  }, [q, filter, state.index, state.docs]);
+  }, [dq, filter, state.index, state.docs]);
 
   useEffect(() => setCursor(0), [q, filter]);
 
