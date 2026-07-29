@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { toast } from "sonner";
 import { ExternalAiMenu } from "@/components/ai/ExternalAiMenu";
 import { detectVariables } from "@/lib/search-index";
@@ -7,7 +7,7 @@ import { detectVariables } from "@/lib/search-index";
  * Fenced code block with an interactive snippet toolbar:
  * run in playground, copy clean command, or ship it to an external AI chat.
  */
-export function CodeBlock({
+function CodeBlockImpl({
   code,
   lang,
   path = "snippet",
