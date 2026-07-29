@@ -121,6 +121,7 @@ function Index() {
   const [sddOpen, setSddOpen] = useState(false);
   const [loopOpen, setLoopOpen] = useState(false);
   const [packOpen, setPackOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const dl = parseDeepLink(window.location.search);
@@ -1129,6 +1130,17 @@ function Th({ children }: { children: React.ReactNode }) {
 }
 function Td({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return <td className={`border border-hard px-3 py-2 ${className}`}>{children}</td>;
+}
+
+function Pill({ tone, children }: { tone: string; children: React.ReactNode }) {
+  return (
+    <span
+      className="inline-flex shrink-0 items-center border px-1.5 py-0.5"
+      style={{ borderColor: `${tone}44`, color: tone }}
+    >
+      {children}
+    </span>
+  );
 }
 
 function Stat({ label, value, accent }: { label: string; value: string | number; accent?: string }) {
