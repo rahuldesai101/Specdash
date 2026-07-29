@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   dirOf,
@@ -392,6 +392,70 @@ function Index() {
 
   const btn =
     "min-h-11 sm:min-h-9 inline-flex items-center justify-center border border-[#333] px-3 text-[10px] uppercase tracking-widest hover:border-[#00ff66] hover:text-[#00ff66]";
+
+  const needSpec = (fn: () => void) => () => {
+    if (!spec) {
+      toast.error("OPEN_A_SPEC_FIRST");
+      return;
+    }
+    fn();
+  };
+
+  const workbenchItems: MenuItem[] = [
+    {
+      icon: "🤖",
+      label: `${rootSpecs[0]?.name ?? "AGENTS.md"} RULES`,
+      accent: "#ff5500",
+      disabled: rootSpecs.length === 0,
+      onSelect: () => setAgentOpen(true),
+    },
+    { icon: "⚡", label: "AI PLAYGROUND", keys: "ALT+P", onSelect: needSpec(() => emitHotkey("specPlayground")) },
+    { icon: "🌐", label: "EXTERNAL DEEP-LINK STUDIO", keys: "ALT+E", onSelect: needSpec(() => emitHotkey("specExternalAi")) },
+    { icon: "📊", label: "VISUAL WORKFLOW DIAGRAM", keys: "ALT+D", onSelect: needSpec(() => emitHotkey("specToggleDiagram")) },
+    {
+      icon: "🎒",
+      label: "PACK CONTEXT WINDOW",
+      accent: "#00ff66",
+      onSelect: () => {
+        setPackOpen(true);
+        setCmdOpen(true);
+      },
+    },
+  ];
+
+  const buildItems: MenuItem[] = [
+    {
+      icon: "♾️",
+      label: "RUN INFINITY LOOP",
+      accent: "#c07cff",
+      disabled: !owner,
+      onSelect: () => setLoopOpen(true),
+    },
+    { icon: "⚡", label: "COMPILE SPEC TO CODE", disabled: !owner, onSelect: () => setSddOpen(true) },
+    { icon: "⚠️", label: "CHECK SPEC DRIFT / ADRs", accent: "#ff5500", disabled: !owner, onSelect: () => setDriftOpen(true) },
+    { icon: "+", label: "NEW SPEC", accent: "#00ff66", disabled: !owner, onSelect: () => setNewOpen(true) },
+  ];
+
+  const moreItems: MenuItem[] = [
+    { icon: "📖", label: "READ ME / HOW IT WORKS", onSelect: () => setReadmeOpen(true) },
+    { icon: "⌨", label: "KEYBOARD SHORTCUTS", keys: "CTRL+/", onSelect: () => setKeysOpen(true) },
+    {
+      icon: aiCfg ? "🟢" : "⚡",
+      label: aiCfg ? `AI ENGINE: ${aiCfg.provider.toUpperCase()}` : "AI ENGINE CONFIG",
+      accent: aiCfg ? "#00ff66" : undefined,
+      onSelect: () => setAiOpen(true),
+    },
+    {
+      icon: hasPat ? "🟢" : "🔴",
+      label: hasPat ? "GITHUB PAT: CONNECTED" : "GITHUB PAT: NOT SET",
+      accent: hasPat ? "#00ff66" : "#ff5500",
+      onSelect: () => setPatOpen(true),
+    },
+    { icon: "⇄", label: "SWITCH REPOSITORY", onSelect: () => setCfgOpen(true) },
+    { icon: "🐙", label: "OPEN FILE ON GITHUB", keys: "ALT+G", disabled: !spec, onSelect: needSpec(() => emitHotkey("specOpenGithub")) },
+    { icon: "📋", label: "COPY RAW CONTENT", keys: "ALT+C", disabled: !spec?.text, onSelect: needSpec(() => emitHotkey("specCopyRaw")) },
+    { icon: "📜", label: "CHANGELOG TIMELINE", onSelect: () => navigate({ to: "/changelog" }) },
+  ];
 
   const rail = (
     <div className="flex h-full flex-col text-[11px]">
@@ -1059,16 +1123,6 @@ function Index() {
   );
 }
 
-function Crumb({ label, onClick }: { label: string; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="max-w-[35vw] truncate border border-hard px-2 py-1 text-[#888] hover:border-[#00ff66] hover:text-[#00ff66]"
-    >
-      {label}
-    </button>
-  );
-}
 
 function Th({ children }: { children: React.ReactNode }) {
   return <th className="border border-hard px-3 py-2 text-left font-normal">{children}</th>;
