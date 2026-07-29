@@ -456,25 +456,91 @@ function Index() {
   const btn =
     "min-h-11 sm:min-h-9 inline-flex items-center justify-center border border-[#333] px-3 text-[10px] uppercase tracking-widest hover:border-[#00ff66] hover:text-[#00ff66]";
 
-  const needSpec = (fn: () => void) => () => {
-    if (!spec) {
-      toast.error("OPEN_A_SPEC_FIRST");
+  // --- repository-global header actions -------------------------------------
+
+  /** Best spec candidate when nothing is open — used by global header actions. */
+  const bestSpec = useMemo(
+    () =>
+      files.find((f) => isSpecifyPath(f.path)) ??
+      files.find((f) => /^(agents\.md|llms\.txt)$/i.test(f.name)) ??
+      files.find((f) => f.path.toLowerCase().endsWith(".md")) ??
+      null,
+    [files],
+  );
+
+  /** Mermaid map of the whole repository — fallback when no CI/CD file exists. */
+  const repoMapChart = useMemo(() => {
+    const safe = (s: string) => s.replace(/["\n]/g, " ").slice(0, 40);
+    const lines = ["flowchart LR", `  ROOT["${safe(`${owner}/${repo}`)}"]`];
+    groups.slice(0, 16).forEach(([dir, list], i) => {
+      lines.push(`  D${i}["/${safe(dir)} · ${list.length}"]`, `  ROOT --> D${i}`);
+      list.slice(0, 6).forEach((f, j) => {
+        lines.push(`  F${i}_${j}["${safe(f.name)}"]`, `  D${i} --> F${i}_${j}`);
+      });
+    });
+    return lines.join("\n");
+  }, [groups, owner, repo]);
+
+  /** Opens the repo CI/CD workflow diagram, or the generated repo map. */
+  const openDiagramGlobal = useCallback(() => {
+    if (spec && isWorkflowPath(spec.path)) {
+      emitHotkey("specToggleDiagram");
       return;
     }
-    fn();
-  };
+    const wf = files.find((f) => isWorkflowPath(f.path));
+    if (wf) {
+      openSpec(wf.path);
+      return;
+    }
+    setMapOpen(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [files, spec]);
+
+  /** Compiles the open spec, else auto-selects the repo's primary spec. */
+  const openCompiler = useCallback(async () => {
+    if (spec?.text) {
+      setSddDoc({ path: spec.path, text: spec.text });
+      setSddOpen(true);
+      return;
+    }
+    const target = bestSpec;
+    if (!target || !owner) return;
+    setSddDoc(null);
+    setSddOpen(true);
+    try {
+      const text = await fetchRaw(owner, repo, branch, target.path);
+      setSddDoc({ path: target.path, text });
+    } catch {
+      setSddOpen(false);
+      setError("SPEC_FETCH_FAILED");
+    }
+  }, [spec, bestSpec, owner, repo, branch]);
+
+  /** Opens root AI directives; drafts a starter template when none exist. */
+  const openDirectives = useCallback(() => setAgentOpen(true), []);
+
+  const draftAgents = rootSpecs.length === 0;
+  const draftRaw = useMemo(
+    () =>
+      `# AGENTS.md (DRAFT — not committed)\n\nThis repository has no AGENTS.md, llms.txt or .cursorrules yet.\nUse this generated starter and commit it at the repository root.\n\n## Project\n\n${owner}/${repo} @ ${branch}\n\n## Agent boundaries / scope\n\n- Never edit files outside the paths listed in this document.\n- Never commit secrets, tokens or .env files.\n- Ask before adding a new dependency.\n\n## Style guide & conventions\n\n- Match the existing formatting and lint configuration.\n- Small, focused commits with imperative messages.\n- Every change ships with tests or a documented reason it cannot.\n\n## Commands\n\n\`\`\`bash\nnpm install\nnpm run dev\nnpm test\n\`\`\`\n`,
+    [owner, repo, branch],
+  );
+  const draftSpec = useMemo(() => (draftAgents ? parseAgentSpec(draftRaw) : null), [draftAgents, draftRaw]);
 
   const workbenchItems: MenuItem[] = [
     {
       icon: "🤖",
-      label: `${rootSpecs[0]?.name ?? "AGENTS.md"} RULES`,
+      label: draftAgents ? "AGENTS.md — DRAFT TEMPLATE" : `${rootSpecs[0].name} RULES`,
       accent: "#ff5500",
-      disabled: rootSpecs.length === 0,
-      onSelect: () => setAgentOpen(true),
+      onSelect: openDirectives,
     },
-    { icon: "⚡", label: "AI PLAYGROUND", keys: "ALT+P", onSelect: needSpec(() => emitHotkey("specPlayground")) },
-    { icon: "🌐", label: "EXTERNAL DEEP-LINK STUDIO", keys: "ALT+E", onSelect: needSpec(() => emitHotkey("specExternalAi")) },
-    { icon: "📊", label: "VISUAL WORKFLOW DIAGRAM", keys: "ALT+D", onSelect: needSpec(() => emitHotkey("specToggleDiagram")) },
+    {
+      icon: "📊",
+      label: "REPO WORKFLOW DIAGRAM",
+      keys: "ALT+D",
+      accent: "#66b3ff",
+      onSelect: openDiagramGlobal,
+    },
     {
       icon: "🎒",
       label: "PACK CONTEXT WINDOW",
@@ -505,7 +571,12 @@ function Index() {
       disabled: !owner,
       onSelect: () => setLoopOpen(true),
     },
-    { icon: "⚡", label: "COMPILE SPEC TO CODE", disabled: !owner, onSelect: () => setSddOpen(true) },
+    {
+      icon: "⚡",
+      label: "COMPILE SPEC TO CODE",
+      disabled: !owner || (!spec?.text && !bestSpec),
+      onSelect: () => void openCompiler(),
+    },
     { icon: "⚠️", label: "CHECK SPEC DRIFT / ADRs", accent: "#ff5500", disabled: !owner, onSelect: () => setDriftOpen(true) },
     { icon: "+", label: "NEW SPEC", accent: "#00ff66", disabled: !owner, onSelect: () => setNewOpen(true) },
   ];
