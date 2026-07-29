@@ -768,6 +768,9 @@ function Index() {
                     <div className="truncate text-[11px] text-[#888]">/{f.path}</div>
                     <div className="mt-1 flex flex-wrap gap-2 text-[10px] uppercase tracking-widest text-[#555]">
                       <span className="border border-hard px-2 py-0.5">{fmtSize(f.size)}</span>
+                      <span className="border border-hard px-2 py-0.5 text-[#00ff66]">
+                        ~{fmtTokens(tokensFromBytes(f.size))} tok
+                      </span>
                       <span className="border border-hard px-2 py-0.5">{readTime(f.size)}</span>
                       <span className="border border-hard px-2 py-0.5">{f.sha.slice(0, 7)}</span>
                     </div>
@@ -808,6 +811,7 @@ function Index() {
                       <Th>FILE_NAME</Th>
                       <Th>RELATIVE_PATH</Th>
                       <Th>SIZE</Th>
+                      <Th>TOKENS</Th>
                       <Th>READ</Th>
                       <Th>SHA</Th>
                       <Th>ACTIONS</Th>
@@ -824,6 +828,7 @@ function Index() {
                         <Td className="text-white">{f.name}</Td>
                         <Td className="text-[#888]">/{f.path}</Td>
                         <Td className="tabular-nums text-[#666]">{fmtSize(f.size)}</Td>
+                        <Td className="tabular-nums text-[#00ff66]">~{fmtTokens(tokensFromBytes(f.size))}</Td>
                         <Td className="text-[#666]">{readTime(f.size)}</Td>
                         <Td className="tabular-nums text-[#666]">{f.sha.slice(0, 10)}</Td>
                         <Td>
