@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { toast } from "sonner";
 import { ExternalAiMenu } from "@/components/ai/ExternalAiMenu";
 import { detectVariables } from "@/lib/search-index";
@@ -7,7 +7,7 @@ import { detectVariables } from "@/lib/search-index";
  * Fenced code block with an interactive snippet toolbar:
  * run in playground, copy clean command, or ship it to an external AI chat.
  */
-export function CodeBlock({
+function CodeBlockImpl({
   code,
   lang,
   path = "snippet",
@@ -70,3 +70,8 @@ export function CodeBlock({
     </div>
   );
 }
+/** Snippets are immutable strings — re-render only when the code itself changes. */
+export const CodeBlock = memo(
+  CodeBlockImpl,
+  (a, b) => a.code === b.code && a.lang === b.lang && a.path === b.path && a.onRun === b.onRun,
+);

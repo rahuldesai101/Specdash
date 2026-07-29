@@ -14,6 +14,7 @@ import {
 import { loadAiConfig, saveAiConfig, type AiConfig } from "@/lib/ai-engine";
 import { AiConfigDrawer } from "@/components/ai/AiConfigDrawer";
 import { SearchModal } from "@/components/search/SearchModal";
+import { PerfPill } from "@/components/devtools/PerfPill";
 import { useSearchIndex } from "@/hooks/use-search-index";
 import { emitHotkey, installHotkeys, onHotkey } from "@/lib/hotkeys";
 import { HeaderMenu, type MenuItem } from "@/components/layout/HeaderMenu";
@@ -102,6 +103,7 @@ function Index() {
   const [hasPat, setHasPat] = useState(false);
   const [spec, setSpec] = useState<{ path: string; text: string | null; err?: string } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [rawCopied, setRawCopied] = useState(false);
   const [now, setNow] = useState("");
   const [aiCfg, setAiCfg] = useState<AiConfig | null>(null);
   const [aiOpen, setAiOpen] = useState(false);
@@ -773,10 +775,33 @@ function Index() {
               ✏️ EDIT
             </a>
             <button
-              onClick={() => spec.text && copy(spec.text, "RAW_MARKDOWN_COPIED")}
+              onClick={() => {
+                if (!spec.text) return;
+                void copy(spec.text, "RAW_MARKDOWN_COPIED").then(() => {
+                  setRawCopied(true);
+                  setTimeout(() => setRawCopied(false), 1500);
+                });
+              }}
               className={btn}
             >
-              📋 RAW
+              {rawCopied ? "✓ COPIED" : "📋 COPY RAW"}
+            </button>
+            <button
+              onClick={() => {
+                if (!spec.text) return;
+                setSelPack((p) =>
+                  p.some((x) => x.path === spec.path)
+                    ? p
+                    : [...p, { path: spec.path, content: spec.text as string }],
+                );
+                setCmdTab("all");
+                setPackOpen(true);
+                setCmdOpen(true);
+              }}
+              className="min-h-11 sm:min-h-9 inline-flex items-center border border-[#00ff66] px-3 text-[#00ff66] hover:bg-[#00ff66] hover:text-black"
+              title={`Add ~${fmtTokens(tokensOf(spec.text ?? ""))} tokens to the LLM context budget`}
+            >
+              🎒 PACK CONTEXT (~{fmtTokens(tokensOf(spec.text ?? ""))})
             </button>
             <button
               onClick={() => {
@@ -969,24 +994,6 @@ function Index() {
               >
                 ⌨
               </button>
-              <button
-                onClick={() => spec && window.open(ghBlobUrl(spec.path, headSha ?? branch), "_blank", "noopener,noreferrer")}
-                disabled={!spec}
-                className={`${btn} disabled:opacity-30`}
-                title="Open current file on GitHub (Alt+G)"
-                aria-label="Open current file on GitHub"
-              >
-                🐙
-              </button>
-              <button
-                onClick={() => spec?.text && copy(spec.text, "RAW_MARKDOWN_COPIED")}
-                disabled={!spec?.text}
-                className={`${btn} disabled:opacity-30`}
-                title="Copy raw content (Alt+C)"
-                aria-label="Copy raw content"
-              >
-                📋
-              </button>
               </span>
               <HeaderMenu
                 icon="•••"
@@ -1172,7 +1179,10 @@ function Index() {
 
           <footer className="flex flex-wrap justify-between gap-2 border-t border-hard px-4 py-2 text-[10px] uppercase tracking-widest text-[#555]">
             <span>&gt; ENGINE: git/trees?recursive=1 + ETAG_304 + RAW_CDN</span>
-            <span className="hidden sm:inline">{now}</span>
+            <span className="flex items-center gap-2">
+              <PerfPill />
+              <span className="hidden sm:inline">{now}</span>
+            </span>
           </footer>
         </main>
 

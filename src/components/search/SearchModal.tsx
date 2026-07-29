@@ -1,7 +1,7 @@
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
-import type MiniSearch from "minisearch";
-import { snippetFor, type DocKind, type SearchDoc } from "@/lib/search-index";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import type { IndexState } from "@/hooks/use-search-index";
+import type { SearchHit } from "@/lib/search-worker-types";
 import { toast } from "sonner";
 import {
   CONTEXT_WINDOW,
@@ -24,7 +24,7 @@ const TABS: { id: Filter; label: string }[] = [
   { id: "prompts", label: "[ ⚡ SAVED PROMPTS ]" },
 ];
 
-type Hit = SearchDoc & { score: number };
+type Hit = SearchHit;
 
 export function SearchModal({
   state,
@@ -57,70 +57,74 @@ export function SearchModal({
   const [packMode, setPackMode] = useState(initialPack);
   const [picked, setPicked] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [hits, setHits] = useState<Hit[]>([]);
+  const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  // Keystrokes stay on the high-priority lane; the (expensive) MiniSearch pass
-  // and result highlighting run against a deferred copy of the query.
-  const dq = useDeferredValue(q);
-  const terms = useMemo(() => dq.trim().split(/\s+/).filter(Boolean), [dq]);
-
-  const hits = useMemo<Hit[]>(() => {
-    const mini = state.index as MiniSearch<SearchDoc> | null;
-    if (!mini) return [];
-    const pool: Hit[] = dq.trim()
-      ? (mini.search(dq) as unknown as Array<SearchDoc & { score: number }>).map((r) => ({ ...r }))
-      : state.docs.filter((d) => d.kind !== "snippet").slice(0, 40).map((d) => ({ ...d, score: 0 }));
-    const filtered = filter === "all" ? pool : pool.filter((d) => d.kind === filter);
-    return filtered.slice(0, 60);
-  }, [dq, filter, state.index, state.docs]);
+  // Keystrokes stay on the high-priority lane: querying, ranking AND snippet
+  // highlighting happen inside the search worker, debounced by 150ms.
+  const search = state.search;
+  useEffect(() => {
+    if (filter === "prompts") return;
+    let alive = true;
+    const t = setTimeout(() => {
+      void search(q, filter).then((r) => alive && setHits(r));
+    }, 150);
+    return () => {
+      alive = false;
+      clearTimeout(t);
+    };
+  }, [q, filter, search, state.docCount]);
 
   useEffect(() => setCursor(0), [q, filter]);
 
-  const counts = useMemo(() => {
-    const c: Record<DocKind | "all" | "prompts", number> = {
-      all: 0,
-      spec: 0,
-      agent: 0,
-      snippet: 0,
-      data: 0,
-      prompts: 0,
-    };
-    for (const d of state.docs) {
-      c.all += 1;
-      c[d.kind] += 1;
-    }
-    return c;
-  }, [state.docs]);
+  const counts = state.counts;
 
-  const activate = (h: Hit) => {
-    if (packMode) {
-      togglePick(h.path);
-      return;
-    }
-    if (h.kind === "snippet" && onRunSnippet) {
-      onRunSnippet(h.content, h.lang ?? "text", h.path);
-      onClose();
-      return;
-    }
-    onOpen(h.path);
-  };
+  const togglePick = useCallback(
+    (path: string) => setPicked((p) => (p.includes(path) ? p.filter((x) => x !== path) : [...p, path])),
+    [],
+  );
 
-  const togglePick = (path: string) =>
-    setPicked((p) => (p.includes(path) ? p.filter((x) => x !== path) : [...p, path]));
+  const activate = useCallback(
+    (h: Hit) => {
+      if (packMode) {
+        togglePick(h.path);
+        return;
+      }
+      if (h.kind === "snippet" && onRunSnippet) {
+        onRunSnippet(h.content, h.lang ?? "text", h.path);
+        onClose();
+        return;
+      }
+      onOpen(h.path);
+    },
+    [packMode, togglePick, onRunSnippet, onOpen, onClose],
+  );
 
-  const byPath = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const d of state.docs) if (d.kind !== "snippet" && !m.has(d.path)) m.set(d.path, d.content);
-    return m;
-  }, [state.docs]);
+  const byPath = useMemo(() => new Map(Object.entries(state.contents)), [state.contents]);
 
   const packFiles = useMemo(
     () => [...extraFiles, ...picked.map((p) => ({ path: p, content: byPath.get(p) ?? "" }))],
     [picked, byPath, extraFiles],
   );
+
+  const rows = useVirtualizer({
+    count: hits.length,
+    getScrollElement: () => listRef.current,
+    // Deterministic row heights (single-line truncated rows) keep scrolling
+    // jank-free without a measurement pass.
+    estimateSize: () => 86,
+    overscan: 8,
+  });
+
+  // Row heights depend on each hit's snippet/heading lines, so recompute the
+  // offset map whenever a new result set arrives.
+  useEffect(() => {
+    rows.measure();
+  }, [hits, rows]);
   const packTokens = useMemo(
     () => packFiles.reduce((n, f) => n + tokensOf(f.content), 0),
     [packFiles],
@@ -204,7 +208,7 @@ export function SearchModal({
               [ 🎒 PACK CONTEXT WINDOW ]
             </button>
             <span className="ml-auto text-[10px] uppercase tracking-widest" style={{ color: state.ready ? "#00ff66" : "#ffaa00" }}>
-              [ INDEX: {state.ready ? "READY" : `${pct}%`} · {state.docs.length} DOCS ]
+              [ INDEX: {state.ready ? "READY" : `${pct}%`} · {state.docCount} DOCS · WORKER ]
             </span>
           </div>
         </div>
@@ -244,7 +248,7 @@ export function SearchModal({
           </div>
         )}
 
-        <div className="min-h-0 flex-1 overflow-y-auto p-3 text-[11px]">
+        <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto p-3 text-[11px]">
           {filter === "prompts" ? (
             <PromptShelf ctx={shelfCtx} onRun={onRunPreset} />
           ) : (
@@ -254,17 +258,25 @@ export function SearchModal({
               &gt; NO_MATCHES
             </div>
           )}
-          {hits.map((h, i) => {
-            const segs = snippetFor(h.content, terms);
+          <div className="relative w-full" style={{ height: hits.length ? rows.getTotalSize() : 0 }}>
+          {rows.getVirtualItems().map((row) => {
+            const h = hits[row.index];
+            const i = row.index;
+            const segs = h.segs;
             const active = i === cursor;
             const checked = picked.includes(h.path);
             return (
               <button
                 key={h.id}
+                data-index={i}
                 onMouseEnter={() => setCursor(i)}
                 onClick={() => activate(h)}
-                className="mb-1 block w-full border px-2 py-2 text-left"
-                style={{ borderColor: checked ? "#ff5500" : active ? "#00ff66" : "#1a1a1a" }}
+                className="absolute left-0 top-0 block w-full overflow-hidden border px-2 py-1.5 text-left"
+                style={{
+                  transform: `translateY(${row.start}px)`,
+                  height: row.size - 4,
+                  borderColor: checked ? "#ff5500" : active ? "#00ff66" : "#1a1a1a",
+                }}
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="truncate text-[11px] text-white">
@@ -273,7 +285,7 @@ export function SearchModal({
                     {h.name}
                   </span>
                   <span className="shrink-0 text-[9px] uppercase tracking-widest text-[#555]">
-                    {h.kind === "snippet" ? `RUN ${h.lang}` : `~${fmtTokens(tokensOf(h.content))} tok · /${h.dir}`}
+                    {h.kind === "snippet" ? `RUN ${h.lang}` : `~${fmtTokens(h.tokens)} tok · /${h.dir}`}
                   </span>
                 </div>
                 <div className="truncate text-[10px] text-[#666]">/{h.path}</div>
@@ -298,6 +310,7 @@ export function SearchModal({
               </button>
             );
           })}
+          </div>
           </>
           )}
         </div>
