@@ -116,10 +116,7 @@ export function SearchModal({
     getScrollElement: () => listRef.current,
     // Deterministic row heights (single-line truncated rows) keep scrolling
     // jank-free without a measurement pass.
-    estimateSize: (i) => {
-      const h = hits[i];
-      return 46 + (h?.segs.length ? 20 : 0) + (h?.headings ? 16 : 0);
-    },
+    estimateSize: () => 86,
     overscan: 8,
   });
 
