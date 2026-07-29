@@ -5,6 +5,18 @@ let seq = 0;
 
 /** Module-level SVG cache keyed by diagram source — survives remounts and mode toggles. */
 const SVG_CACHE = new Map<string, string>();
+/** Bounded LRU: an unbounded map leaked every diagram ever rendered. */
+const SVG_CACHE_MAX = 40;
+
+function cacheSvg(key: string, svg: string) {
+  if (SVG_CACHE.has(key)) SVG_CACHE.delete(key);
+  SVG_CACHE.set(key, svg);
+  while (SVG_CACHE.size > SVG_CACHE_MAX) {
+    const oldest = SVG_CACHE.keys().next().value;
+    if (oldest === undefined) break;
+    SVG_CACHE.delete(oldest);
+  }
+}
 
 type Props = {
   chart: string;
@@ -103,7 +115,7 @@ function DiagramCanvasImpl({ chart, label = "MERMAID", raw, rawLang = "mermaid" 
           },
         });
         const out = await mermaid.render(`mmd-${++seq}-${Date.now()}`, chart);
-        SVG_CACHE.set(chart, out.svg);
+        cacheSvg(chart, out.svg);
         inject(out.svg);
       } catch (e) {
         if (!cancelled) setErr(e instanceof Error ? e.message : "MERMAID_RENDER_ERR");

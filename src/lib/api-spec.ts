@@ -1,3 +1,4 @@
+import { isHttpUrl } from "./url-safety";
 /** OpenAPI / Swagger discovery + endpoint extraction for the API Sandbox. */
 
 export type Endpoint = {
