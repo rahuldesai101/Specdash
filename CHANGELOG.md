@@ -12,6 +12,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - **Perplexity** joins the external AI launcher, and Gemini/Kimi now support prompt pre-fill.
+- **⚙️ Control Centre drawer** — a right-side slide-over holding GitHub PAT / AI engine keys, the default external LLM target, dark/light appearance, search-index clearing and workspace reset.
+
+### Changed
+
+- **Global header redesigned into 4 zones** (brand + repo, compact 300px search with a `CTRL K` badge, two dropdowns `⚡ SPEC ENGINE` / `🛠️ TOOLS`, and the Control Centre icon), fully responsive across mobile, tablet and desktop.
+
+### Removed
+
+- **Duplicate status sub-header** — the pill bar under the main header is gone; token budget now previews on the search bar.
 
 ### Changed
 
