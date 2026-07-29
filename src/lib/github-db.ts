@@ -1,4 +1,8 @@
 const CACHE_PREFIX = "ghdb_cache:";
+/** ETag entries expire after 24h so stale trees can never pin the UI forever. */
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+/** Hard ceiling on cached payload size (chars) — keeps localStorage healthy. */
+const CACHE_MAX_ENTRY = 512 * 1024;
 
 export type CacheStatus = "MISS" | "FRESH" | "304";
 
@@ -33,11 +37,40 @@ export type ApiResult<T> = {
   rate: RateLimit;
 };
 
+type CacheEnvelope<T> = { etag: string; data: T; ts?: number };
+
+/** Drops every ghdb cache entry (used on quota pressure and on TTL sweeps). */
+function pruneCache(all = false) {
+  if (typeof window === "undefined") return;
+  const now = Date.now();
+  for (let i = window.localStorage.length - 1; i >= 0; i--) {
+    const k = window.localStorage.key(i);
+    if (!k || !k.startsWith(CACHE_PREFIX)) continue;
+    if (all) {
+      window.localStorage.removeItem(k);
+      continue;
+    }
+    try {
+      const env = JSON.parse(window.localStorage.getItem(k) ?? "null") as CacheEnvelope<unknown> | null;
+      if (!env || !env.ts || now - env.ts > CACHE_TTL_MS) window.localStorage.removeItem(k);
+    } catch {
+      window.localStorage.removeItem(k);
+    }
+  }
+}
+
 function readCache<T>(key: string): { etag: string; data: T } | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(CACHE_PREFIX + key);
-    return raw ? (JSON.parse(raw) as { etag: string; data: T }) : null;
+    if (!raw) return null;
+    const env = JSON.parse(raw) as CacheEnvelope<T>;
+    if (!env?.etag) return null;
+    if (env.ts && Date.now() - env.ts > CACHE_TTL_MS) {
+      window.localStorage.removeItem(CACHE_PREFIX + key);
+      return null;
+    }
+    return { etag: env.etag, data: env.data };
   } catch {
     return null;
   }
@@ -45,11 +78,29 @@ function readCache<T>(key: string): { etag: string; data: T } | null {
 
 function writeCache(key: string, etag: string, data: unknown) {
   if (typeof window === "undefined" || !etag) return;
+  let payload: string;
   try {
-    window.localStorage.setItem(CACHE_PREFIX + key, JSON.stringify({ etag, data }));
+    payload = JSON.stringify({ etag, data, ts: Date.now() });
   } catch {
-    /* quota exceeded — cache is best-effort */
+    return;
   }
+  if (payload.length > CACHE_MAX_ENTRY) return;
+  try {
+    window.localStorage.setItem(CACHE_PREFIX + key, payload);
+  } catch {
+    // Quota exceeded: sweep expired entries, then retry once, then give up.
+    pruneCache();
+    try {
+      window.localStorage.setItem(CACHE_PREFIX + key, payload);
+    } catch {
+      pruneCache(true);
+    }
+  }
+}
+
+/** Public escape hatch for the settings drawer. */
+export function clearGithubCache() {
+  pruneCache(true);
 }
 
 export async function ghFetch<T>(path: string): Promise<ApiResult<T>> {

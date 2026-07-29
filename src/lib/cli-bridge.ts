@@ -13,6 +13,8 @@
  *   POST /write       -> { files: [{ path, content }] } => { written: string[] }
  */
 
+import { isLoopbackUrl } from "./url-safety";
+
 export const DEFAULT_BRIDGE_URL = "http://localhost:4321";
 
 const URL_KEY = "cli_bridge_url";
@@ -37,12 +39,17 @@ export type BridgeState = "OFF" | "CONNECTING" | "ACTIVE" | "ERROR";
 
 export function getBridgeUrl(): string {
   if (typeof window === "undefined") return DEFAULT_BRIDGE_URL;
-  return window.localStorage.getItem(URL_KEY) || DEFAULT_BRIDGE_URL;
+  const stored = window.localStorage.getItem(URL_KEY) || DEFAULT_BRIDGE_URL;
+  // Defence in depth: a non-loopback value (tampered storage, stale entry)
+  // must never become an exfiltration target for diffs / exec output.
+  return isLoopbackUrl(stored) ? stored : DEFAULT_BRIDGE_URL;
 }
 
 export function setBridgeUrl(v: string) {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(URL_KEY, v.trim().replace(/\/$/, "") || DEFAULT_BRIDGE_URL);
+  const next = v.trim().replace(/\/$/, "") || DEFAULT_BRIDGE_URL;
+  if (!isLoopbackUrl(next)) throw new Error("BRIDGE_URL_REJECTED — loopback addresses only (http://localhost:PORT)");
+  window.localStorage.setItem(URL_KEY, next);
 }
 
 export function isBridgeEnabled(): boolean {
@@ -57,6 +64,7 @@ export function setBridgeEnabled(on: boolean) {
 }
 
 async function call<T>(url: string, path: string, init?: RequestInit, timeoutMs = 8000): Promise<T> {
+  if (!isLoopbackUrl(url)) throw new Error("BRIDGE_URL_REJECTED — loopback addresses only");
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
