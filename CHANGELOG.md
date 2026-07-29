@@ -5,7 +5,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Removed
+
+- **Embedded API Workbench** — the HTTP client / API Sandbox (and its OpenAPI discovery layer) is gone, along with its header entry, state and hotkey wiring. SPEC DASH stays focused on spec-driven work: Spec Kit pipeline, AGENTS.md/Constitution, context token budgeting and the Infinity Loop.
+
+### Added
+
+- **Perplexity** joins the external AI launcher, and Gemini/Kimi now support prompt pre-fill.
+
 ### Changed
+
+- **Spec Compiler menu** — the old `BUILD` dropdown is now `[ ⚡ SPEC COMPILER ▾ ]`: Pack Context Bundle, Export CLI Prompt Snippets, Run Infinity Loop, Check Spec Drift, AGENTS.md & Constitution.
+- **External AI deep links** — every provider (ChatGPT, Claude, Gemini, Perplexity, Kimi) is opened with a `?q=` pre-filled prompt when the payload fits, the payload is always copied to the clipboard first, and the toast reads `[ ⚡ Content copied & passed to … Press Ctrl+V if field isn't pre-filled ]`. Payloads now carry repository + active-file context headers.
 
 - **Performance overhaul** — full-text search now runs entirely off the main thread in a dedicated Web Worker (`src/lib/search.worker.ts`): indexing, prefix querying and snippet highlighting no longer block typing. Search results are DOM-virtualized with `@tanstack/react-virtual`, queries are debounced at 150ms, and markdown/code-block renderers are memoized. A live FPS + render-time meter sits in the footer.
 - **File actions relocated** — the remaining file-scoped buttons (Open on GitHub, Copy Raw) left the global header; the spec reader toolbar now owns them and adds a `🎒 PACK CONTEXT` action that pushes the open file (with its token cost) straight into the LLM context window.
