@@ -774,10 +774,33 @@ function Index() {
               ✏️ EDIT
             </a>
             <button
-              onClick={() => spec.text && copy(spec.text, "RAW_MARKDOWN_COPIED")}
+              onClick={() => {
+                if (!spec.text) return;
+                void copy(spec.text, "RAW_MARKDOWN_COPIED").then(() => {
+                  setRawCopied(true);
+                  setTimeout(() => setRawCopied(false), 1500);
+                });
+              }}
               className={btn}
             >
-              📋 RAW
+              {rawCopied ? "✓ COPIED" : "📋 COPY RAW"}
+            </button>
+            <button
+              onClick={() => {
+                if (!spec.text) return;
+                setSelPack((p) =>
+                  p.some((x) => x.path === spec.path)
+                    ? p
+                    : [...p, { path: spec.path, content: spec.text as string }],
+                );
+                setCmdTab("all");
+                setPackOpen(true);
+                setCmdOpen(true);
+              }}
+              className="min-h-11 sm:min-h-9 inline-flex items-center border border-[#00ff66] px-3 text-[#00ff66] hover:bg-[#00ff66] hover:text-black"
+              title={`Add ~${fmtTokens(tokensOf(spec.text ?? ""))} tokens to the LLM context budget`}
+            >
+              🎒 PACK CONTEXT (~{fmtTokens(tokensOf(spec.text ?? ""))})
             </button>
             <button
               onClick={() => {
