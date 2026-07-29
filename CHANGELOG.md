@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- Header actions are now repository-global: removed file-dependent dead-end buttons (AI Playground, External Deep-Link Studio, Open on GitHub, Copy Raw) from the top header — those live in the inline file view toolbar. AGENTS.md directives auto-draft a starter template when none exist, the workflow diagram resolves CI/CD files or falls back to a generated repo map, and Compile Spec to Code auto-selects the repo's primary spec.
+
 ### Security
 - **URL safety perimeter** — new `src/lib/url-safety.ts` centralises scheme allow-listing (`http`, `https`, `mailto`, `tel`); markdown links are now sanitised through `safeHref` and images through `safeImageSrc`, blocking `javascript:`/`data:` payloads embedded in untrusted specs.
 - **PAT exfiltration guard** — the GitHub token is only ever attached to `raw.githubusercontent.com` requests; any other image host renders without credentials.
