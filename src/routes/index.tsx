@@ -665,6 +665,15 @@ function Index() {
                 </button>
               )}
               <button
+                onClick={() => setDriftOpen(true)}
+                disabled={!owner}
+                className={`${btn} border-[#ff5500] text-[#ff5500] disabled:opacity-40`}
+                title="Spec Drift Inspector — compare recent commits against AGENTS.md / constitution.md / ADRs"
+                aria-label="Open spec drift inspector"
+              >
+                ⚠️<span className="hidden md:inline ml-1">DRIFT</span>
+              </button>
+              <button
                 onClick={() => setNewOpen(true)}
                 disabled={!owner}
                 className={`${btn} border-[#00ff66] text-[#00ff66] disabled:opacity-40`}
