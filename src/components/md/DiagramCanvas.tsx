@@ -1,5 +1,19 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { onHotkey } from "@/lib/hotkeys";
+import { useThemeMode } from "@/lib/theme";
+
+/** Reads the live palette so diagrams follow the active theme. */
+function palette() {
+  const s = getComputedStyle(document.documentElement);
+  const v = (n: string, fb: string) => s.getPropertyValue(n).trim() || fb;
+  return {
+    bg: v("--t-bg", "#000000"),
+    surface: v("--t-surface", "#0a0a0a"),
+    fg: v("--t-fg", "#ffffff"),
+    accent: v("--t-green", "#00ff66"),
+    surface2: v("--t-surface-2", "#111111"),
+  };
+}
 
 let seq = 0;
 
@@ -38,13 +52,14 @@ type Props = {
  *    never unmounted, so transform state and the injected SVG persist.
  */
 function DiagramCanvasImpl({ chart, label = "MERMAID", raw, rawLang = "mermaid" }: Props) {
+  const themeMode = useThemeMode();
   const host = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const zoomLabel = useRef<HTMLSpanElement>(null);
   const viewport = useRef<HTMLDivElement>(null);
 
   const [err, setErr] = useState<string | null>(null);
-  const [ready, setReady] = useState(() => SVG_CACHE.has(chart));
+  const [ready, setReady] = useState(() => SVG_CACHE.has(`${chart}`));
   const [mode, setMode] = useState<"visual" | "raw">("visual");
   const [full, setFull] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
@@ -87,7 +102,8 @@ function DiagramCanvasImpl({ chart, label = "MERMAID", raw, rawLang = "mermaid" 
       setReady(true);
     };
 
-    const cached = SVG_CACHE.get(chart);
+    const key = `${themeMode}::${chart}`;
+    const cached = SVG_CACHE.get(key);
     if (cached) {
       inject(cached);
       return () => {
@@ -99,23 +115,25 @@ function DiagramCanvasImpl({ chart, label = "MERMAID", raw, rawLang = "mermaid" 
     (async () => {
       try {
         const mermaid = (await import("mermaid")).default;
+        const p = palette();
+        const light = document.documentElement.getAttribute("data-theme") === "light";
         mermaid.initialize({
           startOnLoad: false,
-          theme: "dark",
+          theme: light ? "neutral" : "dark",
           securityLevel: "strict",
           fontFamily: "JetBrains Mono, ui-monospace, monospace",
           themeVariables: {
-            background: "#000000",
-            primaryColor: "#0a0a0a",
-            primaryTextColor: "#ffffff",
-            primaryBorderColor: "#00ff66",
-            lineColor: "#00ff66",
-            secondaryColor: "#111111",
-            tertiaryColor: "#111111",
+            background: p.bg,
+            primaryColor: p.surface,
+            primaryTextColor: p.fg,
+            primaryBorderColor: p.accent,
+            lineColor: p.accent,
+            secondaryColor: p.surface2,
+            tertiaryColor: p.surface2,
           },
         });
         const out = await mermaid.render(`mmd-${++seq}-${Date.now()}`, chart);
-        cacheSvg(chart, out.svg);
+        cacheSvg(key, out.svg);
         inject(out.svg);
       } catch (e) {
         if (!cancelled) setErr(e instanceof Error ? e.message : "MERMAID_RENDER_ERR");
@@ -125,7 +143,7 @@ function DiagramCanvasImpl({ chart, label = "MERMAID", raw, rawLang = "mermaid" 
     return () => {
       cancelled = true;
     };
-  }, [chart]);
+  }, [chart, themeMode]);
 
   // ---- node click → pathway trace (bound once per injected SVG) --------------
   useEffect(() => {

@@ -33,16 +33,16 @@ function CodeBlockImpl({
   };
 
   const btn =
-    "border border-[#333] px-2 py-1 text-[9px] uppercase tracking-widest text-[#888] hover:border-[#00ff66] hover:text-[#00ff66]";
+    "border border-[var(--t-line)] px-2 py-1 text-[9px] uppercase tracking-widest text-[var(--t-dim)] hover:border-[var(--t-green)] hover:text-[var(--t-green)]";
 
   return (
-    <div className="group relative border border-hard bg-[#0a0a0a]">
-      <div className="flex flex-wrap items-center gap-2 border-b border-[#161616] px-3 py-2">
-        <span className="text-[9px] uppercase tracking-widest text-[#555]">
+    <div className="group relative border border-hard bg-[var(--t-surface)]">
+      <div className="flex flex-wrap items-center gap-2 border-b border-[var(--t-surface-2)] px-3 py-2">
+        <span className="text-[9px] uppercase tracking-widest text-[var(--t-dim-3)]">
           [ CODE{lang ? `: ${lang}` : ""} ]
         </span>
         {vars.length > 0 && (
-          <span className="text-[9px] uppercase tracking-widest text-[#ffaa00]">
+          <span className="text-[9px] uppercase tracking-widest text-[var(--t-amber)]">
             [ VARS: {vars.join(", ")} ]
           </span>
         )}
@@ -65,7 +65,7 @@ function CodeBlockImpl({
         </div>
       </div>
       <pre className="overflow-x-auto p-3">
-        <code className="whitespace-pre text-[11px] text-[#ccc]">{code}</code>
+        <code className="whitespace-pre text-[11px] text-[var(--t-fg-2)]">{code}</code>
       </pre>
     </div>
   );

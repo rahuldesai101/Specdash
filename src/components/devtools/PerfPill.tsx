@@ -30,7 +30,7 @@ export function PerfPill() {
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  const tone = fps >= 50 ? "#00ff66" : fps >= 30 ? "#ffaa00" : "#ff5500";
+  const tone = fps >= 50 ? "var(--t-green)" : fps >= 30 ? "var(--t-amber)" : "var(--t-orange)";
   return (
     <span
       className="inline-flex items-center border px-2 py-0.5 text-[9px] uppercase tracking-widest"

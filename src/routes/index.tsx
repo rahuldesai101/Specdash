@@ -215,7 +215,7 @@ function Index() {
 
   // ASCII startup banner
   useEffect(() => {
-    console.log("%c[ SPEC_DASH // GITHUB_AS_A_DATABASE ]", "color:#00ff66;font-weight:bold");
+    console.log("%c[ SPEC_DASH // GITHUB_AS_A_DATABASE ]", "color:var(--t-green);font-weight:bold");
   }, []);
 
   // dynamic browser tab title
@@ -404,7 +404,7 @@ function Index() {
   }, [files, rootSpecs]);
 
   const dot =
-    status === "SYNCED" ? "#00ff66" : status === "SYNCING" ? "#ffaa00" : status === "ERROR" ? "#ff5500" : "#666";
+    status === "SYNCED" ? "var(--t-green)" : status === "SYNCING" ? "var(--t-amber)" : status === "ERROR" ? "var(--t-orange)" : "var(--t-dim-2)";
 
   const ghBlobUrl = (path: string, ref?: string | null) =>
     buildBlobUrl(owner, repo, ref ?? branch, path);
@@ -457,7 +457,7 @@ function Index() {
   }, [pendingPath, status, files]);
 
   const btn =
-    "min-h-11 sm:min-h-9 inline-flex items-center justify-center border border-[#333] px-3 text-[10px] uppercase tracking-widest hover:border-[#00ff66] hover:text-[#00ff66]";
+    "min-h-11 sm:min-h-9 inline-flex items-center justify-center border border-[var(--t-line)] px-3 text-[10px] uppercase tracking-widest hover:border-[var(--t-green)] hover:text-[var(--t-green)]";
 
   // --- repository-global header actions -------------------------------------
 
@@ -541,20 +541,20 @@ function Index() {
       icon: "📜",
       label: "SPEC KIT PIPELINE",
       hint: "specs · plans · tasks",
-      accent: "#66b3ff",
+      accent: "var(--t-blue)",
       disabled: !owner || (!spec?.text && !bestSpec),
       onSelect: () => void openCompiler(),
     },
     {
       icon: "🤖",
       label: draftAgents ? "AGENTS.md & CONSTITUTION (DRAFT)" : "AGENTS.md & CONSTITUTION",
-      accent: "#ff5500",
+      accent: "var(--t-orange)",
       onSelect: openDirectives,
     },
     {
       icon: "🎒",
       label: "PACK CONTEXT BUNDLE",
-      accent: "#00ff66",
+      accent: "var(--t-green)",
       onSelect: () => {
         setCmdTab("all");
         setPackOpen(true);
@@ -564,7 +564,7 @@ function Index() {
     {
       icon: "♾️",
       label: "RUN INFINITY LOOP",
-      accent: "#c07cff",
+      accent: "var(--t-purple)",
       disabled: !owner,
       onSelect: () => setLoopOpen(true),
     },
@@ -572,41 +572,41 @@ function Index() {
       icon: "📊",
       label: "WORKFLOW GRAPH",
       keys: "ALT+D",
-      accent: "#66b3ff",
+      accent: "var(--t-blue)",
       onSelect: openDiagramGlobal,
     },
     {
       icon: "⚡",
       label: "SAVED PROMPT SHELF",
       keys: "ALT+S",
-      accent: "#c07cff",
+      accent: "var(--t-purple)",
       onSelect: () => {
         setCmdTab("prompts");
         setCmdOpen(true);
       },
     },
-    { icon: "+", label: "NEW SPEC", accent: "#00ff66", disabled: !owner, onSelect: () => setNewOpen(true) },
+    { icon: "+", label: "NEW SPEC", accent: "var(--t-green)", disabled: !owner, onSelect: () => setNewOpen(true) },
   ];
 
   const toolsItems: MenuItem[] = [
     {
       icon: "📜",
       label: "RELEASE CHANGELOG STUDIO",
-      accent: "#c07cff",
+      accent: "var(--t-purple)",
       disabled: !owner,
       onSelect: () => setRelOpen(true),
     },
     {
       icon: "⚠️",
       label: "SPEC DRIFT INSPECTOR",
-      accent: "#ff5500",
+      accent: "var(--t-orange)",
       disabled: !owner,
       onSelect: () => setDriftOpen(true),
     },
     {
       icon: "🔐",
       label: ".ENV & SECRET GUARD",
-      accent: "#ff5500",
+      accent: "var(--t-orange)",
       disabled: !owner,
       onSelect: () => setEnvOpen(true),
     },
@@ -615,7 +615,7 @@ function Index() {
       icon: "🔌",
       label: bridge.state === "ACTIVE" ? "LOCAL SYNC: ACTIVE" : "LOCAL WORKSPACE CLI BRIDGE",
       keys: "ALT+L",
-      accent: bridge.state === "ACTIVE" ? "#00ff66" : "#ffaa00",
+      accent: bridge.state === "ACTIVE" ? "var(--t-green)" : "var(--t-amber)",
       onSelect: () => setBridgeOpen(true),
     },
     { icon: "📜", label: "CHANGELOG TIMELINE", onSelect: () => navigate({ to: "/changelog" }) },
@@ -625,18 +625,18 @@ function Index() {
   const rail = (
     <div className="flex h-full flex-col text-[11px]">
       <div className="border-b border-hard px-3 py-3">
-        <div className="text-[10px] uppercase tracking-widest text-[#666] mb-2">[ REPOSITORY ]</div>
+        <div className="text-[10px] uppercase tracking-widest text-[var(--t-dim-2)] mb-2">[ REPOSITORY ]</div>
         <button
           onClick={() => setCfgOpen(true)}
-          className="w-full min-h-11 border border-hard px-2 text-left text-[11px] text-[#00ff66] hover:border-[#00ff66] break-all"
+          className="w-full min-h-11 border border-hard px-2 text-left text-[11px] text-[var(--t-green)] hover:border-[var(--t-green)] break-all"
         >
           {owner || "___"}/{repo || "___"}
-          <div className="text-[10px] text-[#666]">@{branch} · [CHANGE]</div>
+          <div className="text-[10px] text-[var(--t-dim-2)]">@{branch} · [CHANGE]</div>
         </button>
         {agentsFile && (
           <button
             onClick={() => openSpec(agentsFile.path)}
-            className="mt-2 w-full min-h-11 border border-[#ff5500] px-2 text-left text-[10px] uppercase tracking-widest text-[#ff5500] hover:bg-[#ff5500] hover:text-black"
+            className="mt-2 w-full min-h-11 border border-[var(--t-orange)] px-2 text-left text-[10px] uppercase tracking-widest text-[var(--t-orange)] hover:bg-[var(--t-orange)] hover:text-[var(--t-on-accent)]"
           >
             ⚑ {agentsFile.name}
           </button>
@@ -644,14 +644,14 @@ function Index() {
       </div>
 
       <div className="flex-1 overflow-y-auto py-2">
-        <div className="px-3 pb-2 text-[10px] uppercase tracking-widest text-[#666]">
+        <div className="px-3 pb-2 text-[10px] uppercase tracking-widest text-[var(--t-dim-2)]">
           [ AI_CONTEXT_TREE: {String(groups.length).padStart(2, "0")} DIRS · ~{fmtTokens(totalTokens)} TOK ]
         </div>
         {groups.map(([dir, list]) => (
           <div
             key={dir}
             className="flex items-stretch"
-            style={{ backgroundColor: activeDir === dir ? "#00ff66" : "transparent" }}
+            style={{ backgroundColor: activeDir === dir ? "var(--t-green)" : "transparent" }}
           >
             <button
               onClick={() => {
@@ -659,12 +659,12 @@ function Index() {
                 setMobileNav(false);
               }}
               className="flex-1 min-w-0 min-h-11 px-3 py-1 text-left text-[11px] uppercase tracking-wider"
-              style={{ color: activeDir === dir ? "#000" : "#fff" }}
+              style={{ color: activeDir === dir ? "var(--t-on-accent)" : "var(--t-fg)" }}
             >
               <span className="block truncate">📁 /{dir} ({String(list.length).padStart(2, "0")})</span>
               <span
                 className="block text-[9px] tracking-widest"
-                style={{ color: activeDir === dir ? "#000" : "#666" }}
+                style={{ color: activeDir === dir ? "var(--t-on-accent)" : "var(--t-dim-2)" }}
               >
                 {fmtSize(list.reduce((n, f) => n + f.size, 0))} · ~
                 {fmtTokens(list.reduce((n, f) => n + tokensFromBytes(f.size), 0))} tokens
@@ -678,7 +678,7 @@ function Index() {
                 title="Open folder in GitHub"
                 aria-label={`Open folder /${dir} in GitHub`}
                 className="min-h-11 min-w-11 grid place-items-center opacity-60 hover:opacity-100"
-                style={{ color: activeDir === dir ? "#000" : "#888" }}
+                style={{ color: activeDir === dir ? "var(--t-on-accent)" : "var(--t-dim)" }}
               >
                 ↗
               </a>
@@ -691,7 +691,7 @@ function Index() {
               setNewOpen(true);
               setMobileNav(false);
             }}
-            className="mt-2 mx-3 min-h-11 w-[calc(100%-1.5rem)] border border-[#00ff66] px-2 text-[10px] uppercase tracking-widest text-[#00ff66] hover:bg-[#00ff66] hover:text-black"
+            className="mt-2 mx-3 min-h-11 w-[calc(100%-1.5rem)] border border-[var(--t-green)] px-2 text-[10px] uppercase tracking-widest text-[var(--t-green)] hover:bg-[var(--t-green)] hover:text-[var(--t-on-accent)]"
           >
             + NEW SPEC
           </button>
@@ -699,11 +699,11 @@ function Index() {
       </div>
 
       <div className="border-t border-hard px-3 py-3 space-y-1 text-[10px] uppercase tracking-widest">
-        <div style={{ color: rate.remaining !== null && rate.remaining < 10 ? "#ff5500" : "#888" }}>
+        <div style={{ color: rate.remaining !== null && rate.remaining < 10 ? "var(--t-orange)" : "var(--t-dim)" }}>
           [ API_QUOTA: {rate.remaining ?? "--"}/{rate.limit ?? "--"} ]
         </div>
-        <div style={{ color: cacheStatus === "304" ? "#00ff66" : "#666" }}>[ CACHE: {cacheStatus} ]</div>
-        <div className="text-[#555]">[ T: {now.slice(11, 19)}Z ]</div>
+        <div style={{ color: cacheStatus === "304" ? "var(--t-green)" : "var(--t-dim-2)" }}>[ CACHE: {cacheStatus} ]</div>
+        <div className="text-[var(--t-dim-3)]">[ T: {now.slice(11, 19)}Z ]</div>
         <button onClick={sync} className={`${btn} w-full mt-2`}>
           [ PULL ]
         </button>
@@ -712,20 +712,20 @@ function Index() {
   );
 
   const reader = spec && (
-    <div className="flex h-full min-h-0 flex-col bg-black">
-      <div className="sticky top-0 z-10 border-b border-hard bg-black px-3 py-2 sm:px-4 sm:py-3">
+    <div className="flex h-full min-h-0 flex-col bg-[var(--t-bg)]">
+      <div className="sticky top-0 z-10 border-b border-hard bg-[var(--t-bg)] px-3 py-2 sm:px-4 sm:py-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0 flex items-center gap-2">
             <button
               onClick={() => setSpec(null)}
-              className="sm:hidden min-h-11 min-w-11 border border-hard px-2 text-[11px] text-[#888] hover:text-[#00ff66]"
+              className="sm:hidden min-h-11 min-w-11 border border-hard px-2 text-[11px] text-[var(--t-dim)] hover:text-[var(--t-green)]"
               aria-label="Back to list"
             >
               ←
             </button>
             <div className="min-w-0">
-              <div className="truncate text-[12px] uppercase tracking-widest text-[#00ff66]">/{spec.path}</div>
-              <div className="text-[10px] uppercase tracking-widest text-[#555]">
+              <div className="truncate text-[12px] uppercase tracking-widest text-[var(--t-green)]">/{spec.path}</div>
+              <div className="text-[10px] uppercase tracking-widest text-[var(--t-dim-3)]">
                 {spec.text
                   ? `${words(spec.text)} words · ~${fmtTokens(tokensOf(spec.text))} tokens · ${readTime(spec.text.length)}`
                   : "loading…"}
@@ -739,7 +739,7 @@ function Index() {
                   setSddDoc({ path: spec.path, text: spec.text as string });
                   setSddOpen(true);
                 }}
-                className="min-h-11 sm:min-h-9 inline-flex items-center border border-[#00ff66] bg-[#00ff66] px-3 text-black"
+                className="min-h-11 sm:min-h-9 inline-flex items-center border border-[var(--t-green)] bg-[var(--t-green)] px-3 text-[var(--t-on-accent)]"
                 title="Compile this spec into tasks.md, test skeletons and agent prompt chains"
               >
                 ⚡ COMPILE SPEC TO SCAFFOLD
@@ -749,7 +749,7 @@ function Index() {
               href={ghBlobUrl(spec.path, branch)}
               target="_blank"
               rel="noopener noreferrer"
-              className="min-h-11 sm:min-h-9 inline-flex items-center border border-[#00ff66] px-3 text-[#00ff66] hover:bg-[#00ff66] hover:text-black"
+              className="min-h-11 sm:min-h-9 inline-flex items-center border border-[var(--t-green)] px-3 text-[var(--t-green)] hover:bg-[var(--t-green)] hover:text-[var(--t-on-accent)]"
             >
               ↗ GITHUB
             </a>
@@ -758,7 +758,7 @@ function Index() {
               target="_blank"
               rel="noopener noreferrer"
               title="Opens GitHub web editor. Without write access GitHub creates a fork and Pull Request for you."
-              className="min-h-11 sm:min-h-9 inline-flex items-center border border-[#ff5500] px-3 text-[#ff5500] hover:bg-[#ff5500] hover:text-black"
+              className="min-h-11 sm:min-h-9 inline-flex items-center border border-[var(--t-orange)] px-3 text-[var(--t-orange)] hover:bg-[var(--t-orange)] hover:text-[var(--t-on-accent)]"
             >
               ✏️ EDIT
             </a>
@@ -786,7 +786,7 @@ function Index() {
                 setPackOpen(true);
                 setCmdOpen(true);
               }}
-              className="min-h-11 sm:min-h-9 inline-flex items-center border border-[#00ff66] px-3 text-[#00ff66] hover:bg-[#00ff66] hover:text-black"
+              className="min-h-11 sm:min-h-9 inline-flex items-center border border-[var(--t-green)] px-3 text-[var(--t-green)] hover:bg-[var(--t-green)] hover:text-[var(--t-on-accent)]"
               title={`Add ~${fmtTokens(tokensOf(spec.text ?? ""))} tokens to the LLM context budget`}
             >
               🎒 PACK CONTEXT (~{fmtTokens(tokensOf(spec.text ?? ""))})
@@ -811,7 +811,7 @@ function Index() {
             </button>
             <button
               onClick={() => setSpec(null)}
-              className="min-h-11 sm:min-h-9 inline-flex items-center px-2 text-[11px] text-[#666] hover:text-white"
+              className="min-h-11 sm:min-h-9 inline-flex items-center px-2 text-[11px] text-[var(--t-dim-2)] hover:text-[var(--t-fg)]"
             >
               [X]
             </button>
@@ -822,9 +822,9 @@ function Index() {
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <div className="min-w-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6 text-[14px] leading-7">
           {spec.err ? (
-            <pre className="whitespace-pre-wrap text-[11px] text-[#ff5500]">ERR: {spec.err}</pre>
+            <pre className="whitespace-pre-wrap text-[11px] text-[var(--t-orange)]">ERR: {spec.err}</pre>
           ) : spec.text === null ? (
-            <pre className="text-[11px] text-[#666]">&gt; LOADING_FROM_RAW_CDN...</pre>
+            <pre className="text-[11px] text-[var(--t-dim-2)]">&gt; LOADING_FROM_RAW_CDN...</pre>
           ) : (
             <>
               {datasetKind(spec.path) && !isWorkflowPath(spec.path) ? (
@@ -840,7 +840,7 @@ function Index() {
                       rawLang={spec.path.split(".").pop() ?? "yaml"}
                     />
                   ) : (
-                    <pre className="overflow-auto border border-hard bg-[#050505] p-3 text-[11px] whitespace-pre text-[#ccc]">
+                    <pre className="overflow-auto border border-hard bg-[var(--t-surface)] p-3 text-[11px] whitespace-pre text-[var(--t-fg-2)]">
                       {spec.text}
                     </pre>
                   );
@@ -848,7 +848,7 @@ function Index() {
               ) : (
               <>
               <details className="mb-4 border border-hard p-3 xl:hidden">
-                <summary className="cursor-pointer text-[10px] uppercase tracking-widest text-[#666]">
+                <summary className="cursor-pointer text-[10px] uppercase tracking-widest text-[var(--t-dim-2)]">
                   [ TABLE_OF_CONTENTS ]
                 </summary>
                 <div className="mt-3">
@@ -869,7 +869,7 @@ function Index() {
                 }}
               />
               {sideBySide && (
-                <pre className="mt-4 max-h-[50vh] overflow-auto border border-hard bg-[#050505] p-3 text-[11px] whitespace-pre-wrap text-[#888]">
+                <pre className="mt-4 max-h-[50vh] overflow-auto border border-hard bg-[var(--t-surface)] p-3 text-[11px] whitespace-pre-wrap text-[var(--t-dim)]">
                   {spec.text}
                 </pre>
               )}
@@ -890,9 +890,9 @@ function Index() {
   );
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col">
+    <div className="min-h-screen bg-[var(--t-bg)] text-[var(--t-fg)] flex flex-col">
       {/* TOP BAR */}
-      <header className="sticky top-0 z-30 border-b border-hard bg-black">
+      <header className="sticky top-0 z-30 border-b border-hard bg-[var(--t-bg)]">
         <div className="mx-auto w-full max-w-[2200px] px-3 py-2 sm:px-4 2xl:px-10">
           {/* ZONE 1 / 2 / 3 */}
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 lg:flex lg:flex-nowrap lg:items-center lg:gap-3">
@@ -901,7 +901,7 @@ function Index() {
               <button
                 onClick={() => setMobileNav(true)}
                 aria-label="Open navigation"
-                className="lg:hidden min-h-9 min-w-9 grid shrink-0 place-items-center border border-hard text-[#00ff66]"
+                className="lg:hidden min-h-9 min-w-9 grid shrink-0 place-items-center border border-hard text-[var(--t-green)]"
               >
                 ☰
               </button>
@@ -909,23 +909,23 @@ function Index() {
                 onClick={() => setRailOpen((v) => !v)}
                 aria-label="Toggle left rail"
                 title="Toggle left rail  [  ]"
-                className="hidden lg:grid min-h-8 min-w-8 shrink-0 place-items-center border border-hard text-[#666] hover:text-[#00ff66]"
+                className="hidden lg:grid min-h-8 min-w-8 shrink-0 place-items-center border border-hard text-[var(--t-dim-2)] hover:text-[var(--t-green)]"
               >
                 {railOpen ? "◧" : "▢"}
               </button>
               <h1 className="shrink-0 text-[12px] font-bold tracking-wider sm:text-[13px]">
                 ⚡ <span className="hidden sm:inline">SPEC DASH</span>
               </h1>
-              <span className="hidden sm:inline text-[#222]">|</span>
+              <span className="hidden sm:inline text-[var(--t-line-2)]">|</span>
               <button
                 onClick={() => setCfgOpen(true)}
                 title="Switch repository"
                 aria-label="Switch repository"
-                className="flex min-w-0 flex-1 items-center gap-1 border border-hard px-2 py-1 text-[10px] sm:max-w-[18rem] tracking-widest text-[#00ff66] hover:border-[#00ff66]"
+                className="flex min-w-0 flex-1 items-center gap-1 border border-hard px-2 py-1 text-[10px] sm:max-w-[18rem] tracking-widest text-[var(--t-green)] hover:border-[var(--t-green)]"
               >
                 <span className="shrink-0">🐙</span>
                 <span className="truncate">{owner ? `${owner}/${repo}` : "BIND_REPO"}</span>
-                <span className="shrink-0 text-[#444]">⇄</span>
+                <span className="shrink-0 text-[var(--t-line)]">⇄</span>
               </button>
               <span
                 className="inline-block h-2 w-2 shrink-0 animate-pulse"
@@ -939,14 +939,14 @@ function Index() {
               onClick={() => setCmdOpen(true)}
               aria-label="Search specs and code (Ctrl+K)"
               title={`Search specs & code · ~${fmtTokens(totalTokens)} tokens indexed`}
-              className="group order-last col-span-2 flex min-w-0 items-center gap-2 border border-hard px-3 py-1.5 text-left text-[11px] text-[#666] hover:border-[#00ff66] hover:text-[#ccc] lg:order-none lg:col-span-1 lg:w-[300px] lg:max-w-[300px] lg:shrink-0"
+              className="group order-last col-span-2 flex min-w-0 items-center gap-2 border border-hard px-3 py-1.5 text-left text-[11px] text-[var(--t-dim-2)] hover:border-[var(--t-green)] hover:text-[var(--t-fg-2)] lg:order-none lg:col-span-1 lg:w-[300px] lg:max-w-[300px] lg:shrink-0"
             >
               <span className="shrink-0">🔍</span>
               <span className="min-w-0 flex-1 truncate">Search specs &amp; code…</span>
-              <span className="hidden shrink-0 border border-[#222] px-1 text-[9px] tracking-widest text-[#666] group-hover:hidden sm:inline">
+              <span className="hidden shrink-0 border border-[var(--t-line-2)] px-1 text-[9px] tracking-widest text-[var(--t-dim-2)] group-hover:hidden sm:inline">
                 CTRL K
               </span>
-              <span className="hidden shrink-0 border border-[#222] px-1 text-[9px] tracking-widest text-[#ff5500] group-hover:sm:inline">
+              <span className="hidden shrink-0 border border-[var(--t-line-2)] px-1 text-[9px] tracking-widest text-[var(--t-orange)] group-hover:sm:inline">
                 🎒 ~{fmtTokens(totalTokens)} TOK
               </span>
             </button>
@@ -956,20 +956,20 @@ function Index() {
               <HeaderMenu
                 icon="⚡"
                 label="SPEC ENGINE"
-                accent="#c07cff"
+                accent="var(--t-purple)"
                 ariaLabel="Spec engine menu"
                 items={specEngineItems}
               />
               <HeaderMenu
                 icon="🛠️"
                 label="TOOLS"
-                accent="#66b3ff"
+                accent="var(--t-blue)"
                 ariaLabel="Tools menu"
                 items={toolsItems}
               />
               <button
                 onClick={() => setCtrlOpen(true)}
-                className="inline-flex min-h-8 min-w-8 shrink-0 items-center justify-center border border-hard px-2 py-1.5 text-[12px] text-[#888] hover:border-[#00ff66] hover:text-[#00ff66]"
+                className="inline-flex min-h-8 min-w-8 shrink-0 items-center justify-center border border-hard px-2 py-1.5 text-[12px] text-[var(--t-dim)] hover:border-[var(--t-green)] hover:text-[var(--t-green)]"
                 title="Control Centre — tokens, default LLM, appearance"
                 aria-label="Open control centre"
               >
@@ -992,36 +992,36 @@ function Index() {
         {/* CENTER */}
         <main className="min-w-0 flex-1">
           <AgentOsBanner specs={rootSpecs} onOpen={() => setAgentOpen(true)} onOpenFile={openSpec} />
-          <div className="grid grid-cols-2 border-b border-hard bg-black sm:grid-cols-4 lg:sticky lg:top-[53px] lg:z-20">
-            <Stat label="MD_RECORDS" value={files.length} accent="#00ff66" />
+          <div className="grid grid-cols-2 border-b border-hard bg-[var(--t-bg)] sm:grid-cols-4 lg:sticky lg:top-[53px] lg:z-20">
+            <Stat label="MD_RECORDS" value={files.length} accent="var(--t-green)" />
             <Stat label="DIRECTORIES" value={groups.length} />
-            <Stat label="ACTIVE_ROWS" value={rows.length} accent="#ff5500" />
+            <Stat label="ACTIVE_ROWS" value={rows.length} accent="var(--t-orange)" />
             <Stat label="BRANCH" value={branch} />
           </div>
 
           {error && (
-            <div className="border-b border-hard px-4 py-2 text-[11px] text-[#ff5500]">
+            <div className="border-b border-hard px-4 py-2 text-[11px] text-[var(--t-orange)]">
               ERR: {error} — verify owner/repo, or connect a PAT for higher quota / private repos.
             </div>
           )}
 
           {!owner ? (
-            <div className="px-4 py-16 text-center text-[12px] text-[#666]">
+            <div className="px-4 py-16 text-center text-[12px] text-[var(--t-dim-2)]">
               &gt; NO_DB_CONFIGURED — open [CFG] to bind GITHUB_OWNER/GITHUB_REPO
             </div>
           ) : files.length === 0 && status === "SYNCED" ? (
-            <div className="px-4 py-16 text-center text-[12px] text-[#666]">&gt; NO_MARKDOWN_RECORDS_FOUND</div>
+            <div className="px-4 py-16 text-center text-[12px] text-[var(--t-dim-2)]">&gt; NO_MARKDOWN_RECORDS_FOUND</div>
           ) : (
             <>
               {/* MOBILE CARDS */}
-              <ul className="divide-y divide-[#1a1a1a] sm:hidden">
+              <ul className="divide-y divide-[var(--t-surface-2)] sm:hidden">
                 {rows.map((f) => (
                   <li key={f.path} className="px-3 py-3">
-                    <div className="truncate text-[13px] text-white">{f.name}</div>
-                    <div className="truncate text-[11px] text-[#888]">/{f.path}</div>
-                    <div className="mt-1 flex flex-wrap gap-2 text-[10px] uppercase tracking-widest text-[#555]">
+                    <div className="truncate text-[13px] text-[var(--t-fg)]">{f.name}</div>
+                    <div className="truncate text-[11px] text-[var(--t-dim)]">/{f.path}</div>
+                    <div className="mt-1 flex flex-wrap gap-2 text-[10px] uppercase tracking-widest text-[var(--t-dim-3)]">
                       <span className="border border-hard px-2 py-0.5">{fmtSize(f.size)}</span>
-                      <span className="border border-hard px-2 py-0.5 text-[#00ff66]">
+                      <span className="border border-hard px-2 py-0.5 text-[var(--t-green)]">
                         ~{fmtTokens(tokensFromBytes(f.size))} tok
                       </span>
                       <span className="border border-hard px-2 py-0.5">{readTime(f.size)}</span>
@@ -1030,7 +1030,7 @@ function Index() {
                     <div className="mt-2 flex flex-wrap gap-2">
                       <button
                         onClick={() => openSpec(f.path)}
-                        className="min-h-11 flex-1 border border-[#00ff66] px-3 text-[11px] text-[#00ff66]"
+                        className="min-h-11 flex-1 border border-[var(--t-green)] px-3 text-[11px] text-[var(--t-green)]"
                       >
                         📄 VIEW
                       </button>
@@ -1038,14 +1038,14 @@ function Index() {
                         href={editFileIntentUrl({ owner, repo, branch, path: f.path })}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="min-h-11 min-w-11 grid place-items-center border border-[#333] px-3 text-[11px] text-[#888]"
+                        className="min-h-11 min-w-11 grid place-items-center border border-[var(--t-line)] px-3 text-[11px] text-[var(--t-dim)]"
                         aria-label={`Edit ${f.name} on GitHub`}
                       >
                         ✏️
                       </a>
                       <button
                         onClick={() => copy(ghBlobUrl(f.path, branch), "LINK_COPIED")}
-                        className="min-h-11 min-w-11 grid place-items-center border border-[#333] px-3 text-[11px] text-[#888]"
+                        className="min-h-11 min-w-11 grid place-items-center border border-[var(--t-line)] px-3 text-[11px] text-[var(--t-dim)]"
                         aria-label={`Copy link to ${f.name}`}
                       >
                         📋
@@ -1059,7 +1059,7 @@ function Index() {
               <div className="hidden overflow-x-auto sm:block">
                 <table className="w-full border-collapse text-[11px] 2xl:text-[13px]">
                   <thead>
-                    <tr className="text-[10px] uppercase tracking-widest text-[#666]">
+                    <tr className="text-[10px] uppercase tracking-widest text-[var(--t-dim-2)]">
                       <Th>#</Th>
                       <Th>FILE_NAME</Th>
                       <Th>RELATIVE_PATH</Th>
@@ -1074,21 +1074,21 @@ function Index() {
                     {rows.map((f, i) => (
                       <tr
                         key={f.path}
-                        className="group hover:bg-[#0a0a0a]"
-                        style={{ outline: spec?.path === f.path ? "1px solid #00ff66" : undefined }}
+                        className="group hover:bg-[var(--t-surface)]"
+                        style={{ outline: spec?.path === f.path ? "1px solid var(--t-green)" : undefined }}
                       >
-                        <Td className="text-[#555] tabular-nums">{String(i + 1).padStart(4, "0")}</Td>
-                        <Td className="text-white">{f.name}</Td>
-                        <Td className="text-[#888]">/{f.path}</Td>
-                        <Td className="tabular-nums text-[#666]">{fmtSize(f.size)}</Td>
-                        <Td className="tabular-nums text-[#00ff66]">~{fmtTokens(tokensFromBytes(f.size))}</Td>
-                        <Td className="text-[#666]">{readTime(f.size)}</Td>
-                        <Td className="tabular-nums text-[#666]">{f.sha.slice(0, 10)}</Td>
+                        <Td className="text-[var(--t-dim-3)] tabular-nums">{String(i + 1).padStart(4, "0")}</Td>
+                        <Td className="text-[var(--t-fg)]">{f.name}</Td>
+                        <Td className="text-[var(--t-dim)]">/{f.path}</Td>
+                        <Td className="tabular-nums text-[var(--t-dim-2)]">{fmtSize(f.size)}</Td>
+                        <Td className="tabular-nums text-[var(--t-green)]">~{fmtTokens(tokensFromBytes(f.size))}</Td>
+                        <Td className="text-[var(--t-dim-2)]">{readTime(f.size)}</Td>
+                        <Td className="tabular-nums text-[var(--t-dim-2)]">{f.sha.slice(0, 10)}</Td>
                         <Td>
                           <div className="flex items-center gap-2 opacity-70 transition-opacity group-hover:opacity-100">
                             <button
                               onClick={() => openSpec(f.path)}
-                              className="border border-[#00ff66] px-2 py-1 text-[#00ff66] hover:bg-[#00ff66] hover:text-black"
+                              className="border border-[var(--t-green)] px-2 py-1 text-[var(--t-green)] hover:bg-[var(--t-green)] hover:text-[var(--t-on-accent)]"
                             >
                               📄 VIEW
                             </button>
@@ -1098,7 +1098,7 @@ function Index() {
                               rel="noopener noreferrer"
                               title="Edit on GitHub"
                               aria-label={`Edit ${f.name} on GitHub`}
-                              className="border border-[#333] px-2 py-1 text-[#888] hover:border-[#ff5500] hover:text-[#ff5500]"
+                              className="border border-[var(--t-line)] px-2 py-1 text-[var(--t-dim)] hover:border-[var(--t-orange)] hover:text-[var(--t-orange)]"
                             >
                               ✏️↗
                             </a>
@@ -1106,7 +1106,7 @@ function Index() {
                               onClick={() => copy(ghBlobUrl(f.path, branch), "LINK_COPIED")}
                               title="Copy link"
                               aria-label={`Copy link to ${f.name}`}
-                              className="border border-[#333] px-2 py-1 text-[#888] hover:border-[#00ff66] hover:text-[#00ff66]"
+                              className="border border-[var(--t-line)] px-2 py-1 text-[var(--t-dim)] hover:border-[var(--t-green)] hover:text-[var(--t-green)]"
                             >
                               📋
                             </button>
@@ -1120,7 +1120,7 @@ function Index() {
             </>
           )}
 
-          <footer className="flex flex-wrap justify-between gap-2 border-t border-hard px-4 py-2 text-[10px] uppercase tracking-widest text-[#555]">
+          <footer className="flex flex-wrap justify-between gap-2 border-t border-hard px-4 py-2 text-[10px] uppercase tracking-widest text-[var(--t-dim-3)]">
             <span>&gt; ENGINE: git/trees?recursive=1 + ETAG_304 + RAW_CDN</span>
             <span className="flex items-center gap-2">
               <PerfPill />
@@ -1133,8 +1133,8 @@ function Index() {
 
       {/* SPEC READER OVERLAY */}
       {spec && readerOpen && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/85 sm:p-4">
-          <div className="h-full w-full border-hard bg-black sm:h-[92vh] sm:max-w-5xl sm:border 2xl:max-w-6xl">
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-[var(--t-bg)]/85 sm:p-4">
+          <div className="h-full w-full border-hard bg-[var(--t-bg)] sm:h-[92vh] sm:max-w-5xl sm:border 2xl:max-w-6xl">
             {reader}
           </div>
         </div>
@@ -1146,12 +1146,12 @@ function Index() {
           <button
             aria-label="Close navigation"
             onClick={() => setMobileNav(false)}
-            className="absolute inset-0 bg-black/80"
+            className="absolute inset-0 bg-[var(--t-bg)]/80"
           />
-          <div className="absolute inset-y-0 left-0 w-[82vw] max-w-[300px] border-r border-hard bg-black">
+          <div className="absolute inset-y-0 left-0 w-[82vw] max-w-[300px] border-r border-hard bg-[var(--t-bg)]">
             <div className="flex items-center justify-between border-b border-hard px-3 py-2">
-              <span className="text-[11px] uppercase tracking-widest text-[#00ff66]">[ NAVIGATION ]</span>
-              <button onClick={() => setMobileNav(false)} className="min-h-11 min-w-11 text-[#666]">
+              <span className="text-[11px] uppercase tracking-widest text-[var(--t-green)]">[ NAVIGATION ]</span>
+              <button onClick={() => setMobileNav(false)} className="min-h-11 min-w-11 text-[var(--t-dim-2)]">
                 [X]
               </button>
             </div>
@@ -1292,7 +1292,7 @@ function Index() {
       )}
 
       {mapOpen && (
-        <DevModal title="REPOSITORY WORKFLOW MAP" accent="#66b3ff" wide onClose={() => setMapOpen(false)}>
+        <DevModal title="REPOSITORY WORKFLOW MAP" accent="var(--t-blue)" wide onClose={() => setMapOpen(false)}>
           <DiagramCanvas chart={repoMapChart} label="REPO MAP" />
         </DevModal>
       )}
@@ -1376,8 +1376,8 @@ function Stat({ label, value, accent }: { label: string; value: string | number;
   const v = typeof value === "number" ? String(value).padStart(4, "0") : value;
   return (
     <div className="border-b border-r border-hard px-4 py-3 last:border-r-0 sm:border-b-0">
-      <div className="text-[10px] uppercase tracking-widest text-[#666]">{label}</div>
-      <div className="mt-1 text-[20px] font-bold tabular-nums 2xl:text-[26px]" style={{ color: accent ?? "#ffffff" }}>
+      <div className="text-[10px] uppercase tracking-widest text-[var(--t-dim-2)]">{label}</div>
+      <div className="mt-1 text-[20px] font-bold tabular-nums 2xl:text-[26px]" style={{ color: accent ?? "var(--t-fg)" }}>
         {v}
       </div>
     </div>
@@ -1387,7 +1387,7 @@ function Stat({ label, value, accent }: { label: string; value: string | number;
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <div className="mb-1 text-[10px] uppercase tracking-widest text-[#666]">&gt; {label}</div>
+      <div className="mb-1 text-[10px] uppercase tracking-widest text-[var(--t-dim-2)]">&gt; {label}</div>
       {children}
     </label>
   );
@@ -1411,11 +1411,11 @@ function CfgDrawer({
     onSave(p.owner, (p.repo || parseRepoInput(r).repo || r || "sandbox").trim());
   };
   return (
-    <div className="fixed inset-0 z-[60] flex items-start justify-end bg-black/80">
-      <div className="h-full w-full max-w-md border-l border-hard bg-black p-6">
+    <div className="fixed inset-0 z-[60] flex items-start justify-end bg-[var(--t-bg)]/80">
+      <div className="h-full w-full max-w-md border-l border-hard bg-[var(--t-bg)] p-6">
         <div className="mb-4 flex items-center justify-between border-b border-hard pb-3">
-          <div className="text-[12px] uppercase tracking-widest text-[#00ff66]">[ DB_CONFIG ]</div>
-          <button onClick={onClose} className="min-h-11 px-2 text-[11px] text-[#666] hover:text-white">
+          <div className="text-[12px] uppercase tracking-widest text-[var(--t-green)]">[ DB_CONFIG ]</div>
+          <button onClick={onClose} className="min-h-11 px-2 text-[11px] text-[var(--t-dim-2)] hover:text-[var(--t-fg)]">
             [X CLOSE]
           </button>
         </div>
@@ -1425,7 +1425,7 @@ function CfgDrawer({
               value={o}
               onChange={(e) => setO(e.target.value)}
               placeholder="octocat  |  https://github.com/octocat/sandbox"
-              className="w-full border border-hard bg-black px-2 py-3 text-white outline-none focus:border-[#00ff66]"
+              className="w-full border border-hard bg-[var(--t-bg)] px-2 py-3 text-[var(--t-fg)] outline-none focus:border-[var(--t-green)]"
             />
           </Field>
           <Field label="GITHUB_REPO">
@@ -1433,10 +1433,10 @@ function CfgDrawer({
               value={r}
               onChange={(e) => setR(e.target.value)}
               placeholder="sandbox"
-              className="w-full border border-hard bg-black px-2 py-3 text-white outline-none focus:border-[#00ff66]"
+              className="w-full border border-hard bg-[var(--t-bg)] px-2 py-3 text-[var(--t-fg)] outline-none focus:border-[var(--t-green)]"
             />
           </Field>
-          <div className="border border-hard p-3 text-[10px] leading-relaxed text-[#666]">
+          <div className="border border-hard p-3 text-[10px] leading-relaxed text-[var(--t-dim-2)]">
             &gt; READ: /git/trees/{"{branch}"}?recursive=1 (filter: blob + .md)<br />
             &gt; CACHE: ETag + If-None-Match, 304 = 0 quota cost<br />
             &gt; FILE_READ: raw.githubusercontent.com (no REST cost)<br />
@@ -1444,7 +1444,7 @@ function CfgDrawer({
           </div>
           <button
             onClick={submit}
-            className="min-h-11 w-full border border-[#00ff66] py-2 text-[11px] uppercase tracking-widest text-[#00ff66] hover:bg-[#00ff66] hover:text-black"
+            className="min-h-11 w-full border border-[var(--t-green)] py-2 text-[11px] uppercase tracking-widest text-[var(--t-green)] hover:bg-[var(--t-green)] hover:text-[var(--t-on-accent)]"
           >
             [ BIND_&_SYNC ]
           </button>
@@ -1457,11 +1457,11 @@ function CfgDrawer({
 function PatModal({ onClose, onSave }: { onClose: () => void; onSave: (v: string) => void }) {
   const [v, setV] = useState(getPat());
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/85 p-4">
-      <div className="w-full max-w-lg border border-hard bg-black">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[var(--t-bg)]/85 p-4">
+      <div className="w-full max-w-lg border border-hard bg-[var(--t-bg)]">
         <div className="flex items-center justify-between border-b border-hard px-4 py-3">
-          <div className="text-[12px] uppercase tracking-widest text-[#00ff66]">[ CONNECT_GITHUB ]</div>
-          <button onClick={onClose} className="min-h-11 px-2 text-[11px] text-[#666] hover:text-white">
+          <div className="text-[12px] uppercase tracking-widest text-[var(--t-green)]">[ CONNECT_GITHUB ]</div>
+          <button onClick={onClose} className="min-h-11 px-2 text-[11px] text-[var(--t-dim-2)] hover:text-[var(--t-fg)]">
             [X CLOSE]
           </button>
         </div>
@@ -1472,10 +1472,10 @@ function PatModal({ onClose, onSave }: { onClose: () => void; onSave: (v: string
               value={v}
               onChange={(e) => setV(e.target.value.trim())}
               placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-              className="w-full border border-hard bg-black px-2 py-3 text-white outline-none focus:border-[#00ff66]"
+              className="w-full border border-hard bg-[var(--t-bg)] px-2 py-3 text-[var(--t-fg)] outline-none focus:border-[var(--t-green)]"
             />
           </Field>
-          <div className="border border-hard p-3 text-[10px] leading-relaxed text-[#666]">
+          <div className="border border-hard p-3 text-[10px] leading-relaxed text-[var(--t-dim-2)]">
             &gt; SCOPE: `repo` for private repos, none for public<br />
             &gt; STORAGE: localStorage[github_pat] — browser only<br />
             &gt; NEVER transmitted to any backend other than api.github.com
@@ -1483,13 +1483,13 @@ function PatModal({ onClose, onSave }: { onClose: () => void; onSave: (v: string
           <div className="flex gap-2">
             <button
               onClick={() => onSave(v)}
-              className="min-h-11 flex-1 border border-[#00ff66] py-2 uppercase tracking-widest text-[#00ff66] hover:bg-[#00ff66] hover:text-black"
+              className="min-h-11 flex-1 border border-[var(--t-green)] py-2 uppercase tracking-widest text-[var(--t-green)] hover:bg-[var(--t-green)] hover:text-[var(--t-on-accent)]"
             >
               [ AUTHORIZE ]
             </button>
             <button
               onClick={() => onSave("")}
-              className="min-h-11 flex-1 border border-[#ff5500] py-2 uppercase tracking-widest text-[#ff5500] hover:bg-[#ff5500] hover:text-black"
+              className="min-h-11 flex-1 border border-[var(--t-orange)] py-2 uppercase tracking-widest text-[var(--t-orange)] hover:bg-[var(--t-orange)] hover:text-[var(--t-on-accent)]"
             >
               [ REVOKE ]
             </button>

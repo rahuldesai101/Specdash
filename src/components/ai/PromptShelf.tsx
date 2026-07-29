@@ -74,8 +74,8 @@ export function PromptShelf({
             onClick={() => setActiveId(p.id)}
             className="border px-2 py-1 text-[10px] uppercase tracking-widest"
             style={{
-              borderColor: p.id === activeId ? "#00ff66" : "#333",
-              color: p.id === activeId ? "#00ff66" : "#888",
+              borderColor: p.id === activeId ? "var(--t-green)" : "var(--t-line)",
+              color: p.id === activeId ? "var(--t-green)" : "var(--t-dim)",
             }}
           >
             [ {p.icon} {p.name} ]
@@ -85,25 +85,25 @@ export function PromptShelf({
           onClick={() =>
             setEditing({ id: newPresetId(), icon: "⚡", name: "NEW PRESET", system: "", template: "" })
           }
-          className="border border-[#ff5500] px-2 py-1 text-[10px] uppercase tracking-widest text-[#ff5500] hover:bg-[#ff5500] hover:text-black"
+          className="border border-[var(--t-orange)] px-2 py-1 text-[10px] uppercase tracking-widest text-[var(--t-orange)] hover:bg-[var(--t-orange)] hover:text-[var(--t-on-accent)]"
         >
           + SAVE NEW TEMPLATE
         </button>
       </div>
 
       {editing ? (
-        <div className="space-y-2 border border-[#ff5500] p-3">
+        <div className="space-y-2 border border-[var(--t-orange)] p-3">
           <div className="grid gap-2 sm:grid-cols-[4rem_minmax(0,1fr)]">
             <input
               value={editing.icon}
               onChange={(e) => setEditing({ ...editing, icon: e.target.value.slice(0, 2) })}
-              className="w-full border border-hard bg-black px-2 py-2 text-[12px] text-white outline-none focus:border-[#00ff66]"
+              className="w-full border border-hard bg-[var(--t-bg)] px-2 py-2 text-[12px] text-[var(--t-fg)] outline-none focus:border-[var(--t-green)]"
             />
             <input
               value={editing.name}
               onChange={(e) => setEditing({ ...editing, name: e.target.value })}
               placeholder="PRESET NAME"
-              className="w-full border border-hard bg-black px-2 py-2 text-[12px] text-white outline-none focus:border-[#00ff66]"
+              className="w-full border border-hard bg-[var(--t-bg)] px-2 py-2 text-[12px] text-[var(--t-fg)] outline-none focus:border-[var(--t-green)]"
             />
           </div>
           <textarea
@@ -111,14 +111,14 @@ export function PromptShelf({
             onChange={(e) => setEditing({ ...editing, system: e.target.value })}
             rows={2}
             placeholder="SYSTEM INSTRUCTION — who the model is and how it must behave"
-            className="w-full resize-y border border-hard bg-[#0a0a0a] p-2 text-[12px] text-[#ddd] outline-none focus:border-[#00ff66]"
+            className="w-full resize-y border border-hard bg-[var(--t-surface)] p-2 text-[12px] text-[var(--t-fg-2)] outline-none focus:border-[var(--t-green)]"
           />
           <textarea
             value={editing.template}
             onChange={(e) => setEditing({ ...editing, template: e.target.value })}
             rows={5}
             placeholder="Template body — use {{file}}, {{repo}}, {{selection}} or any {{custom}} variable"
-            className="w-full resize-y border border-hard bg-[#0a0a0a] p-2 text-[12px] text-[#ddd] outline-none focus:border-[#00ff66]"
+            className="w-full resize-y border border-hard bg-[var(--t-surface)] p-2 text-[12px] text-[var(--t-fg-2)] outline-none focus:border-[var(--t-green)]"
           />
           <div className="flex flex-wrap gap-2 text-[10px] uppercase tracking-widest">
             <button
@@ -133,26 +133,26 @@ export function PromptShelf({
                 setEditing(null);
                 toast.success("PRESET_SAVED");
               }}
-              className="border border-[#00ff66] px-3 py-2 text-[#00ff66] hover:bg-[#00ff66] hover:text-black"
+              className="border border-[var(--t-green)] px-3 py-2 text-[var(--t-green)] hover:bg-[var(--t-green)] hover:text-[var(--t-on-accent)]"
             >
               [ SAVE PRESET ]
             </button>
-            <button onClick={() => setEditing(null)} className="border border-[#333] px-3 py-2 text-[#888] hover:text-white">
+            <button onClick={() => setEditing(null)} className="border border-[var(--t-line)] px-3 py-2 text-[var(--t-dim)] hover:text-[var(--t-fg)]">
               [ CANCEL ]
             </button>
           </div>
         </div>
       ) : active ? (
         <>
-          <div className="border border-hard p-2 text-[10px] leading-relaxed text-[#666]">
-            &gt; SYSTEM: <span className="text-[#c07cff]">{active.system || "(none)"}</span>
+          <div className="border border-hard p-2 text-[10px] leading-relaxed text-[var(--t-dim-2)]">
+            &gt; SYSTEM: <span className="text-[var(--t-purple)]">{active.system || "(none)"}</span>
           </div>
 
           {names.length > 0 && (
             <div className="grid gap-2 sm:grid-cols-2">
               {names.map((n) => (
                 <label key={n} className="block">
-                  <span className="mb-1 block text-[9px] uppercase tracking-widest text-[#666]">
+                  <span className="mb-1 block text-[9px] uppercase tracking-widest text-[var(--t-dim-2)]">
                     {`{{${n}}}`} {ctx[n] ? "· AUTO" : ""}
                   </span>
                   {n === "selection" || n === "content" ? (
@@ -160,13 +160,13 @@ export function PromptShelf({
                       value={vars[n] ?? ""}
                       onChange={(e) => setVars((v) => ({ ...v, [n]: e.target.value }))}
                       rows={3}
-                      className="w-full resize-y border border-hard bg-[#0a0a0a] p-2 text-[11px] text-[#ddd] outline-none focus:border-[#00ff66]"
+                      className="w-full resize-y border border-hard bg-[var(--t-surface)] p-2 text-[11px] text-[var(--t-fg-2)] outline-none focus:border-[var(--t-green)]"
                     />
                   ) : (
                     <input
                       value={vars[n] ?? ""}
                       onChange={(e) => setVars((v) => ({ ...v, [n]: e.target.value }))}
-                      className="w-full border border-hard bg-black px-2 py-2 text-[11px] text-white outline-none focus:border-[#00ff66]"
+                      className="w-full border border-hard bg-[var(--t-bg)] px-2 py-2 text-[11px] text-[var(--t-fg)] outline-none focus:border-[var(--t-green)]"
                     />
                   )}
                 </label>
@@ -174,12 +174,12 @@ export function PromptShelf({
             </div>
           )}
 
-          <pre className="max-h-40 overflow-auto border border-hard bg-[#050505] p-2 text-[11px] whitespace-pre-wrap text-[#999]">
+          <pre className="max-h-40 overflow-auto border border-hard bg-[var(--t-surface)] p-2 text-[11px] whitespace-pre-wrap text-[var(--t-dim)]">
             {prompt}
           </pre>
 
           {missing.length > 0 && (
-            <div className="text-[10px] uppercase tracking-widest text-[#ffaa00]">
+            <div className="text-[10px] uppercase tracking-widest text-[var(--t-amber)]">
               &gt; UNFILLED: {missing.map((m) => `{{${m}}}`).join(" ")}
             </div>
           )}
@@ -188,7 +188,7 @@ export function PromptShelf({
             {onRun && (
               <button
                 onClick={() => onRun(prompt, active)}
-                className="border border-[#00ff66] px-3 py-2 text-[#00ff66] hover:bg-[#00ff66] hover:text-black"
+                className="border border-[var(--t-green)] px-3 py-2 text-[var(--t-green)] hover:bg-[var(--t-green)] hover:text-[var(--t-on-accent)]"
               >
                 ▶ RUN IN PLAYGROUND
               </button>
@@ -199,12 +199,12 @@ export function PromptShelf({
                   ok ? toast.success("PROMPT_COPIED") : toast.error("CLIPBOARD_BLOCKED"),
                 )
               }
-              className="border border-[#333] px-3 py-2 text-[#888] hover:border-[#00ff66] hover:text-[#00ff66]"
+              className="border border-[var(--t-line)] px-3 py-2 text-[var(--t-dim)] hover:border-[var(--t-green)] hover:text-[var(--t-green)]"
             >
               📋 COPY
             </button>
             <span className="flex flex-wrap items-center gap-2">
-              <span className="text-[#555]">ARENA →</span>
+              <span className="text-[var(--t-dim-3)]">ARENA →</span>
               {EXTERNAL_PROVIDERS.map((p) => (
                 <button
                   key={p.id}
@@ -224,7 +224,7 @@ export function PromptShelf({
                   setActiveId(next[0]?.id ?? null);
                   toast.success("PRESET_DELETED");
                 }}
-                className="ml-auto border border-[#ff5500] px-3 py-2 text-[#ff5500] hover:bg-[#ff5500] hover:text-black"
+                className="ml-auto border border-[var(--t-orange)] px-3 py-2 text-[var(--t-orange)] hover:bg-[var(--t-orange)] hover:text-[var(--t-on-accent)]"
               >
                 🗑 DELETE
               </button>
@@ -232,7 +232,7 @@ export function PromptShelf({
             {!active.builtin && (
               <button
                 onClick={() => setEditing(active)}
-                className="border border-[#333] px-3 py-2 text-[#888] hover:text-white"
+                className="border border-[var(--t-line)] px-3 py-2 text-[var(--t-dim)] hover:text-[var(--t-fg)]"
               >
                 ✏️ EDIT
               </button>

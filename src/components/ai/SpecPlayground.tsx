@@ -130,14 +130,14 @@ export function SpecPlayground({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center bg-black/80 p-0 sm:p-6">
-      <div className="flex h-[85vh] w-full max-w-3xl flex-col border border-hard bg-black">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center bg-[var(--t-bg)]/80 p-0 sm:p-6">
+      <div className="flex h-[85vh] w-full max-w-3xl flex-col border border-hard bg-[var(--t-bg)]">
         <div className="flex items-center justify-between border-b border-hard px-4 py-3">
-          <div className="text-[11px] uppercase tracking-widest text-[#00ff66]">
+          <div className="text-[11px] uppercase tracking-widest text-[var(--t-green)]">
             [ PLAYGROUND // SYSTEM_PROMPT = {path.split("/").pop()} ]
           </div>
           <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest">
-            <span style={{ color: cfg ? "#00ff66" : "#ff5500" }}>
+            <span style={{ color: cfg ? "var(--t-green)" : "var(--t-orange)" }}>
               {cfg ? `[ ${cfg.provider.toUpperCase()} • ${cfg.model} ]` : "[ AI: DISABLED ]"}
             </span>
             <ExternalAiMenu
@@ -152,7 +152,7 @@ export function SpecPlayground({
             />
             <button
               onClick={onClose}
-              className="border border-[#333] px-2 py-1 hover:border-[#00ff66] hover:text-[#00ff66]"
+              className="border border-[var(--t-line)] px-2 py-1 hover:border-[var(--t-green)] hover:text-[var(--t-green)]"
             >
               [X]
             </button>
@@ -161,7 +161,7 @@ export function SpecPlayground({
 
         <div ref={scrollRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
           {turns.length === 0 && !err && (
-            <div className="text-[11px] uppercase tracking-widest text-[#666]">
+            <div className="text-[11px] uppercase tracking-widest text-[var(--t-dim-2)]">
               &gt; This markdown file will be sent as the system prompt.
               <br />
               &gt; Type a message below to start chatting.
@@ -171,20 +171,20 @@ export function SpecPlayground({
             <div key={i}>
               <div
                 className="mb-1 text-[10px] uppercase tracking-widest"
-                style={{ color: t.role === "user" ? "#888" : "#00ff66" }}
+                style={{ color: t.role === "user" ? "var(--t-dim)" : "var(--t-green)" }}
               >
                 {t.role === "user" ? "> USER" : "> ASSISTANT"}
               </div>
               {t.role === "assistant" && t.content ? (
                 <MarkdownView source={normalizeAiMarkdown(t.content)} />
               ) : (
-                <pre className="whitespace-pre-wrap break-words text-[13px] leading-relaxed text-[#ddd]">
+                <pre className="whitespace-pre-wrap break-words text-[13px] leading-relaxed text-[var(--t-fg-2)]">
                   {t.content || (busy && i === turns.length - 1 ? "> AWAITING_TOKENS..." : "")}
                 </pre>
               )}
             </div>
           ))}
-          {err && <div className="break-all text-[11px] text-[#ff5500]">ERR: {err}</div>}
+          {err && <div className="break-all text-[11px] text-[var(--t-orange)]">ERR: {err}</div>}
         </div>
 
         <div className="border-t border-hard p-3">
@@ -210,12 +210,12 @@ export function SpecPlayground({
               }
               disabled={!cfg || !text}
               rows={2}
-              className="min-h-[44px] flex-1 resize-y border border-hard bg-[#0a0a0a] p-2 text-[13px] text-[#ddd] outline-none focus:border-[#00ff66] disabled:opacity-40"
+              className="min-h-[44px] flex-1 resize-y border border-hard bg-[var(--t-surface)] p-2 text-[13px] text-[var(--t-fg-2)] outline-none focus:border-[var(--t-green)] disabled:opacity-40"
             />
             {busy ? (
               <button
                 onClick={stop}
-                className="border border-[#ff5500] px-3 py-2 text-[11px] uppercase tracking-widest text-[#ff5500] hover:bg-[#ff5500] hover:text-black"
+                className="border border-[var(--t-orange)] px-3 py-2 text-[11px] uppercase tracking-widest text-[var(--t-orange)] hover:bg-[var(--t-orange)] hover:text-[var(--t-on-accent)]"
               >
                 [ STOP ]
               </button>
@@ -223,7 +223,7 @@ export function SpecPlayground({
               <button
                 onClick={() => void send()}
                 disabled={!cfg || !text || !input.trim()}
-                className="border border-[#00ff66] px-3 py-2 text-[11px] uppercase tracking-widest text-[#00ff66] hover:bg-[#00ff66] hover:text-black disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-[#00ff66]"
+                className="border border-[var(--t-green)] px-3 py-2 text-[11px] uppercase tracking-widest text-[var(--t-green)] hover:bg-[var(--t-green)] hover:text-[var(--t-on-accent)] disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-[var(--t-green)]"
               >
                 [ SEND ]
               </button>
@@ -236,7 +236,7 @@ export function SpecPlayground({
                 setTurns([]);
                 setErr(null);
               }}
-              className="mt-2 text-[10px] uppercase tracking-widest text-[#666] hover:text-[#00ff66]"
+              className="mt-2 text-[10px] uppercase tracking-widest text-[var(--t-dim-2)] hover:text-[var(--t-green)]"
             >
               [ CLEAR_CONVERSATION ]
             </button>

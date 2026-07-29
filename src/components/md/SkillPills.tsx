@@ -45,8 +45,8 @@ export function SkillPills({
   const skills = parseSkills(source);
   if (!skills.length) return null;
   return (
-    <div className="mb-4 border border-[#ffaa00] p-3">
-      <div className="mb-2 text-[10px] uppercase tracking-widest text-[#ffaa00]">
+    <div className="mb-4 border border-[var(--t-amber)] p-3">
+      <div className="mb-2 text-[10px] uppercase tracking-widest text-[var(--t-amber)]">
         [ EXECUTABLE_SKILLS DETECTED — 1-CLICK TESTABLE ]
       </div>
       <div className="flex flex-wrap gap-2">
@@ -58,10 +58,10 @@ export function SkillPills({
               onClick={() => onRun?.(s.body, s.lang)}
               disabled={!onRun}
               title={s.body}
-              className="max-w-[320px] truncate border border-[#333] px-2 py-1 text-[10px] uppercase tracking-widest text-[#ccc] hover:border-[#ffaa00] hover:text-[#ffaa00] disabled:opacity-40"
+              className="max-w-[320px] truncate border border-[var(--t-line)] px-2 py-1 text-[10px] uppercase tracking-widest text-[var(--t-fg-2)] hover:border-[var(--t-amber)] hover:text-[var(--t-amber)] disabled:opacity-40"
             >
               ⚡ {s.label}
-              {vars.length > 0 && <span className="ml-1 text-[#666]">({vars.join(",")})</span>}
+              {vars.length > 0 && <span className="ml-1 text-[var(--t-dim-2)]">({vars.join(",")})</span>}
             </button>
           );
         })}

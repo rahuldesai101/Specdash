@@ -18,28 +18,28 @@ export function ReadmeModal({ open, onClose }: { open: boolean; onClose: () => v
   };
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/80 p-2 sm:p-6 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-[var(--t-bg)]/80 p-2 sm:p-6 overflow-y-auto"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-4xl border border-[#00ff66] bg-black"
+        className="relative w-full max-w-4xl border border-[var(--t-green)] bg-[var(--t-bg)]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-hard bg-black px-4 py-3">
-          <div className="text-[12px] uppercase tracking-widest text-[#00ff66]">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-hard bg-[var(--t-bg)] px-4 py-3">
+          <div className="text-[12px] uppercase tracking-widest text-[var(--t-green)]">
             📖 README // SPEC_DASH_GITHUB_AS_A_DATABASE
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={copy}
-              className="min-h-9 border border-[#333] px-3 text-[11px] uppercase tracking-widest text-[#888] hover:border-[#00ff66] hover:text-[#00ff66]"
+              className="min-h-9 border border-[var(--t-line)] px-3 text-[11px] uppercase tracking-widest text-[var(--t-dim)] hover:border-[var(--t-green)] hover:text-[var(--t-green)]"
               title="Copy README as raw markdown"
             >
               {copied ? "[ COPIED ]" : "📋 COPY"}
             </button>
             <button
               onClick={onClose}
-              className="min-h-9 min-w-9 border border-[#333] px-2 text-[11px] uppercase tracking-widest text-[#888] hover:border-[#ff5500] hover:text-[#ff5500]"
+              className="min-h-9 min-w-9 border border-[var(--t-line)] px-2 text-[11px] uppercase tracking-widest text-[var(--t-dim)] hover:border-[var(--t-orange)] hover:text-[var(--t-orange)]"
               aria-label="Close README"
             >
               [X]

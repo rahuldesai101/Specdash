@@ -108,7 +108,7 @@ export function DependencyRadar({
   return (
     <DevModal
       title="DEPENDENCY_RADAR // SUPPLY_CHAIN"
-      accent={risky.length ? "#ffaa00" : "#00ff66"}
+      accent={risky.length ? "var(--t-amber)" : "var(--t-green)"}
       onClose={onClose}
       wide
       toolbar={
@@ -122,62 +122,62 @@ export function DependencyRadar({
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="filter packages…"
-            className="ml-auto w-40 border border-[#333] bg-black px-2 py-1 font-mono text-[10px] normal-case text-[#ccc] outline-none focus:border-[#00ff66]"
+            className="ml-auto w-40 border border-[var(--t-line)] bg-[var(--t-bg)] px-2 py-1 font-mono text-[10px] normal-case text-[var(--t-fg-2)] outline-none focus:border-[var(--t-green)]"
           />
         </>
       }
       footer="Parses package.json · requirements.txt · Cargo.toml · go.mod · pyproject.toml at depth ≤ 3"
     >
-      {phase === "SCANNING" && <div className="p-6 text-center text-[#666]">&gt; PARSING_MANIFESTS…</div>}
-      {phase === "ERROR" && <div className="p-6 text-center text-[#ff5500]">ERR: {err}</div>}
+      {phase === "SCANNING" && <div className="p-6 text-center text-[var(--t-dim-2)]">&gt; PARSING_MANIFESTS…</div>}
+      {phase === "ERROR" && <div className="p-6 text-center text-[var(--t-orange)]">ERR: {err}</div>}
 
       {phase === "READY" && manifests.length === 0 && (
-        <div className="p-8 text-center uppercase tracking-widest text-[#555]">&gt; NO_MANIFESTS_FOUND</div>
+        <div className="p-8 text-center uppercase tracking-widest text-[var(--t-dim-3)]">&gt; NO_MANIFESTS_FOUND</div>
       )}
 
       {phase === "READY" && manifests.length > 0 && (
         <>
           <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <Stat label="TOTAL DEPS" value={String(counts.all)} tone="#00ff66" />
-            <Stat label="DIRECT / DEV" value={`${counts.direct} / ${counts.dev}`} tone="#66b3ff" />
-            <Stat label="PEER / OPT" value={`${counts.peer} / ${counts.optional}`} tone="#c07cff" />
-            <Stat label="FLAGGED" value={String(risky.length)} tone={risky.length ? "#ffaa00" : "#666"} />
+            <Stat label="TOTAL DEPS" value={String(counts.all)} tone="var(--t-green)" />
+            <Stat label="DIRECT / DEV" value={`${counts.direct} / ${counts.dev}`} tone="var(--t-blue)" />
+            <Stat label="PEER / OPT" value={`${counts.peer} / ${counts.optional}`} tone="var(--t-purple)" />
+            <Stat label="FLAGGED" value={String(risky.length)} tone={risky.length ? "var(--t-amber)" : "var(--t-dim-2)"} />
           </div>
 
-          <div className="mb-3 flex flex-wrap items-center gap-2 border border-[#1a1a1a] p-2 text-[10px] uppercase tracking-widest">
-            <span className="text-[#666]">LICENSES</span>
-            {licenses.length === 0 && <span className="text-[#555]">UNKNOWN</span>}
+          <div className="mb-3 flex flex-wrap items-center gap-2 border border-[var(--t-surface-2)] p-2 text-[10px] uppercase tracking-widest">
+            <span className="text-[var(--t-dim-2)]">LICENSES</span>
+            {licenses.length === 0 && <span className="text-[var(--t-dim-3)]">UNKNOWN</span>}
             {licenses.map(([fam, n]) => (
               <span
                 key={fam}
                 className="border px-1.5 py-0.5"
-                style={{ borderColor: COPYLEFT.has(fam) ? "#ffaa00" : "#333", color: COPYLEFT.has(fam) ? "#ffaa00" : "#00ff66" }}
+                style={{ borderColor: COPYLEFT.has(fam) ? "var(--t-amber)" : "var(--t-line)", color: COPYLEFT.has(fam) ? "var(--t-amber)" : "var(--t-green)" }}
               >
                 {fam} ×{n} {COPYLEFT.has(fam) ? "· COPYLEFT" : ""}
               </span>
             ))}
-            <span className="ml-auto text-[#555]">
+            <span className="ml-auto text-[var(--t-dim-3)]">
               {manifests.map((m) => `/${m.path}`).join(" · ")}
             </span>
           </div>
 
-          <div className="border border-[#1a1a1a]">
-            <div className="grid grid-cols-[minmax(0,1fr)_90px_80px_70px] gap-2 border-b border-[#1a1a1a] px-2 py-1.5 text-[9px] uppercase tracking-widest text-[#555]">
+          <div className="border border-[var(--t-surface-2)]">
+            <div className="grid grid-cols-[minmax(0,1fr)_90px_80px_70px] gap-2 border-b border-[var(--t-surface-2)] px-2 py-1.5 text-[9px] uppercase tracking-widest text-[var(--t-dim-3)]">
               <span>PACKAGE</span>
               <span>VERSION</span>
               <span>SCOPE</span>
               <span>ECO</span>
             </div>
             {list.map((d) => (
-              <div key={`${d.ecosystem}:${d.scope}:${d.name}`} className="border-b border-[#121212] last:border-b-0">
+              <div key={`${d.ecosystem}:${d.scope}:${d.name}`} className="border-b border-[var(--t-surface)] last:border-b-0">
                 <div className="grid grid-cols-[minmax(0,1fr)_90px_80px_70px] items-center gap-2 px-2 py-1.5">
-                  <span className="truncate font-mono text-[11px] text-[#ccc]">{d.name}</span>
-                  <span className="truncate font-mono text-[10px] text-[#ffcc66]">{d.range}</span>
-                  <span className="text-[9px] uppercase tracking-widest text-[#666]">{d.scope}</span>
-                  <span className="text-[9px] uppercase tracking-widest text-[#444]">{d.ecosystem}</span>
+                  <span className="truncate font-mono text-[11px] text-[var(--t-fg-2)]">{d.name}</span>
+                  <span className="truncate font-mono text-[10px] text-[var(--t-amber)]">{d.range}</span>
+                  <span className="text-[9px] uppercase tracking-widest text-[var(--t-dim-2)]">{d.scope}</span>
+                  <span className="text-[9px] uppercase tracking-widest text-[var(--t-line)]">{d.ecosystem}</span>
                 </div>
                 {d.risk && (
-                  <div className="px-2 pb-1.5 text-[9px] uppercase tracking-widest text-[#ffaa00]">⚠ {d.risk}</div>
+                  <div className="px-2 pb-1.5 text-[9px] uppercase tracking-widest text-[var(--t-amber)]">⚠ {d.risk}</div>
                 )}
               </div>
             ))}
@@ -190,8 +190,8 @@ export function DependencyRadar({
 
 function Stat({ label, value, tone }: { label: string; value: string; tone: string }) {
   return (
-    <div className="border border-[#1a1a1a] p-2">
-      <div className="text-[9px] uppercase tracking-widest text-[#555]">{label}</div>
+    <div className="border border-[var(--t-surface-2)] p-2">
+      <div className="text-[9px] uppercase tracking-widest text-[var(--t-dim-3)]">{label}</div>
       <div className="text-[16px]" style={{ color: tone }}>
         {value}
       </div>

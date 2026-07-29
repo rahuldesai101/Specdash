@@ -12,12 +12,12 @@ export type Commit = {
 export type Category = "features" | "fixes" | "perf" | "breaking" | "docs" | "chore";
 
 export const CATEGORY_META: Record<Category, { title: string; icon: string; tone: string }> = {
-  breaking: { title: "Breaking Changes", icon: "⚠️", tone: "#ff3b30" },
-  features: { title: "Features", icon: "🚀", tone: "#00ff66" },
-  fixes: { title: "Fixes", icon: "🐛", tone: "#ffaa00" },
-  perf: { title: "Performance", icon: "⚡", tone: "#c07cff" },
-  docs: { title: "Docs", icon: "📚", tone: "#66b3ff" },
-  chore: { title: "Chores & Internals", icon: "🧹", tone: "#888" },
+  breaking: { title: "Breaking Changes", icon: "⚠️", tone: "var(--t-red)" },
+  features: { title: "Features", icon: "🚀", tone: "var(--t-green)" },
+  fixes: { title: "Fixes", icon: "🐛", tone: "var(--t-amber)" },
+  perf: { title: "Performance", icon: "⚡", tone: "var(--t-purple)" },
+  docs: { title: "Docs", icon: "📚", tone: "var(--t-blue)" },
+  chore: { title: "Chores & Internals", icon: "🧹", tone: "var(--t-dim)" },
 };
 
 export const CATEGORY_ORDER: Category[] = ["breaking", "features", "fixes", "perf", "docs", "chore"];

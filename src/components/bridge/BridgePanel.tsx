@@ -5,16 +5,16 @@ import type { CliBridge } from "@/hooks/use-cli-bridge";
 import { BRIDGE_INSTALL, BRIDGE_SNIPPET, type ExecResult } from "@/lib/cli-bridge";
 
 const STATUS_COLOR: Record<string, string> = {
-  A: "#00ff66",
-  M: "#ffaa00",
-  D: "#ff5500",
-  R: "#66b3ff",
-  "??": "#888",
+  A: "var(--t-green)",
+  M: "var(--t-amber)",
+  D: "var(--t-orange)",
+  R: "var(--t-blue)",
+  "??": "var(--t-dim)",
 };
 
 export function BridgePill({ bridge, onOpen }: { bridge: CliBridge; onOpen: () => void }) {
   const active = bridge.state === "ACTIVE";
-  const tone = active ? "#00ff66" : bridge.state === "ERROR" ? "#ff5500" : bridge.state === "CONNECTING" ? "#ffaa00" : "#555";
+  const tone = active ? "var(--t-green)" : bridge.state === "ERROR" ? "var(--t-orange)" : bridge.state === "CONNECTING" ? "var(--t-amber)" : "var(--t-dim-3)";
   const dirty = bridge.status?.files.length ?? 0;
   return (
     <button
@@ -24,7 +24,7 @@ export function BridgePill({ bridge, onOpen }: { bridge: CliBridge; onOpen: () =
       style={{ borderColor: `${tone}44`, color: tone }}
     >
       🔌 LOCAL SYNC: {active ? "ACTIVE" : bridge.state === "CONNECTING" ? "…" : bridge.state === "ERROR" ? "ERR" : "OFF"}
-      {active && dirty > 0 && <span style={{ color: "#ffaa00" }}>· {dirty} DIRTY</span>}
+      {active && dirty > 0 && <span style={{ color: "var(--t-amber)" }}>· {dirty} DIRTY</span>}
     </button>
   );
 }
@@ -71,7 +71,7 @@ export function BridgePanel({
   return (
     <DevModal
       title="LOCAL WORKSPACE CLI BRIDGE"
-      accent="#ffaa00"
+      accent="var(--t-amber)"
       onClose={onClose}
       toolbar={
         <>
@@ -86,7 +86,7 @@ export function BridgePanel({
           </Tab>
           <span
             className="ml-auto"
-            style={{ color: bridge.state === "ACTIVE" ? "#00ff66" : bridge.state === "ERROR" ? "#ff5500" : "#666" }}
+            style={{ color: bridge.state === "ACTIVE" ? "var(--t-green)" : bridge.state === "ERROR" ? "var(--t-orange)" : "var(--t-dim-2)" }}
           >
             [ {bridge.state} {bridge.info?.branch ? `· ⑂ ${bridge.info.branch}` : ""} ]
           </span>
@@ -102,43 +102,43 @@ export function BridgePanel({
           <div className="flex flex-wrap gap-2 text-[10px] uppercase tracking-widest">
             <button
               onClick={() => void bridge.connect()}
-              className="border border-[#00ff66] px-3 py-2 text-[#00ff66] hover:bg-[#00ff66] hover:text-black"
+              className="border border-[var(--t-green)] px-3 py-2 text-[var(--t-green)] hover:bg-[var(--t-green)] hover:text-[var(--t-on-accent)]"
             >
               [ CONNECT ]
             </button>
-            <button onClick={() => void bridge.refresh()} className="border border-[#333] px-3 py-2 text-[#888] hover:text-white">
+            <button onClick={() => void bridge.refresh()} className="border border-[var(--t-line)] px-3 py-2 text-[var(--t-dim)] hover:text-[var(--t-fg)]">
               [ RE-PROBE ]
             </button>
             <button
               onClick={bridge.disconnect}
-              className="border border-[#ff5500] px-3 py-2 text-[#ff5500] hover:bg-[#ff5500] hover:text-black"
+              className="border border-[var(--t-orange)] px-3 py-2 text-[var(--t-orange)] hover:bg-[var(--t-orange)] hover:text-[var(--t-on-accent)]"
             >
               [ DISCONNECT ]
             </button>
           </div>
-          {bridge.error && <div className="break-all text-[11px] text-[#ff5500]">ERR: {bridge.error}</div>}
+          {bridge.error && <div className="break-all text-[11px] text-[var(--t-orange)]">ERR: {bridge.error}</div>}
           {bridge.info && (
-            <div className="border border-hard p-3 text-[10px] uppercase tracking-widest text-[#888]">
-              <div>CWD: <span className="text-[#00ff66] normal-case">{bridge.info.cwd}</span></div>
+            <div className="border border-hard p-3 text-[10px] uppercase tracking-widest text-[var(--t-dim)]">
+              <div>CWD: <span className="text-[var(--t-green)] normal-case">{bridge.info.cwd}</span></div>
               <div>BRANCH: {bridge.info.branch}</div>
               <div>DAEMON: v{bridge.info.version ?? "?"}</div>
             </div>
           )}
-          <div className="border border-hard p-3 text-[10px] leading-relaxed text-[#666]">
+          <div className="border border-hard p-3 text-[10px] leading-relaxed text-[var(--t-dim-2)]">
             &gt; 1. Open a terminal inside your local clone.<br />
-            &gt; 2. <code className="text-[#00ff66]">{BRIDGE_INSTALL}</code><br />
+            &gt; 2. <code className="text-[var(--t-green)]">{BRIDGE_INSTALL}</code><br />
             &gt; 3. Hit [ CONNECT ] above — the dashboard then reads local git diff, runs whitelisted commands and can write generated specs to disk.
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-[10px] uppercase tracking-widest text-[#666]">[ REFERENCE DAEMON // bridge.mjs ]</span>
+            <span className="text-[10px] uppercase tracking-widest text-[var(--t-dim-2)]">[ REFERENCE DAEMON // bridge.mjs ]</span>
             <button
               onClick={() => copy(BRIDGE_SNIPPET, "BRIDGE_SCRIPT_COPIED")}
-              className="border border-[#333] px-2 py-1 text-[10px] uppercase tracking-widest text-[#888] hover:border-[#00ff66] hover:text-[#00ff66]"
+              className="border border-[var(--t-line)] px-2 py-1 text-[10px] uppercase tracking-widest text-[var(--t-dim)] hover:border-[var(--t-green)] hover:text-[var(--t-green)]"
             >
               📋 COPY SCRIPT
             </button>
           </div>
-          <pre className="max-h-64 overflow-auto border border-hard bg-[#050505] p-3 text-[10px] whitespace-pre text-[#888]">
+          <pre className="max-h-64 overflow-auto border border-hard bg-[var(--t-surface)] p-3 text-[10px] whitespace-pre text-[var(--t-dim)]">
             {BRIDGE_SNIPPET}
           </pre>
         </div>
@@ -147,17 +147,17 @@ export function BridgePanel({
       {tab === "DIFF" && (
         <div className="space-y-2">
           {bridge.state !== "ACTIVE" ? (
-            <div className="py-8 text-center text-[11px] uppercase tracking-widest text-[#555]">
+            <div className="py-8 text-center text-[11px] uppercase tracking-widest text-[var(--t-dim-3)]">
               &gt; BRIDGE_OFFLINE — connect to read local git state
             </div>
           ) : files.length === 0 ? (
-            <div className="py-8 text-center text-[11px] uppercase tracking-widest text-[#00ff66]">
+            <div className="py-8 text-center text-[11px] uppercase tracking-widest text-[var(--t-green)]">
               &gt; WORKING_TREE_CLEAN
             </div>
           ) : (
             <table className="w-full border-collapse text-[11px]">
               <thead>
-                <tr className="text-[9px] uppercase tracking-widest text-[#666]">
+                <tr className="text-[9px] uppercase tracking-widest text-[var(--t-dim-2)]">
                   <th className="border border-hard px-2 py-1 text-left font-normal">ST</th>
                   <th className="border border-hard px-2 py-1 text-left font-normal">LOCAL_PATH</th>
                   <th className="border border-hard px-2 py-1 text-left font-normal">+/−</th>
@@ -166,13 +166,13 @@ export function BridgePanel({
               <tbody>
                 {files.map((f) => (
                   <tr key={f.path}>
-                    <td className="border border-hard px-2 py-1" style={{ color: STATUS_COLOR[f.status] ?? "#888" }}>
+                    <td className="border border-hard px-2 py-1" style={{ color: STATUS_COLOR[f.status] ?? "var(--t-dim)" }}>
                       {f.status}
                     </td>
-                    <td className="border border-hard px-2 py-1 break-all text-white">{f.path}</td>
+                    <td className="border border-hard px-2 py-1 break-all text-[var(--t-fg)]">{f.path}</td>
                     <td className="border border-hard px-2 py-1 tabular-nums">
-                      <span className="text-[#00ff66]">+{f.additions ?? 0}</span>{" "}
-                      <span className="text-[#ff5500]">−{f.deletions ?? 0}</span>
+                      <span className="text-[var(--t-green)]">+{f.additions ?? 0}</span>{" "}
+                      <span className="text-[var(--t-orange)]">−{f.deletions ?? 0}</span>
                     </td>
                   </tr>
                 ))}
@@ -195,23 +195,23 @@ export function BridgePanel({
             <button
               onClick={() => void run(custom)}
               disabled={!custom.trim() || !!busy}
-              className="shrink-0 border border-[#00ff66] px-3 text-[10px] uppercase tracking-widest text-[#00ff66] hover:bg-[#00ff66] hover:text-black disabled:opacity-30"
+              className="shrink-0 border border-[var(--t-green)] px-3 text-[10px] uppercase tracking-widest text-[var(--t-green)] hover:bg-[var(--t-green)] hover:text-[var(--t-on-accent)] disabled:opacity-30"
             >
               ▶ RUN
             </button>
           </div>
-          <div className="text-[9px] uppercase tracking-widest text-[#666]">[ PARSED FROM AGENTS.md ]</div>
+          <div className="text-[9px] uppercase tracking-widest text-[var(--t-dim-2)]">[ PARSED FROM AGENTS.md ]</div>
           {commands.length === 0 ? (
-            <div className="text-[11px] text-[#555]">&gt; NO_EXECUTABLE_COMMANDS_FOUND</div>
+            <div className="text-[11px] text-[var(--t-dim-3)]">&gt; NO_EXECUTABLE_COMMANDS_FOUND</div>
           ) : (
             <ul className="space-y-2">
               {commands.map((c) => (
                 <li key={c} className="flex items-stretch gap-2">
-                  <code className="min-w-0 flex-1 truncate border border-hard px-2 py-2 text-[11px] text-[#00ff66]">$ {c}</code>
+                  <code className="min-w-0 flex-1 truncate border border-hard px-2 py-2 text-[11px] text-[var(--t-green)]">$ {c}</code>
                   <button
                     onClick={() => void run(c)}
                     disabled={!!busy || bridge.state !== "ACTIVE"}
-                    className="shrink-0 border border-[#ffaa00] px-2 text-[10px] uppercase tracking-widest text-[#ffaa00] hover:bg-[#ffaa00] hover:text-black disabled:opacity-30"
+                    className="shrink-0 border border-[var(--t-amber)] px-2 text-[10px] uppercase tracking-widest text-[var(--t-amber)] hover:bg-[var(--t-amber)] hover:text-[var(--t-on-accent)] disabled:opacity-30"
                   >
                     {busy === c ? "…RUNNING" : "▶ RUN"}
                   </button>
@@ -219,17 +219,17 @@ export function BridgePanel({
               ))}
             </ul>
           )}
-          {log.length > 0 && <div className="text-[9px] uppercase tracking-widest text-[#666]">[ OUTPUT ]</div>}
+          {log.length > 0 && <div className="text-[9px] uppercase tracking-widest text-[var(--t-dim-2)]">[ OUTPUT ]</div>}
           {log.map((r, i) => (
             <div key={i} className="border border-hard">
               <div
                 className="flex items-center justify-between border-b border-hard px-2 py-1 text-[10px] uppercase tracking-widest"
-                style={{ color: r.code === 0 ? "#00ff66" : "#ff5500" }}
+                style={{ color: r.code === 0 ? "var(--t-green)" : "var(--t-orange)" }}
               >
                 <span className="truncate">$ {r.cmd}</span>
                 <span className="shrink-0">EXIT {r.code} · {r.ms}ms</span>
               </div>
-              <pre className="max-h-56 overflow-auto bg-[#050505] p-2 text-[10px] whitespace-pre-wrap text-[#ccc]">
+              <pre className="max-h-56 overflow-auto bg-[var(--t-surface)] p-2 text-[10px] whitespace-pre-wrap text-[var(--t-fg-2)]">
                 {(r.stdout || "") + (r.stderr ? `\n${r.stderr}` : "") || "(no output)"}
               </pre>
             </div>

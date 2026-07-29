@@ -32,6 +32,6 @@ export function RepoImage({ src, alt }: { src: string; alt: string }) {
     };
   }, [safe]);
 
-  if (!url) return <span className="text-[10px] text-[#666]">[ BLOCKED_IMAGE_SRC ]</span>;
+  if (!url) return <span className="text-[10px] text-[var(--t-dim-2)]">[ BLOCKED_IMAGE_SRC ]</span>;
   return <img src={url} alt={alt} loading="lazy" className="max-w-full border border-hard" />;
 }

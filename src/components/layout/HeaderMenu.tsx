@@ -19,7 +19,7 @@ export function HeaderMenu({
   icon,
   label,
   items,
-  accent = "#00ff66",
+  accent = "var(--t-green)",
   triggerClass = "",
   ariaLabel,
 }: {
@@ -71,7 +71,7 @@ export function HeaderMenu({
         aria-expanded={open}
         title={ariaLabel}
         className={`inline-flex shrink-0 items-center gap-1 border px-2 py-1.5 text-[10px] uppercase tracking-widest transition-colors ${triggerClass}`}
-        style={{ borderColor: open ? accent : "#333", color: open ? accent : "#ccc" }}
+        style={{ borderColor: open ? accent : "var(--t-line)", color: open ? accent : "var(--t-fg-2)" }}
       >
         <span>{icon}</span>
         {label && <span className="hidden md:inline">{label}</span>}
@@ -85,7 +85,7 @@ export function HeaderMenu({
           <div
             ref={popRef}
             role="menu"
-            className="fixed z-[80] border border-hard bg-black shadow-[0_0_0_1px_#000]"
+            className="fixed z-[80] border border-hard bg-[var(--t-bg)] shadow-[0_0_0_1px_var(--t-on-accent)]"
             style={{ top: pos.top, left: pos.left, width: pos.width }}
           >
             {items.map((it) => (
@@ -97,16 +97,16 @@ export function HeaderMenu({
                   setOpen(false);
                   it.onSelect();
                 }}
-                className="flex w-full items-center gap-2 border-b border-[#151515] px-3 py-2.5 text-left text-[11px] last:border-b-0 hover:bg-[#0d0d0d] disabled:cursor-not-allowed disabled:opacity-35"
-                style={{ color: it.accent ?? "#ddd" }}
+                className="flex w-full items-center gap-2 border-b border-[var(--t-surface-2)] px-3 py-2.5 text-left text-[11px] last:border-b-0 hover:bg-[var(--t-surface-2)] disabled:cursor-not-allowed disabled:opacity-35"
+                style={{ color: it.accent ?? "var(--t-fg-2)" }}
               >
                 <span className="w-4 shrink-0 text-center">{it.icon}</span>
                 <span className="min-w-0 flex-1 truncate">
                   {it.label}
-                  {it.hint && <span className="ml-1 text-[9px] text-[#555]">{it.hint}</span>}
+                  {it.hint && <span className="ml-1 text-[9px] text-[var(--t-dim-3)]">{it.hint}</span>}
                 </span>
                 {it.keys && (
-                  <span className="shrink-0 border border-[#222] px-1 text-[9px] tracking-widest text-[#666]">
+                  <span className="shrink-0 border border-[var(--t-line-2)] px-1 text-[9px] tracking-widest text-[var(--t-dim-2)]">
                     {it.keys}
                   </span>
                 )}

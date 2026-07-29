@@ -120,8 +120,8 @@ export function ExternalAiMenu({
         title="No API key needed — opens the spec + prompt in a free AI web chat"
         className={
           compact
-            ? "border border-[#333] px-2 py-1 text-[9px] uppercase tracking-widest text-[#888] hover:border-[#00ff66] hover:text-[#00ff66] disabled:opacity-40"
-            : "border border-[#333] px-3 py-1.5 text-[11px] uppercase tracking-widest hover:border-[#00ff66] hover:text-[#00ff66] disabled:opacity-40 disabled:hover:border-[#333] disabled:hover:text-inherit"
+            ? "border border-[var(--t-line)] px-2 py-1 text-[9px] uppercase tracking-widest text-[var(--t-dim)] hover:border-[var(--t-green)] hover:text-[var(--t-green)] disabled:opacity-40"
+            : "border border-[var(--t-line)] px-3 py-1.5 text-[11px] uppercase tracking-widest hover:border-[var(--t-green)] hover:text-[var(--t-green)] disabled:opacity-40 disabled:hover:border-[var(--t-line)] disabled:hover:text-inherit"
         }
       >
         {compact ? "🌐 TEST IN EXTERNAL AI" : "[ 🌐 OPEN IN EXTERNAL AI (ALT+E) ▾ ]"}
@@ -131,7 +131,7 @@ export function ExternalAiMenu({
         createPortal(
           <div
             ref={menuRef}
-            className="fixed z-[200] w-[290px] overflow-y-auto border border-hard bg-black"
+            className="fixed z-[200] w-[290px] overflow-y-auto border border-hard bg-[var(--t-bg)]"
             style={{
               top: pos?.top ?? -9999,
               left: pos?.left ?? -9999,
@@ -139,21 +139,21 @@ export function ExternalAiMenu({
               visibility: pos ? "visible" : "hidden",
             }}
           >
-          <div className="border-b border-[#222] px-3 py-2 text-[10px] uppercase tracking-widest text-[#666]">
+          <div className="border-b border-[var(--t-line-2)] px-3 py-2 text-[10px] uppercase tracking-widest text-[var(--t-dim-2)]">
             ZERO-COST // NO API KEY REQUIRED
           </div>
           {EXTERNAL_PROVIDERS.map((p) => (
             <button
               key={p.id}
               onClick={() => void go(p)}
-              className="flex w-full items-center gap-2 border-b border-[#161616] px-3 py-2 text-left text-[11px] uppercase tracking-widest text-[#ccc] hover:bg-[#0d0d0d]"
+              className="flex w-full items-center gap-2 border-b border-[var(--t-surface-2)] px-3 py-2 text-left text-[11px] uppercase tracking-widest text-[var(--t-fg-2)] hover:bg-[var(--t-surface-2)]"
               style={{ borderLeft: `2px solid transparent` }}
               onMouseEnter={(e) => (e.currentTarget.style.borderLeftColor = p.color)}
               onMouseLeave={(e) => (e.currentTarget.style.borderLeftColor = "transparent")}
             >
               <span>{p.dot}</span>
               <span className="flex-1">{p.label}</span>
-              <span className="text-[9px] text-[#555]">{p.urlLimit ? "PREFILL" : "PASTE"}</span>
+              <span className="text-[9px] text-[var(--t-dim-3)]">{p.urlLimit ? "PREFILL" : "PASTE"}</span>
             </button>
           ))}
           <button
@@ -164,7 +164,7 @@ export function ExternalAiMenu({
                 "PAYLOAD COPIED TO CLIPBOARD",
               );
             }}
-            className="w-full px-3 py-2 text-left text-[11px] uppercase tracking-widest text-[#666] hover:text-[#00ff66]"
+            className="w-full px-3 py-2 text-left text-[11px] uppercase tracking-widest text-[var(--t-dim-2)] hover:text-[var(--t-green)]"
           >
             [ 📋 COPY PAYLOAD ONLY ]
           </button>
