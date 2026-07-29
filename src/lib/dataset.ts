@@ -102,16 +102,13 @@ export function parseDataset(path: string, text: string): ParsedDataset | null {
 
   // .json — only arrays of objects are tabular
   try {
-    const data = JSON.parse(text);
-    const arr = Array.isArray(data)
+    const data: unknown = JSON.parse(text);
+    const bag = data && typeof data === "object" ? (data as Record<string, unknown>) : null;
+    const arr: unknown[] | null = Array.isArray(data)
       ? data
-      : Array.isArray((data as any)?.data)
-        ? (data as any).data
-        : Array.isArray((data as any)?.rows)
-          ? (data as any).rows
-          : Array.isArray((data as any)?.examples)
-            ? (data as any).examples
-            : null;
+      : ["data", "rows", "examples"]
+          .map((k) => bag?.[k])
+          .find((v): v is unknown[] => Array.isArray(v)) ?? null;
     if (!arr || !arr.length) return null;
     const rows = arr.map(flatten);
     const columns = columnsOf(rows);
