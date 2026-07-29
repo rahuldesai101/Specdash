@@ -68,6 +68,30 @@
   --term-green: #00ff66;
   --alert-orange: #ff5500;
   --hard-border: #333333;
+
+  /* ── SPEC DASH terminal palette (dark, default) ─────────────────────── */
+  --t-bg: #000000;
+  --t-surface: #0a0a0a;
+  --t-surface-2: #151515;
+  --t-line: #333333;
+  --t-line-2: #222222;
+  --t-fg: #ffffff;
+  --t-fg-2: #cccccc;
+  --t-dim: #888888;
+  --t-dim-2: #666666;
+  --t-dim-3: #555555;
+  --t-green: #00ff66;
+  --t-orange: #ff5500;
+  --t-amber: #ffaa00;
+  --t-purple: #c07cff;
+  --t-blue: #66b3ff;
+  --t-cyan: #22d3ee;
+  --t-red: #ff3b30;
+  --t-mark: #00ffcc;
+  --t-on-accent: #000000;
+  --t-tint-warm: #331000;
+  --t-shadow: 0 0 0 1px #000000;
+  --t-ring: var(--t-green);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);
   --popover: oklch(1 0 0);
