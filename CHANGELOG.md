@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - **Perplexity** joins the external AI launcher, and Gemini/Kimi now support prompt pre-fill.
+- **Pro Light Mode** — a WCAG-AA calibrated light palette (slate canvas, white surfaces, indigo accent, high-contrast text and borders) built on semantic `--t-*` tokens instead of the old global invert hack, plus a 3-way `☀️ Light / 🌙 Dark / 💻 System` switcher in the Control Centre with OS sync and smooth colour transitions. Mermaid diagrams now re-render with the active theme palette.
 - **⚙️ Control Centre drawer** — a right-side slide-over holding GitHub PAT / AI engine keys, the default external LLM target, dark/light appearance, search-index clearing and workspace reset.
 
 ### Changed
