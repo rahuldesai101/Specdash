@@ -109,26 +109,26 @@ export function SelectionBar({
       ref={barRef}
       data-selection-bar
       onMouseDown={(e) => e.preventDefault()}
-      className="fixed z-[85] -translate-x-1/2 border border-[#00ff66] bg-black shadow-[0_0_0_1px_#000]"
+      className="fixed z-[85] -translate-x-1/2 border border-[var(--t-green)] bg-[var(--t-bg)] shadow-[0_0_0_1px_var(--t-on-accent)]"
       style={{ left: pos.x, top: pos.y, transform: `translate(-50%, ${pos.flip ? "0" : "-100%"})` }}
     >
-      <div className="flex items-stretch divide-x divide-[#1a1a1a] text-[10px] uppercase tracking-widest">
-        <span className="grid place-items-center px-2 text-[#555]">{chars} CH</span>
-        <BarBtn onClick={act(onExplain)} color="#00ff66">
+      <div className="flex items-stretch divide-x divide-[var(--t-surface-2)] text-[10px] uppercase tracking-widest">
+        <span className="grid place-items-center px-2 text-[var(--t-dim-3)]">{chars} CH</span>
+        <BarBtn onClick={act(onExplain)} color="var(--t-green)">
           ⚡ EXPLAIN
         </BarBtn>
-        <BarBtn onClick={act(onAddToPack)} color="#ffaa00">
+        <BarBtn onClick={act(onAddToPack)} color="var(--t-amber)">
           🎒 ADD TO TOKEN PACK
         </BarBtn>
-        <BarBtn onClick={() => setAiOpen((v) => !v)} color="#66b3ff">
+        <BarBtn onClick={() => setAiOpen((v) => !v)} color="var(--t-blue)">
           🌐 TEST IN EXTERNAL AI
         </BarBtn>
-        <BarBtn onClick={act(onRefine)} color="#c07cff">
+        <BarBtn onClick={act(onRefine)} color="var(--t-purple)">
           ♾️ REFINE
         </BarBtn>
       </div>
       {aiOpen && (
-        <div className="flex flex-wrap gap-1 border-t border-[#1a1a1a] p-1">
+        <div className="flex flex-wrap gap-1 border-t border-[var(--t-surface-2)] p-1">
           {EXTERNAL_PROVIDERS.map((p) => (
             <button
               key={p.id}

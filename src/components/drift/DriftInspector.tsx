@@ -85,14 +85,14 @@ export function DriftInspector({ owner, repo, branch, ruleFiles, onClose, onOpen
   const hard = findings.filter((f) => f.rule.severity === "hard").length;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-start justify-center bg-black/85 p-3 pt-[6vh]" onMouseDown={onClose}>
+    <div className="fixed inset-0 z-[60] flex items-start justify-center bg-[var(--t-bg)]/85 p-3 pt-[6vh]" onMouseDown={onClose}>
       <div
-        className="flex max-h-[86vh] w-full max-w-4xl flex-col border border-hard bg-black"
+        className="flex max-h-[86vh] w-full max-w-4xl flex-col border border-hard bg-[var(--t-bg)]"
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-hard px-4 py-3">
-          <div className="text-[12px] uppercase tracking-widest text-[#ff5500]">[ SPEC_DRIFT_INSPECTOR // ADR_WATCHER ]</div>
-          <button onClick={onClose} className="text-[11px] text-[#666] hover:text-white">
+          <div className="text-[12px] uppercase tracking-widest text-[var(--t-orange)]">[ SPEC_DRIFT_INSPECTOR // ADR_WATCHER ]</div>
+          <button onClick={onClose} className="text-[11px] text-[var(--t-dim-2)] hover:text-[var(--t-fg)]">
             [ESC]
           </button>
         </div>
@@ -103,23 +103,23 @@ export function DriftInspector({ owner, repo, branch, ruleFiles, onClose, onOpen
               key={t}
               onClick={() => setTab(t)}
               className="border px-2 py-1"
-              style={{ borderColor: tab === t ? "#00ff66" : "#333", color: tab === t ? "#00ff66" : "#888" }}
+              style={{ borderColor: tab === t ? "var(--t-green)" : "var(--t-line)", color: tab === t ? "var(--t-green)" : "var(--t-dim)" }}
             >
               [ {t} {String(t === "drift" ? findings.length : t === "rules" ? rules.length : commits.length).padStart(2, "0")} ]
             </button>
           ))}
-          <span className="ml-auto" style={{ color: phase === "READY" ? (hard ? "#ff5500" : "#00ff66") : "#ffaa00" }}>
+          <span className="ml-auto" style={{ color: phase === "READY" ? (hard ? "var(--t-orange)" : "var(--t-green)") : "var(--t-amber)" }}>
             [ {phase === "READY" ? (hard ? `${hard} HARD_VIOLATIONS` : "NO_HARD_DRIFT") : phase} ]
           </span>
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto p-3 text-[11px]">
-          {phase === "SCANNING" && <div className="p-6 text-center text-[#666]">&gt; SCANNING_RULES_AND_COMMITS…</div>}
-          {phase === "ERROR" && <div className="p-6 text-center text-[#ff5500]">ERR: {err}</div>}
+          {phase === "SCANNING" && <div className="p-6 text-center text-[var(--t-dim-2)]">&gt; SCANNING_RULES_AND_COMMITS…</div>}
+          {phase === "ERROR" && <div className="p-6 text-center text-[var(--t-orange)]">ERR: {err}</div>}
 
           {phase === "READY" && tab === "drift" && (
             findings.length === 0 ? (
-              <div className="p-8 text-center uppercase tracking-widest text-[#00ff66]">
+              <div className="p-8 text-center uppercase tracking-widest text-[var(--t-green)]">
                 &gt; NO_DRIFT_DETECTED across {commits.length} commits / {rules.length} rules
               </div>
             ) : (
@@ -127,22 +127,22 @@ export function DriftInspector({ owner, repo, branch, ruleFiles, onClose, onOpen
                 <div
                   key={f.id}
                   className="mb-2 border p-3"
-                  style={{ borderColor: f.rule.severity === "hard" ? "#ff5500" : "#666" }}
+                  style={{ borderColor: f.rule.severity === "hard" ? "var(--t-orange)" : "var(--t-dim-2)" }}
                 >
-                  <div className="text-[11px]" style={{ color: f.rule.severity === "hard" ? "#ff5500" : "#ffaa00" }}>
+                  <div className="text-[11px]" style={{ color: f.rule.severity === "hard" ? "var(--t-orange)" : "var(--t-amber)" }}>
                     [ {f.rule.severity === "hard" ? "⚠️ SPEC DRIFT WARNING" : "· ADVISORY"}: File '{f.file}' violates rule
                     in {f.rule.source} ]
                   </div>
-                  <div className="mt-2 border-l-2 border-[#333] pl-2 text-[11px] text-[#ccc]">“{f.rule.text}”</div>
-                  <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-widest text-[#666]">
+                  <div className="mt-2 border-l-2 border-[var(--t-line)] pl-2 text-[11px] text-[var(--t-fg-2)]">“{f.rule.text}”</div>
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-widest text-[var(--t-dim-2)]">
                     <span>{f.commit.sha.slice(0, 7)}</span>
-                    <span className="truncate max-w-[40ch] text-[#888] normal-case">{f.commit.message}</span>
+                    <span className="truncate max-w-[40ch] text-[var(--t-dim)] normal-case">{f.commit.message}</span>
                     <span>{f.commit.author}</span>
                     <span>{f.commit.date.slice(0, 10)}</span>
-                    <a href={f.commit.url} target="_blank" rel="noopener noreferrer" className="text-[#00ff66]">
+                    <a href={f.commit.url} target="_blank" rel="noopener noreferrer" className="text-[var(--t-green)]">
                       ↗ COMMIT
                     </a>
-                    <button onClick={() => onOpenFile(f.rule.source)} className="text-[#00ff66]">
+                    <button onClick={() => onOpenFile(f.rule.source)} className="text-[var(--t-green)]">
                       📄 OPEN_RULE
                     </button>
                   </div>
@@ -153,17 +153,17 @@ export function DriftInspector({ owner, repo, branch, ruleFiles, onClose, onOpen
 
           {phase === "READY" && tab === "rules" && (
             rules.length === 0 ? (
-              <div className="p-8 text-center uppercase tracking-widest text-[#555]">&gt; NO_RULE_SOURCES_FOUND</div>
+              <div className="p-8 text-center uppercase tracking-widest text-[var(--t-dim-3)]">&gt; NO_RULE_SOURCES_FOUND</div>
             ) : (
               rules.map((r) => (
-                <div key={r.id} className="mb-1 border border-[#1a1a1a] p-2">
+                <div key={r.id} className="mb-1 border border-[var(--t-surface-2)] p-2">
                   <div className="flex items-center justify-between gap-2 text-[9px] uppercase tracking-widest">
-                    <span style={{ color: r.severity === "hard" ? "#ff5500" : "#888" }}>[ {r.severity} ]</span>
-                    <span className="truncate text-[#555]">/{r.source}</span>
+                    <span style={{ color: r.severity === "hard" ? "var(--t-orange)" : "var(--t-dim)" }}>[ {r.severity} ]</span>
+                    <span className="truncate text-[var(--t-dim-3)]">/{r.source}</span>
                   </div>
-                  <div className="mt-1 text-[11px] text-[#ccc]">{r.text}</div>
+                  <div className="mt-1 text-[11px] text-[var(--t-fg-2)]">{r.text}</div>
                   {r.topics.length > 0 && (
-                    <div className="mt-1 text-[9px] uppercase tracking-widest text-[#444]">§ {r.topics.join(" · ")}</div>
+                    <div className="mt-1 text-[9px] uppercase tracking-widest text-[var(--t-line)]">§ {r.topics.join(" · ")}</div>
                   )}
                 </div>
               ))
@@ -172,14 +172,14 @@ export function DriftInspector({ owner, repo, branch, ruleFiles, onClose, onOpen
 
           {phase === "READY" && tab === "commits" && (
             commits.map((c) => (
-              <div key={c.sha} className="mb-1 border border-[#1a1a1a] p-2">
+              <div key={c.sha} className="mb-1 border border-[var(--t-surface-2)] p-2">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="truncate text-[11px] text-white">{c.message}</span>
-                  <a href={c.url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#00ff66]">
+                  <span className="truncate text-[11px] text-[var(--t-fg)]">{c.message}</span>
+                  <a href={c.url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-[var(--t-green)]">
                     {c.sha.slice(0, 7)} ↗
                   </a>
                 </div>
-                <div className="text-[10px] text-[#555]">
+                <div className="text-[10px] text-[var(--t-dim-3)]">
                   {c.author} · {c.date.slice(0, 10)} · {c.files.length} files
                 </div>
               </div>
@@ -187,7 +187,7 @@ export function DriftInspector({ owner, repo, branch, ruleFiles, onClose, onOpen
           )}
         </div>
 
-        <div className="border-t border-hard px-4 py-2 text-[9px] uppercase tracking-widest text-[#555]">
+        <div className="border-t border-hard px-4 py-2 text-[9px] uppercase tracking-widest text-[var(--t-dim-3)]">
           SOURCES: AGENTS.md · constitution.md · /docs/adr/*.md · last 10 commits
         </div>
       </div>

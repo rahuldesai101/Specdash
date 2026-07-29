@@ -57,11 +57,11 @@ export function ControlCentre({
 
   return (
     <div className="fixed inset-0 z-[90]">
-      <button aria-label="Close control centre" onClick={onClose} className="absolute inset-0 bg-black/85" />
-      <aside className="absolute inset-y-0 right-0 flex w-[92vw] max-w-[420px] flex-col border-l border-hard bg-black">
+      <button aria-label="Close control centre" onClick={onClose} className="absolute inset-0 bg-[var(--t-bg)]/85" />
+      <aside className="absolute inset-y-0 right-0 flex w-[92vw] max-w-[420px] flex-col border-l border-hard bg-[var(--t-bg)]">
         <div className="flex items-center justify-between border-b border-hard px-4 py-3">
-          <span className="text-[11px] uppercase tracking-widest text-[#00ff66]">[ ⚙️ CONTROL CENTRE ]</span>
-          <button onClick={onClose} className="min-h-9 min-w-9 text-[#666] hover:text-[#ff5500]">
+          <span className="text-[11px] uppercase tracking-widest text-[var(--t-green)]">[ ⚙️ CONTROL CENTRE ]</span>
+          <button onClick={onClose} className="min-h-9 min-w-9 text-[var(--t-dim-2)] hover:text-[var(--t-orange)]">
             [X]
           </button>
         </div>
@@ -71,12 +71,12 @@ export function ControlCentre({
             <Row
               label={hasPat ? "GITHUB PAT: CONNECTED" : "GITHUB PAT: NOT SET"}
               icon={hasPat ? "🟢" : "🔴"}
-              tone={hasPat ? "#00ff66" : "#ff5500"}
+              tone={hasPat ? "var(--t-green)" : "var(--t-orange)"}
               onClick={onOpenPat}
             />
-            <Row label={aiLabel} icon="⚡" tone="#c07cff" onClick={onOpenAi} />
+            <Row label={aiLabel} icon="⚡" tone="var(--t-purple)" onClick={onOpenAi} />
             <Row label="SWITCH REPOSITORY" icon="⇄" onClick={onSwitchRepo} />
-            <Row label="LOCAL WORKSPACE CLI BRIDGE" icon="🔌" tone="#ffaa00" onClick={onOpenBridge} />
+            <Row label="LOCAL WORKSPACE CLI BRIDGE" icon="🔌" tone="var(--t-amber)" onClick={onOpenBridge} />
           </Section>
 
           <Section title="TARGET LLM DEFAULT">
@@ -91,8 +91,8 @@ export function ControlCentre({
                   }}
                   className="flex items-center gap-2 border px-2 py-2 text-left text-[10px] uppercase tracking-widest"
                   style={{
-                    borderColor: target === p.id ? p.color : "#333",
-                    color: target === p.id ? p.color : "#888",
+                    borderColor: target === p.id ? p.color : "var(--t-line)",
+                    color: target === p.id ? p.color : "var(--t-dim)",
                   }}
                 >
                   <span>{p.dot}</span>
@@ -109,7 +109,7 @@ export function ControlCentre({
                   key={t}
                   onClick={() => setThemeAndStore(t)}
                   className="flex-1 border px-2 py-2 text-[10px] uppercase tracking-widest"
-                  style={{ borderColor: theme === t ? "#00ff66" : "#333", color: theme === t ? "#00ff66" : "#888" }}
+                  style={{ borderColor: theme === t ? "var(--t-green)" : "var(--t-line)", color: theme === t ? "var(--t-green)" : "var(--t-dim)" }}
                 >
                   {t === "dark" ? "🌑 DARK" : "☀ LIGHT"}
                 </button>
@@ -118,7 +118,7 @@ export function ControlCentre({
             <Row
               label="CLEAR IN-MEMORY SEARCH INDEX"
               icon="🧹"
-              tone="#ffaa00"
+              tone="var(--t-amber)"
               onClick={() => {
                 sessionStorage.clear();
                 toast.success("SEARCH INDEX CLEARED — REBUILDING");
@@ -128,7 +128,7 @@ export function ControlCentre({
             <Row
               label="RESET WORKSPACE STATE"
               icon="⌫"
-              tone="#ff5500"
+              tone="var(--t-orange)"
               onClick={() => {
                 localStorage.clear();
                 sessionStorage.clear();
@@ -151,7 +151,7 @@ export function ControlCentre({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="border-b border-hard">
-      <div className="px-4 py-2 text-[9px] uppercase tracking-widest text-[#555]">[ {title} ]</div>
+      <div className="px-4 py-2 text-[9px] uppercase tracking-widest text-[var(--t-dim-3)]">[ {title} ]</div>
       {children}
     </section>
   );
@@ -160,7 +160,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Row({
   label,
   icon,
-  tone = "#ddd",
+  tone = "var(--t-fg-2)",
   onClick,
 }: {
   label: string;
@@ -171,12 +171,12 @@ function Row({
   return (
     <button
       onClick={onClick}
-      className="flex w-full items-center gap-2 border-t border-[#151515] px-4 py-3 text-left text-[11px] uppercase tracking-widest hover:bg-[#0d0d0d]"
+      className="flex w-full items-center gap-2 border-t border-[var(--t-surface-2)] px-4 py-3 text-left text-[11px] uppercase tracking-widest hover:bg-[var(--t-surface-2)]"
       style={{ color: tone }}
     >
       <span className="w-4 shrink-0 text-center">{icon}</span>
       <span className="min-w-0 flex-1 truncate">{label}</span>
-      <span className="shrink-0 text-[#444]">›</span>
+      <span className="shrink-0 text-[var(--t-line)]">›</span>
     </button>
   );
 }

@@ -30,19 +30,19 @@ export function SddCompilerPanel({
       .catch(() => toast.error("CLIPBOARD_BLOCKED"));
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-start justify-center bg-black/85 p-3 pt-[5vh]" onMouseDown={onClose}>
+    <div className="fixed inset-0 z-[70] flex items-start justify-center bg-[var(--t-bg)]/85 p-3 pt-[5vh]" onMouseDown={onClose}>
       <div
-        className="flex max-h-[88vh] w-full max-w-4xl flex-col border border-hard bg-black"
+        className="flex max-h-[88vh] w-full max-w-4xl flex-col border border-hard bg-[var(--t-bg)]"
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-hard px-4 py-3">
           <div className="min-w-0">
-            <div className="text-[12px] uppercase tracking-widest text-[#00ff66]">[ SDD_COMPILER // SPEC_TO_SCAFFOLD ]</div>
-            <div className="truncate text-[10px] uppercase tracking-widest text-[#555]">
+            <div className="text-[12px] uppercase tracking-widest text-[var(--t-green)]">[ SDD_COMPILER // SPEC_TO_SCAFFOLD ]</div>
+            <div className="truncate text-[10px] uppercase tracking-widest text-[var(--t-dim-3)]">
               /{path} → {scaffold.requirements.length} REQS · {scaffold.testFiles.length} TESTS
             </div>
           </div>
-          <button onClick={onClose} className="text-[11px] text-[#666] hover:text-white">
+          <button onClick={onClose} className="text-[11px] text-[var(--t-dim-2)] hover:text-[var(--t-fg)]">
             [ESC]
           </button>
         </div>
@@ -53,7 +53,7 @@ export function SddCompilerPanel({
               key={t.id}
               onClick={() => setTab(t.id)}
               className="border px-2 py-1 text-[10px] uppercase tracking-widest"
-              style={{ borderColor: tab === t.id ? "#00ff66" : "#333", color: tab === t.id ? "#00ff66" : "#888" }}
+              style={{ borderColor: tab === t.id ? "var(--t-green)" : "var(--t-line)", color: tab === t.id ? "var(--t-green)" : "var(--t-dim)" }}
             >
               {t.label}
             </button>
@@ -62,7 +62,7 @@ export function SddCompilerPanel({
 
         <div className="min-h-0 flex-1 overflow-y-auto p-3 text-[11px]">
           {scaffold.requirements.length === 0 && (
-            <div className="p-8 text-center uppercase tracking-widest text-[#555]">
+            <div className="p-8 text-center uppercase tracking-widest text-[var(--t-dim-3)]">
               &gt; NO_REQUIREMENTS_PARSED — spec has no imperative bullet statements
             </div>
           )}
@@ -71,11 +71,11 @@ export function SddCompilerPanel({
             <>
               <button
                 onClick={() => copy(scaffold.tasksMd, "TASKS_MD_COPIED")}
-                className="mb-2 border border-[#00ff66] px-2 py-1 text-[10px] uppercase tracking-widest text-[#00ff66] hover:bg-[#00ff66] hover:text-black"
+                className="mb-2 border border-[var(--t-green)] px-2 py-1 text-[10px] uppercase tracking-widest text-[var(--t-green)] hover:bg-[var(--t-green)] hover:text-[var(--t-on-accent)]"
               >
                 📋 COPY tasks.md
               </button>
-              <pre className="whitespace-pre-wrap border border-hard bg-[#050505] p-3 text-[11px] text-[#ccc]">
+              <pre className="whitespace-pre-wrap border border-hard bg-[var(--t-surface)] p-3 text-[11px] text-[var(--t-fg-2)]">
                 {scaffold.tasksMd}
               </pre>
             </>
@@ -85,12 +85,12 @@ export function SddCompilerPanel({
             scaffold.testFiles.map((f) => (
               <div key={f.path} className="mb-2 border border-hard">
                 <div className="flex items-center justify-between border-b border-hard px-2 py-1">
-                  <span className="truncate text-[10px] text-[#00ff66]">{f.path}</span>
-                  <button onClick={() => copy(f.code, "TEST_COPIED")} className="text-[10px] text-[#888] hover:text-[#00ff66]">
+                  <span className="truncate text-[10px] text-[var(--t-green)]">{f.path}</span>
+                  <button onClick={() => copy(f.code, "TEST_COPIED")} className="text-[10px] text-[var(--t-dim)] hover:text-[var(--t-green)]">
                     📋
                   </button>
                 </div>
-                <pre className="overflow-x-auto whitespace-pre bg-[#050505] p-3 text-[11px] text-[#ccc]">{f.code}</pre>
+                <pre className="overflow-x-auto whitespace-pre bg-[var(--t-surface)] p-3 text-[11px] text-[var(--t-fg-2)]">{f.code}</pre>
               </div>
             ))}
 
@@ -103,19 +103,19 @@ export function SddCompilerPanel({
                     "PROMPT_CHAIN_COPIED",
                   )
                 }
-                className="mb-2 border border-[#00ff66] px-2 py-1 text-[10px] uppercase tracking-widest text-[#00ff66] hover:bg-[#00ff66] hover:text-black"
+                className="mb-2 border border-[var(--t-green)] px-2 py-1 text-[10px] uppercase tracking-widest text-[var(--t-green)] hover:bg-[var(--t-green)] hover:text-[var(--t-on-accent)]"
               >
                 📋 COPY FULL CHAIN
               </button>
               {scaffold.promptChain.map((s) => (
                 <div key={s.step} className="mb-2 border border-hard p-3">
-                  <div className="text-[10px] uppercase tracking-widest text-[#ff5500]">
+                  <div className="text-[10px] uppercase tracking-widest text-[var(--t-orange)]">
                     STEP {s.step} // {s.role}
                   </div>
-                  <div className="mt-1 text-[11px] text-[#ccc]">{s.prompt}</div>
+                  <div className="mt-1 text-[11px] text-[var(--t-fg-2)]">{s.prompt}</div>
                   <button
                     onClick={() => copy(s.prompt, `STEP_${s.step}_COPIED`)}
-                    className="mt-2 border border-[#333] px-2 py-1 text-[10px] uppercase tracking-widest text-[#888] hover:border-[#00ff66] hover:text-[#00ff66]"
+                    className="mt-2 border border-[var(--t-line)] px-2 py-1 text-[10px] uppercase tracking-widest text-[var(--t-dim)] hover:border-[var(--t-green)] hover:text-[var(--t-green)]"
                   >
                     📋 COPY STEP
                   </button>
@@ -127,11 +127,11 @@ export function SddCompilerPanel({
           {tab === "cli" &&
             scaffold.commands.map((c) => (
               <div key={c.label} className="mb-2 flex items-center gap-2 border border-hard p-2">
-                <span className="w-28 shrink-0 text-[10px] uppercase tracking-widest text-[#ff5500]">{c.label}</span>
-                <code className="min-w-0 flex-1 truncate text-[11px] text-[#ccc]">{c.cmd}</code>
+                <span className="w-28 shrink-0 text-[10px] uppercase tracking-widest text-[var(--t-orange)]">{c.label}</span>
+                <code className="min-w-0 flex-1 truncate text-[11px] text-[var(--t-fg-2)]">{c.cmd}</code>
                 <button
                   onClick={() => copy(c.cmd, "COMMAND_COPIED")}
-                  className="shrink-0 border border-[#333] px-2 py-1 text-[10px] text-[#888] hover:border-[#00ff66] hover:text-[#00ff66]"
+                  className="shrink-0 border border-[var(--t-line)] px-2 py-1 text-[10px] text-[var(--t-dim)] hover:border-[var(--t-green)] hover:text-[var(--t-green)]"
                 >
                   📋 RUN
                 </button>

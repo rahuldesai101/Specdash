@@ -103,7 +103,7 @@ export function EnvGuard({
   return (
     <DevModal
       title="ENV_INSPECTOR // SECRET_GUARD"
-      accent={high ? "#ff5500" : "#00ff66"}
+      accent={high ? "var(--t-orange)" : "var(--t-green)"}
       onClose={onClose}
       wide
       toolbar={
@@ -119,11 +119,11 @@ export function EnvGuard({
           </Tab>
           <button
             onClick={() => setReveal((v) => !v)}
-            className="border border-[#333] px-2 py-1 text-[#888] hover:text-[#00ff66]"
+            className="border border-[var(--t-line)] px-2 py-1 text-[var(--t-dim)] hover:text-[var(--t-green)]"
           >
             {reveal ? "🙈 MASK VALUES" : "👁 SHOW EXAMPLES"}
           </button>
-          <span className="ml-auto" style={{ color: phase === "READY" ? (high ? "#ff5500" : "#00ff66") : "#ffaa00" }}>
+          <span className="ml-auto" style={{ color: phase === "READY" ? (high ? "var(--t-orange)" : "var(--t-green)") : "var(--t-amber)" }}>
             [ {phase === "READY" ? (high ? `${high} HIGH_RISK` : "NO_HIGH_RISK") : `${phase} ${scanned}`} ]
           </span>
         </>
@@ -131,14 +131,14 @@ export function EnvGuard({
       footer="Scans up to 60 shallow source files via the GitHub raw CDN · values are masked before render · nothing is uploaded"
     >
       {phase === "SCANNING" && (
-        <div className="p-6 text-center text-[#666]">&gt; SCANNING_REPOSITORY… {scanned} files</div>
+        <div className="p-6 text-center text-[var(--t-dim-2)]">&gt; SCANNING_REPOSITORY… {scanned} files</div>
       )}
-      {phase === "ERROR" && <div className="p-6 text-center text-[#ff5500]">ERR: {err}</div>}
+      {phase === "ERROR" && <div className="p-6 text-center text-[var(--t-orange)]">ERR: {err}</div>}
 
       {phase !== "ERROR" && tab === "secrets" && (
         hits.length === 0 ? (
           phase === "READY" && (
-            <div className="p-8 text-center uppercase tracking-widest text-[#00ff66]">
+            <div className="p-8 text-center uppercase tracking-widest text-[var(--t-green)]">
               &gt; NO_HARDCODED_CREDENTIALS_DETECTED across {scanned} files
             </div>
           )
@@ -147,18 +147,18 @@ export function EnvGuard({
             <div
               key={h.id}
               className="mb-2 border p-3"
-              style={{ borderColor: h.severity === "high" ? "#ff5500" : "#666" }}
+              style={{ borderColor: h.severity === "high" ? "var(--t-orange)" : "var(--t-dim-2)" }}
             >
-              <div className="text-[11px]" style={{ color: h.severity === "high" ? "#ff5500" : "#ffaa00" }}>
+              <div className="text-[11px]" style={{ color: h.severity === "high" ? "var(--t-orange)" : "var(--t-amber)" }}>
                 [ ⚠️ {h.severity === "high" ? "Warning" : "Advisory"}: Potential {h.kind.replace(/_/g, " ")} in /{h.file}:{h.line} ]
               </div>
-              <div className="mt-2 overflow-x-auto border-l-2 border-[#333] pl-2 font-mono text-[11px] text-[#ccc]">
+              <div className="mt-2 overflow-x-auto border-l-2 border-[var(--t-line)] pl-2 font-mono text-[11px] text-[var(--t-fg-2)]">
                 {h.snippet}
               </div>
-              <div className="mt-2 flex flex-wrap items-center gap-3 text-[10px] uppercase tracking-widest text-[#666]">
-                <span>MASKED: <span className="text-[#ffcc66]">{h.masked}</span></span>
+              <div className="mt-2 flex flex-wrap items-center gap-3 text-[10px] uppercase tracking-widest text-[var(--t-dim-2)]">
+                <span>MASKED: <span className="text-[var(--t-amber)]">{h.masked}</span></span>
                 {onOpenFile && /\.(md|markdown)$/i.test(h.file) && (
-                  <button onClick={() => onOpenFile(h.file)} className="text-[#00ff66]">
+                  <button onClick={() => onOpenFile(h.file)} className="text-[var(--t-green)]">
                     📄 OPEN
                   </button>
                 )}
@@ -166,7 +166,7 @@ export function EnvGuard({
                   href={`https://github.com/${owner}/${repo}/blob/${branch}/${h.file}#L${h.line}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#00ff66]"
+                  className="text-[var(--t-green)]"
                 >
                   ↗ GITHUB
                 </a>
@@ -178,29 +178,29 @@ export function EnvGuard({
 
       {phase !== "ERROR" && tab === "env" && (
         envFiles.length === 0 ? (
-          <div className="p-8 text-center uppercase tracking-widest text-[#555]">&gt; NO_.ENV.EXAMPLE_FOUND</div>
+          <div className="p-8 text-center uppercase tracking-widest text-[var(--t-dim-3)]">&gt; NO_.ENV.EXAMPLE_FOUND</div>
         ) : (
           envFiles.map((f) => (
-            <div key={f.path} className="mb-3 border border-[#1a1a1a]">
-              <div className="border-b border-[#1a1a1a] px-2 py-1.5 text-[10px] uppercase tracking-widest text-[#00ff66]">
+            <div key={f.path} className="mb-3 border border-[var(--t-surface-2)]">
+              <div className="border-b border-[var(--t-surface-2)] px-2 py-1.5 text-[10px] uppercase tracking-widest text-[var(--t-green)]">
                 /{f.path} · {f.keys.length} keys
               </div>
               {f.keys.map((k) => {
                 const used = refKeys.includes(k.key);
                 return (
-                  <div key={k.key} className="flex flex-wrap items-center gap-2 border-b border-[#121212] px-2 py-1.5 last:border-b-0">
-                    <span className="min-w-[180px] flex-1 truncate font-mono text-[11px] text-[#ccc]">{k.key}</span>
-                    <span className="truncate font-mono text-[10px] text-[#ffcc66]">
+                  <div key={k.key} className="flex flex-wrap items-center gap-2 border-b border-[var(--t-surface)] px-2 py-1.5 last:border-b-0">
+                    <span className="min-w-[180px] flex-1 truncate font-mono text-[11px] text-[var(--t-fg-2)]">{k.key}</span>
+                    <span className="truncate font-mono text-[10px] text-[var(--t-amber)]">
                       {k.example ? (reveal ? k.example : maskExample(k.example)) : "<empty>"}
                     </span>
                     <span
                       className="border px-1 text-[9px] uppercase tracking-widest"
-                      style={{ borderColor: used ? "#00ff66" : "#333", color: used ? "#00ff66" : "#555" }}
+                      style={{ borderColor: used ? "var(--t-green)" : "var(--t-line)", color: used ? "var(--t-green)" : "var(--t-dim-3)" }}
                     >
                       {used ? "USED_IN_CODE" : "UNREFERENCED"}
                     </span>
                     {k.required && (
-                      <span className="border border-[#ffaa00] px-1 text-[9px] uppercase tracking-widest text-[#ffaa00]">
+                      <span className="border border-[var(--t-amber)] px-1 text-[9px] uppercase tracking-widest text-[var(--t-amber)]">
                         REQUIRED
                       </span>
                     )}
@@ -214,16 +214,16 @@ export function EnvGuard({
 
       {phase !== "ERROR" && tab === "missing" && (
         missing.length === 0 ? (
-          <div className="p-8 text-center uppercase tracking-widest text-[#00ff66]">
+          <div className="p-8 text-center uppercase tracking-widest text-[var(--t-green)]">
             &gt; ALL_REFERENCED_KEYS_DECLARED
           </div>
         ) : (
-          <div className="border border-[#ff5500]">
-            <div className="border-b border-[#331000] px-2 py-1.5 text-[10px] uppercase tracking-widest text-[#ff5500]">
+          <div className="border border-[var(--t-orange)]">
+            <div className="border-b border-[var(--t-tint-warm)] px-2 py-1.5 text-[10px] uppercase tracking-widest text-[var(--t-orange)]">
               REFERENCED IN CODE BUT MISSING FROM .ENV.EXAMPLE
             </div>
             {missing.map((k) => (
-              <div key={k} className="border-b border-[#121212] px-2 py-1.5 font-mono text-[11px] text-[#ccc] last:border-b-0">
+              <div key={k} className="border-b border-[var(--t-surface)] px-2 py-1.5 font-mono text-[11px] text-[var(--t-fg-2)] last:border-b-0">
                 {k}=
               </div>
             ))}

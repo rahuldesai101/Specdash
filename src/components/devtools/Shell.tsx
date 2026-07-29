@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 /** Shared brutalist modal shell for the Dev Tools suite. */
 export function DevModal({
   title,
-  accent = "#00ff66",
+  accent = "var(--t-green)",
   onClose,
   toolbar,
   footer,
@@ -20,18 +20,18 @@ export function DevModal({
 }) {
   return (
     <div
-      className="fixed inset-0 z-[70] flex items-start justify-center bg-black/85 p-2 pt-[4vh] sm:p-3 sm:pt-[6vh]"
+      className="fixed inset-0 z-[70] flex items-start justify-center bg-[var(--t-bg)]/85 p-2 pt-[4vh] sm:p-3 sm:pt-[6vh]"
       onMouseDown={onClose}
     >
       <div
-        className={`flex max-h-[90vh] w-full flex-col border border-hard bg-black ${wide ? "max-w-6xl" : "max-w-4xl"}`}
+        className={`flex max-h-[90vh] w-full flex-col border border-hard bg-[var(--t-bg)] ${wide ? "max-w-6xl" : "max-w-4xl"}`}
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between gap-2 border-b border-hard px-4 py-3">
           <div className="truncate text-[12px] uppercase tracking-widest" style={{ color: accent }}>
             [ {title} ]
           </div>
-          <button onClick={onClose} className="shrink-0 text-[11px] text-[#666] hover:text-white">
+          <button onClick={onClose} className="shrink-0 text-[11px] text-[var(--t-dim-2)] hover:text-[var(--t-fg)]">
             [ESC]
           </button>
         </div>
@@ -42,7 +42,7 @@ export function DevModal({
         )}
         <div className="min-h-0 flex-1 overflow-y-auto p-3 text-[11px]">{children}</div>
         {footer && (
-          <div className="border-t border-hard px-4 py-2 text-[9px] uppercase tracking-widest text-[#555]">
+          <div className="border-t border-hard px-4 py-2 text-[9px] uppercase tracking-widest text-[var(--t-dim-3)]">
             {footer}
           </div>
         )}
@@ -64,7 +64,7 @@ export function Tab({
     <button
       onClick={onClick}
       className="border px-2 py-1"
-      style={{ borderColor: active ? "#00ff66" : "#333", color: active ? "#00ff66" : "#888" }}
+      style={{ borderColor: active ? "var(--t-green)" : "var(--t-line)", color: active ? "var(--t-green)" : "var(--t-dim)" }}
     >
       {children}
     </button>
@@ -74,11 +74,11 @@ export function Tab({
 export function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[9px] uppercase tracking-widest text-[#666]">{label}</span>
+      <span className="mb-1 block text-[9px] uppercase tracking-widest text-[var(--t-dim-2)]">{label}</span>
       {children}
     </label>
   );
 }
 
 export const inputCls =
-  "w-full border border-[#333] bg-black px-2 py-1.5 font-mono text-[11px] text-[#ccc] outline-none focus:border-[#00ff66]";
+  "w-full border border-[var(--t-line)] bg-[var(--t-bg)] px-2 py-1.5 font-mono text-[11px] text-[var(--t-fg-2)] outline-none focus:border-[var(--t-green)]";

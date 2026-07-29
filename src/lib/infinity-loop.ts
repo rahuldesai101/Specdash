@@ -37,7 +37,7 @@ export const SPEC_SOURCES: SpecSourceDef[] = [
     kind: "constitution",
     label: "CONSTITUTION",
     icon: "⚖️",
-    color: "#ff5500",
+    color: "var(--t-orange)",
     directive:
       "NON-NEGOTIABLE ARCHITECTURAL CONSTRAINTS. Any proposal violating these MUST be rejected or rewritten.",
     match: /(^|\/)(constitution|principles|architecture-rules)\.md$/i,
@@ -47,7 +47,7 @@ export const SPEC_SOURCES: SpecSourceDef[] = [
     kind: "agents",
     label: "AGENT_DIRECTIVES",
     icon: "🤖",
-    color: "#00ff66",
+    color: "var(--t-green)",
     directive:
       "AGENT BOUNDARIES, EXECUTION RULES AND CODING STANDARDS. All generated work must comply.",
     match: /(^|\/)(agents\.md|agent\.md|claude\.md|cursor\.md|agents\.txt|\.cursorrules|copilot-instructions\.md)$/i,
@@ -57,7 +57,7 @@ export const SPEC_SOURCES: SpecSourceDef[] = [
     kind: "llms",
     label: "PROJECT_DOCS",
     icon: "📚",
-    color: "#5599ff",
+    color: "var(--t-blue)",
     directive: "HIGH-LEVEL PROJECT DOCUMENTATION, MODULE MAP AND API SHAPES.",
     match: /(^|\/)(llms\.txt|llms-full\.txt|readme\.md|docs\/index\.md)$/i,
     weight: 2,
@@ -66,7 +66,7 @@ export const SPEC_SOURCES: SpecSourceDef[] = [
     kind: "memory",
     label: "DECISION_MEMORY",
     icon: "🧠",
-    color: "#c07cff",
+    color: "var(--t-purple)",
     directive:
       "PREVIOUS DECISION LOGS, KNOWN EDGE CASES AND PRIOR ITERATIONS. Do not repeat rejected approaches.",
     match: /(^|\/)(memory\.md|history\.md|changelog\.md|decisions\.md)$|^docs\/adr\/.+\.md$|(^|\/)adr\/.+\.md$/i,

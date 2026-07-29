@@ -120,7 +120,7 @@ export function SpecAssistant({
             key={k}
             onClick={() => run(k)}
             disabled={!text || busy}
-            className="border border-[#333] px-3 py-1.5 hover:border-[#00ff66] hover:text-[#00ff66] disabled:opacity-40 disabled:hover:border-[#333] disabled:hover:text-inherit"
+            className="border border-[var(--t-line)] px-3 py-1.5 hover:border-[var(--t-green)] hover:text-[var(--t-green)] disabled:opacity-40 disabled:hover:border-[var(--t-line)] disabled:hover:text-inherit"
           >
             [ {TASKS[k].label} ]
           </button>
@@ -129,7 +129,7 @@ export function SpecAssistant({
           onClick={() => setPlaygroundOpen(true)}
           disabled={!text}
           title="Run this markdown as system prompt in a chat playground"
-          className="border border-[#333] px-3 py-1.5 hover:border-[#00ff66] hover:text-[#00ff66] disabled:opacity-40 disabled:hover:border-[#333] disabled:hover:text-inherit"
+          className="border border-[var(--t-line)] px-3 py-1.5 hover:border-[var(--t-green)] hover:text-[var(--t-green)] disabled:opacity-40 disabled:hover:border-[var(--t-line)] disabled:hover:text-inherit"
         >
           [ 🎮 RUN_AS_SYSTEM_PROMPT (ALT+P) ]
         </button>
@@ -139,11 +139,11 @@ export function SpecAssistant({
           openSignal={externalSignal}
           action={task ? TASKS[task].prompt : "Review this spec and report anything notable."}
         />
-        <span className="ml-auto" style={{ color: cfg ? "#00ff66" : "#ff5500" }}>
+        <span className="ml-auto" style={{ color: cfg ? "var(--t-green)" : "var(--t-orange)" }}>
           {cfg ? `[ AI: ACTIVE (${cfg.provider.toUpperCase()}) ]` : "[ AI: DISABLED ]"}
         </span>
         {open && (
-          <button onClick={() => setOpen(false)} className="border border-[#333] px-3 py-1.5 hover:text-white">
+          <button onClick={() => setOpen(false)} className="border border-[var(--t-line)] px-3 py-1.5 hover:text-[var(--t-fg)]">
             [ HIDE_DRAWER ]
           </button>
         )}
@@ -151,15 +151,15 @@ export function SpecAssistant({
 
       {open && (
         <div className="border-t border-hard max-h-[45vh] min-h-[160px] overflow-auto p-5 text-[13px] leading-relaxed">
-          <div className="text-[11px] uppercase tracking-widest text-[#666] mb-3">
-            &gt; {task} {busy && <span className="text-[#ffaa00]">// STREAMING...</span>}
+          <div className="text-[11px] uppercase tracking-widest text-[var(--t-dim-2)] mb-3">
+            &gt; {task} {busy && <span className="text-[var(--t-amber)]">// STREAMING...</span>}
           </div>
           {err ? (
-            <div className="text-[#ff5500] break-all">ERR: {err}</div>
+            <div className="text-[var(--t-orange)] break-all">ERR: {err}</div>
           ) : clean ? (
             <MarkdownView source={clean} />
           ) : (
-            <pre className="whitespace-pre-wrap text-[13px] leading-relaxed text-[#ddd]">&gt; AWAITING_TOKENS...</pre>
+            <pre className="whitespace-pre-wrap text-[13px] leading-relaxed text-[var(--t-fg-2)]">&gt; AWAITING_TOKENS...</pre>
           )}
         </div>
       )}

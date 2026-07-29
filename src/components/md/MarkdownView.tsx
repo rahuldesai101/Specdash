@@ -33,27 +33,27 @@ function MarkdownViewImpl({ source, ctx }: { source: string; ctx?: MdRepoCtx }) 
   const resolve = (href: string) => resolveRelativePath(ctx?.currentPath ?? "", href.split(/[?#]/)[0]);
 
   return (
-    <div className="text-[12px] leading-relaxed text-[#ccc] space-y-3">
+    <div className="text-[12px] leading-relaxed text-[var(--t-fg-2)] space-y-3">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
           h1: ({ children }) => (
-            <h1 id={slugify(textOf(children))} className="text-[16px] font-bold text-[#00ff66] uppercase tracking-wider border-b border-hard pb-2">
+            <h1 id={slugify(textOf(children))} className="text-[16px] font-bold text-[var(--t-green)] uppercase tracking-wider border-b border-hard pb-2">
               {children}
             </h1>
           ),
           h2: ({ children }) => (
-            <h2 id={slugify(textOf(children))} className="text-[14px] font-bold text-white uppercase tracking-wider border-b border-hard pb-1">
+            <h2 id={slugify(textOf(children))} className="text-[14px] font-bold text-[var(--t-fg)] uppercase tracking-wider border-b border-hard pb-1">
               {children}
             </h2>
           ),
           h3: ({ children }) => (
-            <h3 id={slugify(textOf(children))} className="text-[12px] font-bold text-[#00ff66] uppercase tracking-widest">{children}</h3>
+            <h3 id={slugify(textOf(children))} className="text-[12px] font-bold text-[var(--t-green)] uppercase tracking-widest">{children}</h3>
           ),
-          p: ({ children }) => <p className="text-[#ccc]">{children}</p>,
+          p: ({ children }) => <p className="text-[var(--t-fg-2)]">{children}</p>,
           a: ({ children, href }) => {
             const cls =
-              "text-[#00ff66] underline underline-offset-2 hover:bg-[#00ff66] hover:text-black cursor-pointer";
+              "text-[var(--t-green)] underline underline-offset-2 hover:bg-[var(--t-green)] hover:text-[var(--t-on-accent)] cursor-pointer";
             const h = href ?? "";
             if (!h || isExternal(h)) {
               return (
@@ -112,11 +112,11 @@ function MarkdownViewImpl({ source, ctx }: { source: string; ctx?: MdRepoCtx }) 
               </a>
             );
           },
-          ul: ({ children }) => <ul className="list-disc pl-5 space-y-1 marker:text-[#00ff66]">{children}</ul>,
-          ol: ({ children }) => <ol className="list-decimal pl-5 space-y-1 marker:text-[#00ff66]">{children}</ol>,
-          li: ({ children }) => <li className="text-[#ccc]">{children}</li>,
+          ul: ({ children }) => <ul className="list-disc pl-5 space-y-1 marker:text-[var(--t-green)]">{children}</ul>,
+          ol: ({ children }) => <ol className="list-decimal pl-5 space-y-1 marker:text-[var(--t-green)]">{children}</ol>,
+          li: ({ children }) => <li className="text-[var(--t-fg-2)]">{children}</li>,
           blockquote: ({ children }) => (
-            <blockquote className="border-l-2 border-[#00ff66] pl-3 text-[#888] italic">{children}</blockquote>
+            <blockquote className="border-l-2 border-[var(--t-green)] pl-3 text-[var(--t-dim)] italic">{children}</blockquote>
           ),
           hr: () => <hr className="border-hard" />,
           table: ({ children }) => (
@@ -125,12 +125,12 @@ function MarkdownViewImpl({ source, ctx }: { source: string; ctx?: MdRepoCtx }) 
             </div>
           ),
           th: ({ children }) => (
-            <th className="border border-hard px-2 py-1 text-left text-[10px] uppercase tracking-widest text-[#666] font-normal">
+            <th className="border border-hard px-2 py-1 text-left text-[10px] uppercase tracking-widest text-[var(--t-dim-2)] font-normal">
               {children}
             </th>
           ),
           td: ({ children }) => <td className="border border-hard px-2 py-1 align-top">{children}</td>,
-          input: (props) => <input {...props} readOnly className="mr-2 accent-[#00ff66]" />,
+          input: (props) => <input {...props} readOnly className="mr-2 accent-[var(--t-green)]" />,
           img: ({ src, alt }) => {
             const raw = typeof src === "string" ? src : "";
             const url =
@@ -158,7 +158,7 @@ function MarkdownViewImpl({ source, ctx }: { source: string; ctx?: MdRepoCtx }) 
             }
             if (!className) {
               return (
-                <code className="border border-hard bg-[#0a0a0a] px-1 py-0.5 text-[#00ff66]" {...props}>
+                <code className="border border-hard bg-[var(--t-surface)] px-1 py-0.5 text-[var(--t-green)]" {...props}>
                   {text}
                 </code>
               );

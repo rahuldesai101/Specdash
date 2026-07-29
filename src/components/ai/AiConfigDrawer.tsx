@@ -16,18 +16,18 @@ export function AiConfigDrawer({
   const meta = PROVIDERS.find((p) => p.id === provider)!;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-end bg-black/80">
-      <div className="w-full max-w-md h-full overflow-auto bg-black border-l border-hard p-6">
+    <div className="fixed inset-0 z-50 flex items-start justify-end bg-[var(--t-bg)]/80">
+      <div className="w-full max-w-md h-full overflow-auto bg-[var(--t-bg)] border-l border-hard p-6">
         <div className="flex items-center justify-between border-b border-hard pb-3 mb-4">
-          <div className="text-[12px] uppercase tracking-widest text-[#00ff66]">[ AI_ENGINE_CONFIG ]</div>
-          <button onClick={onClose} className="text-[#666] hover:text-white text-[11px]">
+          <div className="text-[12px] uppercase tracking-widest text-[var(--t-green)]">[ AI_ENGINE_CONFIG ]</div>
+          <button onClick={onClose} className="text-[var(--t-dim-2)] hover:text-[var(--t-fg)] text-[11px]">
             [X CLOSE]
           </button>
         </div>
 
         <div className="space-y-4 text-[11px]">
           <div>
-            <div className="text-[10px] uppercase tracking-widest text-[#666] mb-1">&gt; PROVIDER_SELECT</div>
+            <div className="text-[10px] uppercase tracking-widest text-[var(--t-dim-2)] mb-1">&gt; PROVIDER_SELECT</div>
             <div className="grid grid-cols-2 gap-2">
               {PROVIDERS.map((p) => (
                 <button
@@ -38,9 +38,9 @@ export function AiConfigDrawer({
                   }}
                   className="border px-2 py-2 text-[10px] uppercase tracking-widest"
                   style={{
-                    borderColor: provider === p.id ? "#00ff66" : "#333",
-                    backgroundColor: provider === p.id ? "#00ff66" : "transparent",
-                    color: provider === p.id ? "#000" : "#fff",
+                    borderColor: provider === p.id ? "var(--t-green)" : "var(--t-line)",
+                    backgroundColor: provider === p.id ? "var(--t-green)" : "transparent",
+                    color: provider === p.id ? "var(--t-on-accent)" : "var(--t-fg)",
                   }}
                 >
                   {p.label}
@@ -50,26 +50,26 @@ export function AiConfigDrawer({
           </div>
 
           <label className="block">
-            <div className="text-[10px] uppercase tracking-widest text-[#666] mb-1">&gt; API_KEY</div>
+            <div className="text-[10px] uppercase tracking-widest text-[var(--t-dim-2)] mb-1">&gt; API_KEY</div>
             <input
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value.trim())}
               placeholder={meta.keyHint}
-              className="w-full bg-black border border-hard px-2 py-2 text-white outline-none focus:border-[#00ff66]"
+              className="w-full bg-[var(--t-bg)] border border-hard px-2 py-2 text-[var(--t-fg)] outline-none focus:border-[var(--t-green)]"
             />
           </label>
 
           <label className="block">
-            <div className="text-[10px] uppercase tracking-widest text-[#666] mb-1">&gt; MODEL_ID</div>
+            <div className="text-[10px] uppercase tracking-widest text-[var(--t-dim-2)] mb-1">&gt; MODEL_ID</div>
             <input
               value={model}
               onChange={(e) => setModel(e.target.value.trim())}
-              className="w-full bg-black border border-hard px-2 py-2 text-white outline-none focus:border-[#00ff66]"
+              className="w-full bg-[var(--t-bg)] border border-hard px-2 py-2 text-[var(--t-fg)] outline-none focus:border-[var(--t-green)]"
             />
           </label>
 
-          <div className="border border-hard p-3 text-[10px] text-[#666] leading-relaxed">
+          <div className="border border-hard p-3 text-[10px] text-[var(--t-dim-2)] leading-relaxed">
             &gt; TRANSPORT: browser -&gt; provider (SSE stream), no backend hop
             <br />
             &gt; STORAGE: localStorage[ai_engine_cfg] — this browser only
@@ -80,13 +80,13 @@ export function AiConfigDrawer({
           <div className="flex gap-2">
             <button
               onClick={() => onSave({ provider, apiKey, model: model || meta.model })}
-              className="flex-1 border border-[#00ff66] text-[#00ff66] py-2 hover:bg-[#00ff66] hover:text-black uppercase tracking-widest"
+              className="flex-1 border border-[var(--t-green)] text-[var(--t-green)] py-2 hover:bg-[var(--t-green)] hover:text-[var(--t-on-accent)] uppercase tracking-widest"
             >
               [ ACTIVATE ]
             </button>
             <button
               onClick={() => onSave(null)}
-              className="flex-1 border border-[#ff5500] text-[#ff5500] py-2 hover:bg-[#ff5500] hover:text-black uppercase tracking-widest"
+              className="flex-1 border border-[var(--t-orange)] text-[var(--t-orange)] py-2 hover:bg-[var(--t-orange)] hover:text-[var(--t-on-accent)] uppercase tracking-widest"
             >
               [ PURGE_KEY ]
             </button>

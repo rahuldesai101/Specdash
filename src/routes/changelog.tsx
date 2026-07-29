@@ -59,20 +59,20 @@ function ChangelogPage() {
   const releases = useMemo(() => (raw ? parseChangelog(raw) : []), [raw]);
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <header className="sticky top-0 z-30 border-b border-hard bg-black">
+    <div className="min-h-screen bg-[var(--t-bg)] text-[var(--t-fg)]">
+      <header className="sticky top-0 z-30 border-b border-hard bg-[var(--t-bg)]">
         <div className="mx-auto flex w-full max-w-[2200px] flex-wrap items-center gap-3 px-3 py-3 sm:px-4 2xl:px-10">
           <Link
             to="/"
-            className="min-h-11 sm:min-h-9 inline-flex items-center border border-hard px-3 text-[10px] uppercase tracking-widest text-[#888] hover:text-[#00ff66]"
+            className="min-h-11 sm:min-h-9 inline-flex items-center border border-hard px-3 text-[10px] uppercase tracking-widest text-[var(--t-dim)] hover:text-[var(--t-green)]"
           >
             ← DB
           </Link>
           <h1 className="text-[12px] font-bold tracking-wider sm:text-[13px]">
-            ⚡ SPEC DASH <span className="text-[#333]">//</span>{" "}
-            <span className="text-[#00ff66]">CHANGELOG_TIMELINE</span>
+            ⚡ SPEC DASH <span className="text-[var(--t-line)]">//</span>{" "}
+            <span className="text-[var(--t-green)]">CHANGELOG_TIMELINE</span>
           </h1>
-          <span className="ml-auto truncate text-[10px] uppercase tracking-widest text-[#666]">
+          <span className="ml-auto truncate text-[10px] uppercase tracking-widest text-[var(--t-dim-2)]">
             {owner || "___"}/{repo || "___"} @ {branch}/CHANGELOG.md
           </span>
         </div>
@@ -85,8 +85,8 @@ function ChangelogPage() {
                 onClick={() => setActive(on ? null : k)}
                 className="min-h-9 inline-flex items-center border px-3 text-[10px] uppercase tracking-widest"
                 style={{
-                  borderColor: on ? KIND_META[k].color : "#333",
-                  color: on ? "#000" : KIND_META[k].color,
+                  borderColor: on ? KIND_META[k].color : "var(--t-line)",
+                  color: on ? "var(--t-on-accent)" : KIND_META[k].color,
                   backgroundColor: on ? KIND_META[k].color : "transparent",
                 }}
               >
@@ -99,17 +99,17 @@ function ChangelogPage() {
 
       <main className="mx-auto w-full max-w-[1100px] px-3 py-6 sm:px-6 2xl:py-10">
         {!owner ? (
-          <pre className="border border-hard p-4 text-[11px] text-[#ff5500]">
+          <pre className="border border-hard p-4 text-[11px] text-[var(--t-orange)]">
             &gt; NO_DB_CONFIGURED — bind GITHUB_OWNER/REPO on the main dashboard first.
           </pre>
         ) : err ? (
-          <pre className="whitespace-pre-wrap border border-hard p-4 text-[11px] text-[#ff5500]">
+          <pre className="whitespace-pre-wrap border border-hard p-4 text-[11px] text-[var(--t-orange)]">
             ERR: {err}
           </pre>
         ) : raw === null ? (
-          <pre className="text-[11px] text-[#666]">&gt; LOADING_CHANGELOG_FROM_RAW_CDN...</pre>
+          <pre className="text-[11px] text-[var(--t-dim-2)]">&gt; LOADING_CHANGELOG_FROM_RAW_CDN...</pre>
         ) : releases.length === 0 ? (
-          <pre className="text-[11px] text-[#666]">&gt; NO_RELEASE_RECORDS_PARSED</pre>
+          <pre className="text-[11px] text-[var(--t-dim-2)]">&gt; NO_RELEASE_RECORDS_PARSED</pre>
         ) : (
           <ol className="relative border-l border-hard pl-4 sm:pl-6">
             {releases.map((r) => {
@@ -119,18 +119,18 @@ function ChangelogPage() {
                 <li key={r.version} className="relative mb-8">
                   <span
                     className="absolute -left-[21px] top-2 h-2 w-2 sm:-left-[29px]"
-                    style={{ backgroundColor: r.unreleased ? "#ff5500" : "#00ff66" }}
+                    style={{ backgroundColor: r.unreleased ? "var(--t-orange)" : "var(--t-green)" }}
                   />
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="border border-[#00ff66] px-2 py-1 text-[11px] font-bold tracking-widest text-[#00ff66]">
+                    <span className="border border-[var(--t-green)] px-2 py-1 text-[11px] font-bold tracking-widest text-[var(--t-green)]">
                       v{r.version.replace(/^v/i, "")}
                     </span>
-                    <span className="border border-hard px-2 py-1 text-[10px] uppercase tracking-widest text-[#888]">
+                    <span className="border border-hard px-2 py-1 text-[10px] uppercase tracking-widest text-[var(--t-dim)]">
                       {r.date ?? "UNSCHEDULED"}
                     </span>
                   </div>
                   {groups.length === 0 ? (
-                    <p className="mt-3 text-[11px] uppercase tracking-widest text-[#555]">
+                    <p className="mt-3 text-[11px] uppercase tracking-widest text-[var(--t-dim-3)]">
                       NO_ENTRIES_YET
                     </p>
                   ) : (
@@ -145,8 +145,8 @@ function ChangelogPage() {
                           </h2>
                           <ul className="space-y-2 px-3 py-3">
                             {g.items.map((it, i) => (
-                              <li key={i} className="text-[13px] leading-6 text-[#ddd]">
-                                <span className="text-[#333]">—</span> {plain(it)}
+                              <li key={i} className="text-[13px] leading-6 text-[var(--t-fg-2)]">
+                                <span className="text-[var(--t-line)]">—</span> {plain(it)}
                               </li>
                             ))}
                           </ul>

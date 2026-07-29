@@ -44,24 +44,24 @@ export function NewSpecModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4">
-      <div className="w-full max-w-4xl h-[90vh] flex flex-col bg-black border border-hard">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--t-bg)]/85 p-4">
+      <div className="w-full max-w-4xl h-[90vh] flex flex-col bg-[var(--t-bg)] border border-hard">
         <div className="flex items-center justify-between border-b border-hard px-5 py-3">
-          <div className="text-[12px] uppercase tracking-widest text-[#00ff66]">
+          <div className="text-[12px] uppercase tracking-widest text-[var(--t-green)]">
             [ NEW_SPEC ] INSERT INTO {owner}/{repo}@{branch}
           </div>
-          <button onClick={onClose} className="text-[11px] text-[#666] hover:text-white">
+          <button onClick={onClose} className="text-[11px] text-[var(--t-dim-2)] hover:text-[var(--t-fg)]">
             [X CLOSE]
           </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 border-b border-hard px-5 py-4 text-[11px]">
           <label className="block">
-            <span className="block text-[10px] uppercase tracking-widest text-[#666] mb-1">TARGET_FOLDER</span>
+            <span className="block text-[10px] uppercase tracking-widest text-[var(--t-dim-2)] mb-1">TARGET_FOLDER</span>
             <select
               value={folder}
               onChange={(e) => setFolder(e.target.value)}
-              className="w-full bg-black border border-hard px-2 py-2 text-white"
+              className="w-full bg-[var(--t-bg)] border border-hard px-2 py-2 text-[var(--t-fg)]"
             >
               {folders.map((d) => (
                 <option key={d} value={d}>
@@ -75,27 +75,27 @@ export function NewSpecModal({
                 value={customFolder}
                 onChange={(e) => setCustomFolder(e.target.value)}
                 placeholder="docs/research"
-                className="mt-2 w-full bg-black border border-hard px-2 py-2 text-white"
+                className="mt-2 w-full bg-[var(--t-bg)] border border-hard px-2 py-2 text-[var(--t-fg)]"
               />
             )}
           </label>
 
           <label className="block">
-            <span className="block text-[10px] uppercase tracking-widest text-[#666] mb-1">FILE_NAME</span>
+            <span className="block text-[10px] uppercase tracking-widest text-[var(--t-dim-2)] mb-1">FILE_NAME</span>
             <input
               value={fileName}
               onChange={(e) => setFileName(e.target.value)}
               placeholder="IDE-004-title.md"
-              className="w-full bg-black border border-hard px-2 py-2 text-white"
+              className="w-full bg-[var(--t-bg)] border border-hard px-2 py-2 text-[var(--t-fg)]"
             />
           </label>
 
           <label className="block">
-            <span className="block text-[10px] uppercase tracking-widest text-[#666] mb-1">TEMPLATE</span>
+            <span className="block text-[10px] uppercase tracking-widest text-[var(--t-dim-2)] mb-1">TEMPLATE</span>
             <select
               value={tpl}
               onChange={(e) => applyTemplate(e.target.value)}
-              className="w-full bg-black border border-hard px-2 py-2 text-white"
+              className="w-full bg-[var(--t-bg)] border border-hard px-2 py-2 text-[var(--t-fg)]"
             >
               {Object.entries(TEMPLATES).map(([k, v]) => (
                 <option key={k} value={k}>
@@ -107,7 +107,7 @@ export function NewSpecModal({
         </div>
 
         <div className="flex-1 flex flex-col px-5 py-4 min-h-0">
-          <span className="block text-[10px] uppercase tracking-widest text-[#666] mb-2">
+          <span className="block text-[10px] uppercase tracking-widest text-[var(--t-dim-2)] mb-2">
             MARKDOWN_BODY — /{targetFolder === "root" ? "" : `${targetFolder}/`}
             {finalName || "untitled.md"}
           </span>
@@ -115,7 +115,7 @@ export function NewSpecModal({
             value={content}
             onChange={(e) => setContent(e.target.value)}
             spellCheck={false}
-            className="flex-1 w-full bg-[#050505] border border-hard px-3 py-3 text-[13px] leading-6 text-[#ccc] resize-none"
+            className="flex-1 w-full bg-[var(--t-surface)] border border-hard px-3 py-3 text-[13px] leading-6 text-[var(--t-fg-2)] resize-none"
           />
         </div>
 
@@ -130,13 +130,13 @@ export function NewSpecModal({
             }}
             className="border px-4 py-2 text-[11px] uppercase tracking-widest"
             style={{
-              borderColor: finalName ? "#00ff66" : "#333",
-              color: finalName ? "#00ff66" : "#555",
+              borderColor: finalName ? "var(--t-green)" : "var(--t-line)",
+              color: finalName ? "var(--t-green)" : "var(--t-dim-3)",
             }}
           >
             [ COMMIT TO GITHUB ↗ ]
           </a>
-          <p className="text-[10px] text-[#555] max-w-xl">
+          <p className="text-[10px] text-[var(--t-dim-3)] max-w-xl">
             Opens GitHub web editor. If you do not have write access, GitHub will automatically create a fork and Pull
             Request for you.
           </p>

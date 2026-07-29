@@ -9,13 +9,13 @@ export type Release = {
 };
 
 export const KIND_META: Record<ChangeKind, { icon: string; color: string }> = {
-  Added: { icon: "🟢", color: "#00ff66" },
-  Changed: { icon: "🟡", color: "#ffcc00" },
-  Fixed: { icon: "🔴", color: "#ff5500" },
+  Added: { icon: "🟢", color: "var(--t-green)" },
+  Changed: { icon: "🟡", color: "var(--t-amber)" },
+  Fixed: { icon: "🔴", color: "var(--t-orange)" },
   Security: { icon: "🔒", color: "#00bfff" },
-  Removed: { icon: "⚪", color: "#888888" },
-  Deprecated: { icon: "⚪", color: "#888888" },
-  Other: { icon: "▪", color: "#888888" },
+  Removed: { icon: "⚪", color: "var(--t-dim)" },
+  Deprecated: { icon: "⚪", color: "var(--t-dim)" },
+  Other: { icon: "▪", color: "var(--t-dim)" },
 };
 
 function normalizeKind(raw: string): ChangeKind {

@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { cellText, parseDataset, toCsv, type DatasetRow } from "@/lib/dataset";
 
 const btn =
-  "min-h-9 inline-flex items-center justify-center border border-[#333] px-3 text-[10px] uppercase tracking-widest hover:border-[#00ff66] hover:text-[#00ff66] disabled:opacity-30 disabled:hover:border-[#333] disabled:hover:text-white";
+  "min-h-9 inline-flex items-center justify-center border border-[var(--t-line)] px-3 text-[10px] uppercase tracking-widest hover:border-[var(--t-green)] hover:text-[var(--t-green)] disabled:opacity-30 disabled:hover:border-[var(--t-line)] disabled:hover:text-[var(--t-fg)]";
 
 const PAGE_SIZES = [25, 50, 100, 250];
 
@@ -46,7 +46,7 @@ export function DatasetInspector({ path, text }: { path: string; text: string })
 
   if (!parsed) {
     return (
-      <pre className="overflow-auto border border-hard bg-[#050505] p-3 text-[11px] whitespace-pre text-[#ccc]">
+      <pre className="overflow-auto border border-hard bg-[var(--t-surface)] p-3 text-[11px] whitespace-pre text-[var(--t-fg-2)]">
         {text}
       </pre>
     );
@@ -79,10 +79,10 @@ export function DatasetInspector({ path, text }: { path: string; text: string })
   };
 
   return (
-    <div className="border border-hard bg-[#050505]">
+    <div className="border border-hard bg-[var(--t-surface)]">
       {/* TOOLBAR */}
       <div className="flex flex-wrap items-center gap-2 border-b border-hard px-3 py-2">
-        <span className="text-[10px] uppercase tracking-widest text-[#00ff66]">
+        <span className="text-[10px] uppercase tracking-widest text-[var(--t-green)]">
           [ DATASET_INSPECTOR // {parsed.kind.toUpperCase()} ]
         </span>
         <input
@@ -92,9 +92,9 @@ export function DatasetInspector({ path, text }: { path: string; text: string })
             setPage(0);
           }}
           placeholder="SEARCH_ROWS..."
-          className="min-h-9 flex-1 min-w-[160px] border border-[#333] bg-black px-2 text-[11px] text-white placeholder:text-[#555] focus:border-[#00ff66] focus:outline-none"
+          className="min-h-9 flex-1 min-w-[160px] border border-[var(--t-line)] bg-[var(--t-bg)] px-2 text-[11px] text-[var(--t-fg)] placeholder:text-[var(--t-dim-3)] focus:border-[var(--t-green)] focus:outline-none"
         />
-        <span className="border border-[#333] px-2 py-1 text-[10px] tracking-widest text-[#888]">
+        <span className="border border-[var(--t-line)] px-2 py-1 text-[10px] tracking-widest text-[var(--t-dim)]">
           {total ? `VIEWING ${start + 1}-${Math.min(start + pageSize, total)} OF ${total.toLocaleString()} ROWS` : "0 ROWS"}
         </span>
         {parsed.pairs && (
@@ -111,7 +111,7 @@ export function DatasetInspector({ path, text }: { path: string; text: string })
       </div>
 
       {parsed.errors.length > 0 && (
-        <div className="border-b border-hard px-3 py-1 text-[10px] text-[#ffaa00]">
+        <div className="border-b border-hard px-3 py-1 text-[10px] text-[var(--t-amber)]">
           PARSE_WARN: {parsed.errors.join(" | ")}
         </div>
       )}
@@ -128,31 +128,31 @@ export function DatasetInspector({ path, text }: { path: string; text: string })
             );
             return (
               <div key={start + i} className="border border-hard">
-                <div className="flex items-center justify-between border-b border-hard px-2 py-1 text-[10px] tracking-widest text-[#666]">
+                <div className="flex items-center justify-between border-b border-hard px-2 py-1 text-[10px] tracking-widest text-[var(--t-dim-2)]">
                   <span>ROW_{start + i + 1}</span>
                   {score && (
-                    <span className="text-[#00ff66]">
+                    <span className="text-[var(--t-green)]">
                       {score.key.toUpperCase()}: {score.value}
                     </span>
                   )}
                 </div>
                 {inp && (
                   <div className="border-b border-hard p-2">
-                    <div className="mb-1 text-[10px] tracking-widest text-[#00ff66]">▸ {inp.key.toUpperCase()}</div>
-                    <pre className="whitespace-pre-wrap text-[12px] leading-6 text-[#ddd]">{inp.value}</pre>
+                    <div className="mb-1 text-[10px] tracking-widest text-[var(--t-green)]">▸ {inp.key.toUpperCase()}</div>
+                    <pre className="whitespace-pre-wrap text-[12px] leading-6 text-[var(--t-fg-2)]">{inp.value}</pre>
                   </div>
                 )}
                 {out && (
                   <div className="p-2">
-                    <div className="mb-1 text-[10px] tracking-widest text-[#888]">▸ {out.key.toUpperCase()}</div>
-                    <pre className="whitespace-pre-wrap text-[12px] leading-6 text-[#aaa]">{out.value}</pre>
+                    <div className="mb-1 text-[10px] tracking-widest text-[var(--t-dim)]">▸ {out.key.toUpperCase()}</div>
+                    <pre className="whitespace-pre-wrap text-[12px] leading-6 text-[var(--t-fg-2)]">{out.value}</pre>
                   </div>
                 )}
                 {rest.length > 0 && (
-                  <div className="flex flex-wrap gap-2 border-t border-hard px-2 py-1 text-[10px] text-[#666]">
+                  <div className="flex flex-wrap gap-2 border-t border-hard px-2 py-1 text-[10px] text-[var(--t-dim-2)]">
                     {rest.map((c) => (
                       <span key={c}>
-                        {c}=<span className="text-[#999]">{cellText(r[c]).slice(0, 60)}</span>
+                        {c}=<span className="text-[var(--t-dim)]">{cellText(r[c]).slice(0, 60)}</span>
                       </span>
                     ))}
                   </div>
@@ -160,14 +160,14 @@ export function DatasetInspector({ path, text }: { path: string; text: string })
               </div>
             );
           })}
-          {!slice.length && <div className="p-4 text-[11px] text-[#666]">NO_MATCHING_ROWS</div>}
+          {!slice.length && <div className="p-4 text-[11px] text-[var(--t-dim-2)]">NO_MATCHING_ROWS</div>}
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-[11px]">
             <thead>
-              <tr className="border-b border-hard bg-black">
-                <th className="px-2 py-2 text-left text-[10px] tracking-widest text-[#444]">#</th>
+              <tr className="border-b border-hard bg-[var(--t-bg)]">
+                <th className="px-2 py-2 text-left text-[10px] tracking-widest text-[var(--t-line)]">#</th>
                 {parsed.columns.map((c) => {
                   const active = sort?.col === c;
                   return (
@@ -176,7 +176,7 @@ export function DatasetInspector({ path, text }: { path: string; text: string })
                         onClick={() =>
                           setSort(active && sort!.dir === 1 ? { col: c, dir: -1 } : active && sort!.dir === -1 ? null : { col: c, dir: 1 })
                         }
-                        className={`text-[10px] uppercase tracking-widest ${active ? "text-[#00ff66]" : "text-[#888]"} hover:text-[#00ff66]`}
+                        className={`text-[10px] uppercase tracking-widest ${active ? "text-[var(--t-green)]" : "text-[var(--t-dim)]"} hover:text-[var(--t-green)]`}
                       >
                         {c} {active ? (sort!.dir === 1 ? "▲" : "▼") : "↕"}
                       </button>
@@ -187,10 +187,10 @@ export function DatasetInspector({ path, text }: { path: string; text: string })
             </thead>
             <tbody>
               {slice.map((r, i) => (
-                <tr key={start + i} className="border-b border-[#151515] align-top hover:bg-[#0b0b0b]">
-                  <td className="px-2 py-1 text-[10px] text-[#444]">{start + i + 1}</td>
+                <tr key={start + i} className="border-b border-[var(--t-surface-2)] align-top hover:bg-[#0b0b0b]">
+                  <td className="px-2 py-1 text-[10px] text-[var(--t-line)]">{start + i + 1}</td>
                   {parsed.columns.map((c) => (
-                    <td key={c} className="max-w-[380px] border-l border-[#151515] px-2 py-1 text-[#ccc]">
+                    <td key={c} className="max-w-[380px] border-l border-[var(--t-surface-2)] px-2 py-1 text-[var(--t-fg-2)]">
                       <div className="line-clamp-4 whitespace-pre-wrap break-words">{cellText(r[c])}</div>
                     </td>
                   ))}
@@ -198,7 +198,7 @@ export function DatasetInspector({ path, text }: { path: string; text: string })
               ))}
               {!slice.length && (
                 <tr>
-                  <td colSpan={parsed.columns.length + 1} className="p-4 text-[11px] text-[#666]">
+                  <td colSpan={parsed.columns.length + 1} className="p-4 text-[11px] text-[var(--t-dim-2)]">
                     NO_MATCHING_ROWS
                   </td>
                 </tr>
@@ -217,7 +217,7 @@ export function DatasetInspector({ path, text }: { path: string; text: string })
           <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={safePage === 0} className={btn}>
             [ PREV ]
           </button>
-          <span className="text-[10px] tracking-widest text-[#888]">
+          <span className="text-[10px] tracking-widest text-[var(--t-dim)]">
             PAGE {safePage + 1} OF {pages}
           </span>
           <button
@@ -231,7 +231,7 @@ export function DatasetInspector({ path, text }: { path: string; text: string })
             LAST ⏭
           </button>
         </div>
-        <div className="flex items-center gap-2 text-[10px] tracking-widest text-[#666]">
+        <div className="flex items-center gap-2 text-[10px] tracking-widest text-[var(--t-dim-2)]">
           ROWS/PAGE
           <select
             value={pageSize}
@@ -239,7 +239,7 @@ export function DatasetInspector({ path, text }: { path: string; text: string })
               setPageSize(Number(e.target.value));
               setPage(0);
             }}
-            className="min-h-9 border border-[#333] bg-black px-2 text-[11px] text-white focus:border-[#00ff66] focus:outline-none"
+            className="min-h-9 border border-[var(--t-line)] bg-[var(--t-bg)] px-2 text-[11px] text-[var(--t-fg)] focus:border-[var(--t-green)] focus:outline-none"
           >
             {PAGE_SIZES.map((s) => (
               <option key={s} value={s}>

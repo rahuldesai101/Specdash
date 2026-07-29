@@ -25,13 +25,13 @@ export function SpecToc({ source, className = "" }: { source: string; className?
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
   return (
     <nav className={className} aria-label="Table of contents">
-      <div className="text-[10px] uppercase tracking-widest text-[#666] mb-2">[ TOC ]</div>
+      <div className="text-[10px] uppercase tracking-widest text-[var(--t-dim-2)] mb-2">[ TOC ]</div>
       <ul className="space-y-1">
         {headings.map((h, i) => (
           <li key={`${h.id}-${i}`} style={{ paddingLeft: (h.level - 1) * 10 }}>
             <button
               onClick={() => go(h.id)}
-              className="text-left w-full text-[11px] leading-5 text-[#888] hover:text-[#00ff66] truncate"
+              className="text-left w-full text-[11px] leading-5 text-[var(--t-dim)] hover:text-[var(--t-green)] truncate"
               title={h.text}
             >
               {h.level === 1 ? "# " : h.level === 2 ? "## " : "### "}

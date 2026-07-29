@@ -23,9 +23,9 @@ export function AgentOsBanner({
 }) {
   if (!specs.length) return null;
   return (
-    <div className="flex flex-wrap items-center gap-2 border-b border-[#ff5500] bg-[#140800] px-4 py-2 text-[10px] uppercase tracking-widest">
-      <span className="text-[#ff5500]">[ 🤖 AI OPERATING SYSTEM DETECTED ]</span>
-      <span className="text-[#666]">
+    <div className="flex flex-wrap items-center gap-2 border-b border-[var(--t-orange)] bg-[var(--t-tint-warm)] px-4 py-2 text-[10px] uppercase tracking-widest">
+      <span className="text-[var(--t-orange)]">[ 🤖 AI OPERATING SYSTEM DETECTED ]</span>
+      <span className="text-[var(--t-dim-2)]">
         {specs.map((s) => s.name).join(" · ")}
       </span>
       <div className="ml-auto flex flex-wrap gap-2">
@@ -33,14 +33,14 @@ export function AgentOsBanner({
           <button
             key={s.path}
             onClick={() => onOpenFile(s.path)}
-            className="border border-[#333] px-2 py-1 text-[#888] hover:border-[#00ff66] hover:text-[#00ff66]"
+            className="border border-[var(--t-line)] px-2 py-1 text-[var(--t-dim)] hover:border-[var(--t-green)] hover:text-[var(--t-green)]"
           >
             📄 {s.name}
           </button>
         ))}
         <button
           onClick={onOpen}
-          className="border border-[#ff5500] px-2 py-1 text-[#ff5500] hover:bg-[#ff5500] hover:text-black"
+          className="border border-[var(--t-orange)] px-2 py-1 text-[var(--t-orange)] hover:bg-[var(--t-orange)] hover:text-[var(--t-on-accent)]"
         >
           🤖 OPEN DIRECTIVES
         </button>
@@ -97,12 +97,12 @@ export function AgentOsPanel({
 
   return (
     <div className="fixed inset-0 z-[55] flex justify-end">
-      <button aria-label="Close agent panel" onClick={onClose} className="absolute inset-0 bg-black/70" />
-      <aside className="relative h-full w-full max-w-xl border-l border-[#ff5500] bg-black flex flex-col">
+      <button aria-label="Close agent panel" onClick={onClose} className="absolute inset-0 bg-[var(--t-bg)]/70" />
+      <aside className="relative h-full w-full max-w-xl border-l border-[var(--t-orange)] bg-[var(--t-bg)] flex flex-col">
         <div className="border-b border-hard px-4 py-3">
           <div className="flex items-center justify-between gap-2">
-            <div className="text-[12px] uppercase tracking-widest text-[#ff5500]">[ 🤖 AI OPERATING SYSTEM ]</div>
-            <button onClick={onClose} className="min-h-9 px-2 text-[11px] text-[#666] hover:text-white">
+            <div className="text-[12px] uppercase tracking-widest text-[var(--t-orange)]">[ 🤖 AI OPERATING SYSTEM ]</div>
+            <button onClick={onClose} className="min-h-9 px-2 text-[11px] text-[var(--t-dim-2)] hover:text-[var(--t-fg)]">
               [X CLOSE]
             </button>
           </div>
@@ -113,8 +113,8 @@ export function AgentOsPanel({
                 onClick={() => onSelect(s.path)}
                 className="border px-2 py-1"
                 style={{
-                  borderColor: activeSpecPath === s.path ? "#00ff66" : "#333",
-                  color: activeSpecPath === s.path ? "#00ff66" : "#888",
+                  borderColor: activeSpecPath === s.path ? "var(--t-green)" : "var(--t-line)",
+                  color: activeSpecPath === s.path ? "var(--t-green)" : "var(--t-dim)",
                 }}
               >
                 {s.name}
@@ -126,7 +126,7 @@ export function AgentOsPanel({
                   key={t}
                   onClick={() => setTab(t)}
                   className="border px-2 py-1"
-                  style={{ borderColor: tab === t ? "#00ff66" : "#333", color: tab === t ? "#00ff66" : "#888" }}
+                  style={{ borderColor: tab === t ? "var(--t-green)" : "var(--t-line)", color: tab === t ? "var(--t-green)" : "var(--t-dim)" }}
                 >
                   {t}
                 </button>
@@ -136,24 +136,24 @@ export function AgentOsPanel({
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 space-y-4">
-          {loading && <pre className="text-[11px] text-[#666]">&gt; LOADING_ROOT_SPEC...</pre>}
-          {error && <pre className="text-[11px] text-[#ff5500]">ERR: {error}</pre>}
+          {loading && <pre className="text-[11px] text-[var(--t-dim-2)]">&gt; LOADING_ROOT_SPEC...</pre>}
+          {error && <pre className="text-[11px] text-[var(--t-orange)]">ERR: {error}</pre>}
 
           {!loading && !error && spec && tab === "DIRECTIVES" && (
             <>
               {(spec.title || spec.intro) && (
-                <Card label="[ OVERVIEW ]" accent="#00ff66">
-                  {spec.title && <div className="text-[13px] text-white">{spec.title}</div>}
-                  {spec.intro && <p className="mt-1 whitespace-pre-wrap text-[#888]">{spec.intro}</p>}
+                <Card label="[ OVERVIEW ]" accent="var(--t-green)">
+                  {spec.title && <div className="text-[13px] text-[var(--t-fg)]">{spec.title}</div>}
+                  {spec.intro && <p className="mt-1 whitespace-pre-wrap text-[var(--t-dim)]">{spec.intro}</p>}
                 </Card>
               )}
 
-              <Card label="[ AGENT BOUNDARIES / SCOPE ]" accent="#ff5500">
+              <Card label="[ AGENT BOUNDARIES / SCOPE ]" accent="var(--t-orange)">
                 {spec.boundaries.length ? (
                   spec.boundaries.map((s) => (
                     <div key={s.title} className="mb-3 last:mb-0">
-                      <div className="text-[11px] uppercase tracking-widest text-[#ff5500]">{s.title}</div>
-                      <ul className="mt-1 list-disc pl-5 text-[#ccc]">
+                      <div className="text-[11px] uppercase tracking-widest text-[var(--t-orange)]">{s.title}</div>
+                      <ul className="mt-1 list-disc pl-5 text-[var(--t-fg-2)]">
                         {(s.bullets.length ? s.bullets : [s.body.slice(0, 300)])
                           .filter((b) => b.trim())
                           .map((b, i) => (
@@ -163,16 +163,16 @@ export function AgentOsPanel({
                     </div>
                   ))
                 ) : (
-                  <span className="text-[#555]">&gt; NO_BOUNDARY_RULES_DETECTED</span>
+                  <span className="text-[var(--t-dim-3)]">&gt; NO_BOUNDARY_RULES_DETECTED</span>
                 )}
               </Card>
 
-              <Card label="[ STYLE GUIDE & CONVENTIONS ]" accent="#00ff66">
+              <Card label="[ STYLE GUIDE & CONVENTIONS ]" accent="var(--t-green)">
                 {spec.styleGuides.length ? (
                   spec.styleGuides.map((s) => (
                     <div key={s.title} className="mb-3 last:mb-0">
-                      <div className="text-[11px] uppercase tracking-widest text-[#00ff66]">{s.title}</div>
-                      <ul className="mt-1 list-disc pl-5 text-[#ccc]">
+                      <div className="text-[11px] uppercase tracking-widest text-[var(--t-green)]">{s.title}</div>
+                      <ul className="mt-1 list-disc pl-5 text-[var(--t-fg-2)]">
                         {(s.bullets.length ? s.bullets : [s.body.slice(0, 300)])
                           .filter((b) => b.trim())
                           .map((b, i) => (
@@ -182,21 +182,21 @@ export function AgentOsPanel({
                     </div>
                   ))
                 ) : (
-                  <span className="text-[#555]">&gt; NO_STYLE_RULES_DETECTED</span>
+                  <span className="text-[var(--t-dim-3)]">&gt; NO_STYLE_RULES_DETECTED</span>
                 )}
               </Card>
 
-              <Card label="[ BUILD / TEST COMMANDS ]" accent="#ffaa00">
+              <Card label="[ BUILD / TEST COMMANDS ]" accent="var(--t-amber)">
                 {spec.commands.length ? (
                   <ul className="space-y-2">
                     {spec.commands.map((c) => (
                       <li key={c} className="flex items-stretch gap-2">
-                        <code className="min-w-0 flex-1 truncate border border-hard px-2 py-2 text-[11px] text-[#00ff66]">
+                        <code className="min-w-0 flex-1 truncate border border-hard px-2 py-2 text-[11px] text-[var(--t-green)]">
                           $ {c}
                         </code>
                         <button
                           onClick={() => copyText(c, "COMMAND_COPIED")}
-                          className="shrink-0 border border-[#333] px-2 text-[10px] uppercase tracking-widest text-[#888] hover:border-[#00ff66] hover:text-[#00ff66]"
+                          className="shrink-0 border border-[var(--t-line)] px-2 text-[10px] uppercase tracking-widest text-[var(--t-dim)] hover:border-[var(--t-green)] hover:text-[var(--t-green)]"
                         >
                           📋 COPY COMMAND
                         </button>
@@ -204,12 +204,12 @@ export function AgentOsPanel({
                     ))}
                   </ul>
                 ) : (
-                  <span className="text-[#555]">&gt; NO_EXECUTABLE_COMMANDS_FOUND</span>
+                  <span className="text-[var(--t-dim-3)]">&gt; NO_EXECUTABLE_COMMANDS_FOUND</span>
                 )}
               </Card>
 
               {empty && (
-                <div className="border border-hard p-3 text-[11px] text-[#666]">
+                <div className="border border-hard p-3 text-[11px] text-[var(--t-dim-2)]">
                   &gt; Spec detected but no structured directives parsed — view RAW.
                 </div>
               )}
@@ -228,13 +228,13 @@ export function AgentOsPanel({
             <>
               <button
                 onClick={() => onOpenFile(activeSpecPath)}
-                className="border border-[#00ff66] px-3 py-2 text-[#00ff66] hover:bg-[#00ff66] hover:text-black"
+                className="border border-[var(--t-green)] px-3 py-2 text-[var(--t-green)] hover:bg-[var(--t-green)] hover:text-[var(--t-on-accent)]"
               >
                 📄 OPEN FULL SPEC
               </button>
               <button
                 onClick={() => raw && copyText(raw, "SPEC_COPIED")}
-                className="border border-[#333] px-3 py-2 text-[#888] hover:border-[#00ff66] hover:text-[#00ff66]"
+                className="border border-[var(--t-line)] px-3 py-2 text-[var(--t-dim)] hover:border-[var(--t-green)] hover:text-[var(--t-green)]"
               >
                 📋 COPY RAW
               </button>

@@ -119,7 +119,7 @@ export function ReleaseStudio({
   return (
     <DevModal
       title="RELEASE_NOTES_STUDIO // CHANGELOG_COMPILER"
-      accent="#c07cff"
+      accent="var(--t-purple)"
       onClose={onClose}
       wide
       toolbar={
@@ -133,12 +133,12 @@ export function ReleaseStudio({
           <input
             value={version}
             onChange={(e) => setVersion(e.target.value)}
-            className="w-24 border border-[#333] bg-black px-2 py-1 text-[10px] text-[#c07cff] outline-none focus:border-[#c07cff]"
+            className="w-24 border border-[var(--t-line)] bg-[var(--t-bg)] px-2 py-1 text-[10px] text-[var(--t-purple)] outline-none focus:border-[var(--t-purple)]"
           />
           <select
             value={count}
             onChange={(e) => setCount(Number(e.target.value))}
-            className="border border-[#333] bg-black px-2 py-1 text-[10px] text-[#888] outline-none"
+            className="border border-[var(--t-line)] bg-[var(--t-bg)] px-2 py-1 text-[10px] text-[var(--t-dim)] outline-none"
           >
             {[15, 30, 50, 100].map((n) => (
               <option key={n} value={n}>
@@ -146,10 +146,10 @@ export function ReleaseStudio({
               </option>
             ))}
           </select>
-          <label className="flex items-center gap-1 text-[9px] text-[#888]">
+          <label className="flex items-center gap-1 text-[9px] text-[var(--t-dim)]">
             <input type="checkbox" checked={includeSha} onChange={(e) => setIncludeSha(e.target.checked)} /> SHA
           </label>
-          <label className="flex items-center gap-1 text-[9px] text-[#888]">
+          <label className="flex items-center gap-1 text-[9px] text-[var(--t-dim)]">
             <input type="checkbox" checked={includeAuthors} onChange={(e) => setIncludeAuthors(e.target.checked)} /> AUTHORS
           </label>
           <button
@@ -159,7 +159,7 @@ export function ReleaseStudio({
                 .then(() => toast.success("RELEASE_MARKDOWN_COPIED"))
                 .catch(() => toast.error("CLIPBOARD_BLOCKED"))
             }
-            className="ml-auto border border-[#00ff66] px-2 py-1 text-[#00ff66] hover:bg-[#00ff66] hover:text-black"
+            className="ml-auto border border-[var(--t-green)] px-2 py-1 text-[var(--t-green)] hover:bg-[var(--t-green)] hover:text-[var(--t-on-accent)]"
           >
             📋 COPY RELEASE MD
           </button>
@@ -167,7 +167,7 @@ export function ReleaseStudio({
             href={`https://github.com/${owner}/${repo}/releases/new?tag=${encodeURIComponent(version)}&title=${encodeURIComponent(version)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="border border-[#333] px-2 py-1 text-[#888] hover:border-[#c07cff] hover:text-[#c07cff]"
+            className="border border-[var(--t-line)] px-2 py-1 text-[var(--t-dim)] hover:border-[var(--t-purple)] hover:text-[var(--t-purple)]"
           >
             🐙 DRAFT RELEASE
           </a>
@@ -175,8 +175,8 @@ export function ReleaseStudio({
       }
       footer={`BASE: ${prevTag ?? "no previous tag"} · HEAD: ${branch} · commits classified by conventional-commit prefixes`}
     >
-      {phase === "LOADING" && <div className="p-6 text-center text-[#666]">&gt; FETCHING_COMMIT_HISTORY…</div>}
-      {phase === "ERROR" && <div className="p-6 text-center text-[#ff5500]">ERR: {err}</div>}
+      {phase === "LOADING" && <div className="p-6 text-center text-[var(--t-dim-2)]">&gt; FETCHING_COMMIT_HISTORY…</div>}
+      {phase === "ERROR" && <div className="p-6 text-center text-[var(--t-orange)]">ERR: {err}</div>}
 
       {phase === "READY" && tab === "grouped" && (
         <>
@@ -185,25 +185,25 @@ export function ReleaseStudio({
             if (!items?.length) return null;
             const meta = CATEGORY_META[cat];
             return (
-              <div key={cat} className="mb-3 border border-[#1a1a1a]">
+              <div key={cat} className="mb-3 border border-[var(--t-surface-2)]">
                 <div
-                  className="border-b border-[#1a1a1a] px-2 py-1.5 text-[10px] uppercase tracking-widest"
+                  className="border-b border-[var(--t-surface-2)] px-2 py-1.5 text-[10px] uppercase tracking-widest"
                   style={{ color: meta.tone }}
                 >
                   {meta.icon} {meta.title} · {items.length}
                 </div>
                 {items.map((c) => (
-                  <div key={c.sha} className="flex items-start gap-2 border-b border-[#121212] px-2 py-1.5 last:border-b-0">
+                  <div key={c.sha} className="flex items-start gap-2 border-b border-[var(--t-surface)] px-2 py-1.5 last:border-b-0">
                     <button
                       onClick={() => toggle(c.sha)}
                       title="Exclude from release notes"
-                      className="mt-0.5 shrink-0 border border-[#333] px-1 text-[9px] text-[#666] hover:border-[#ff5500] hover:text-[#ff5500]"
+                      className="mt-0.5 shrink-0 border border-[var(--t-line)] px-1 text-[9px] text-[var(--t-dim-2)] hover:border-[var(--t-orange)] hover:text-[var(--t-orange)]"
                     >
                       ✕
                     </button>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-[11px] text-[#ccc]">{cleanSubject(c.message)}</div>
-                      <div className="text-[9px] uppercase tracking-widest text-[#555]">
+                      <div className="truncate text-[11px] text-[var(--t-fg-2)]">{cleanSubject(c.message)}</div>
+                      <div className="text-[9px] uppercase tracking-widest text-[var(--t-dim-3)]">
                         {c.author} · {c.date.slice(0, 10)}
                       </div>
                     </div>
@@ -211,7 +211,7 @@ export function ReleaseStudio({
                       href={c.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="shrink-0 text-[10px] text-[#00ff66]"
+                      className="shrink-0 text-[10px] text-[var(--t-green)]"
                     >
                       {c.sha.slice(0, 7)} ↗
                     </a>
@@ -221,9 +221,9 @@ export function ReleaseStudio({
             );
           })}
           {excluded.size > 0 && (
-            <div className="border border-[#1a1a1a] p-2 text-[10px] uppercase tracking-widest text-[#555]">
+            <div className="border border-[var(--t-surface-2)] p-2 text-[10px] uppercase tracking-widest text-[var(--t-dim-3)]">
               {excluded.size} commit(s) excluded ·{" "}
-              <button onClick={() => setExcluded(new Set())} className="text-[#00ff66]">
+              <button onClick={() => setExcluded(new Set())} className="text-[var(--t-green)]">
                 RESTORE ALL
               </button>
             </div>

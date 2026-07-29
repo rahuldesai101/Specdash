@@ -25,7 +25,7 @@ export const EXTERNAL_PROVIDERS: ExternalProvider[] = [
     id: "chatgpt",
     label: "ChatGPT",
     dot: "🟢",
-    color: "#00ff66",
+    color: "var(--t-green)",
     urlLimit: 8000,
     url: (p) => (p ? `https://chatgpt.com/?q=${encodeURIComponent(p)}` : "https://chatgpt.com/"),
   },
@@ -33,7 +33,7 @@ export const EXTERNAL_PROVIDERS: ExternalProvider[] = [
     id: "claude",
     label: "Claude",
     dot: "🟣",
-    color: "#c07cff",
+    color: "var(--t-purple)",
     urlLimit: 8000,
     url: (p) => (p ? `https://claude.ai/new?q=${encodeURIComponent(p)}` : "https://claude.ai/new"),
   },
@@ -41,7 +41,7 @@ export const EXTERNAL_PROVIDERS: ExternalProvider[] = [
     id: "gemini",
     label: "Google Gemini",
     dot: "🔵",
-    color: "#5599ff",
+    color: "var(--t-blue)",
     urlLimit: 4000,
     url: (p) =>
       p
@@ -52,7 +52,7 @@ export const EXTERNAL_PROVIDERS: ExternalProvider[] = [
     id: "perplexity",
     label: "Perplexity",
     dot: "🔎",
-    color: "#22d3ee",
+    color: "var(--t-cyan)",
     urlLimit: 6000,
     url: (p) =>
       p
@@ -63,7 +63,7 @@ export const EXTERNAL_PROVIDERS: ExternalProvider[] = [
     id: "kimi",
     label: "Kimi AI",
     dot: "🌙",
-    color: "#ffaa00",
+    color: "var(--t-amber)",
     urlLimit: 6000,
     url: (p) => (p ? `https://www.kimi.com/chat?q=${encodeURIComponent(p)}` : "https://www.kimi.com/"),
   },
