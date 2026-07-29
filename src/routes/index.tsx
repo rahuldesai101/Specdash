@@ -519,6 +519,12 @@ function Index() {
   /** Opens root AI directives; drafts a starter template when none exist. */
   const openDirectives = useCallback(() => setAgentOpen(true), []);
 
+  // Alt+D works repo-wide: with no spec open it resolves CI/CD or the repo map.
+  useEffect(() => {
+    if (spec) return;
+    return onHotkey("specToggleDiagram", () => openDiagramGlobal());
+  }, [spec, openDiagramGlobal]);
+
   const draftAgents = rootSpecs.length === 0;
   const draftRaw = useMemo(
     () =>
