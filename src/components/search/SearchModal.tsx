@@ -114,7 +114,12 @@ export function SearchModal({
   const rows = useVirtualizer({
     count: hits.length,
     getScrollElement: () => listRef.current,
-    estimateSize: () => 78,
+    // Deterministic row heights (single-line truncated rows) keep scrolling
+    // jank-free without a measurement pass.
+    estimateSize: (i) => {
+      const h = hits[i];
+      return 46 + (h?.segs.length ? 20 : 0) + (h?.headings ? 16 : 0);
+    },
     overscan: 8,
   });
   const packTokens = useMemo(
