@@ -955,72 +955,27 @@ function Index() {
             <div className="flex shrink-0 items-center gap-1.5 text-[10px] uppercase tracking-widest sm:gap-2">
               <HeaderMenu
                 icon="⚡"
-                label="WORKBENCH"
-                ariaLabel="Workbench tools menu"
-                items={workbenchItems}
-              />
-              <HeaderMenu
-                icon="⚡"
-                label="SPEC COMPILER"
+                label="SPEC ENGINE"
                 accent="#c07cff"
-                ariaLabel="Spec compiler menu"
-                items={compilerItems}
+                ariaLabel="Spec engine menu"
+                items={specEngineItems}
               />
               <HeaderMenu
                 icon="🛠️"
-                label="DEV TOOLS"
+                label="TOOLS"
                 accent="#66b3ff"
-                ariaLabel="Developer tools menu"
-                items={devToolItems}
+                ariaLabel="Tools menu"
+                items={toolsItems}
               />
-              <span className="hidden items-center gap-2 lg:flex">
               <button
-                onClick={() => setKeysOpen(true)}
-                className={`${btn}`}
-                title="Keyboard shortcuts (Ctrl+/)"
-                aria-label="Keyboard shortcuts"
+                onClick={() => setCtrlOpen(true)}
+                className="inline-flex min-h-8 min-w-8 shrink-0 items-center justify-center border border-hard px-2 py-1.5 text-[12px] text-[#888] hover:border-[#00ff66] hover:text-[#00ff66]"
+                title="Control Centre — tokens, default LLM, appearance"
+                aria-label="Open control centre"
               >
-                ⌨
+                ⚙️
               </button>
-              </span>
-              <HeaderMenu
-                icon="•••"
-                ariaLabel="More actions"
-                accent="#888"
-                items={moreItems}
-              />
             </div>
-          </div>
-
-          {/* SLIM STATUS SUB-HEADER */}
-          <div className="mt-1.5 flex h-7 items-center gap-1.5 overflow-x-auto text-[9px] uppercase tracking-widest whitespace-nowrap">
-            <Pill tone={status === "SYNCED" ? "#00ff66" : status === "ERROR" ? "#ff5500" : "#ffaa00"}>
-              ● DB_{status}
-            </Pill>
-            {rootSpecs[0] && (
-              <Pill tone="#ff5500">📄 {rootSpecs[0].name}: ACTIVE</Pill>
-            )}
-            {ruleFiles.some((f) => /constitution/i.test(f)) && <Pill tone="#c07cff">📜 CONSTITUTION: VERIFIED</Pill>}
-            <Pill tone="#00ff66">🎒 CONTEXT: ~{fmtTokens(totalTokens)} TOK</Pill>
-            <BridgePill bridge={bridge} onOpen={() => setBridgeOpen(true)} />
-            {selPack.length > 0 && (
-              <button
-                onClick={() => {
-                  setCmdTab("all");
-                  setPackOpen(true);
-                  setCmdOpen(true);
-                }}
-              >
-                <Pill tone="#ffaa00">🎒 SELECTIONS: {selPack.length}</Pill>
-              </button>
-            )}
-            <Pill tone="#666">⑂ {branch}</Pill>
-            {spec && <Pill tone="#00ff66">📄 {spec.path.split("/").pop()}</Pill>}
-            {!spec && activeDir && (
-              <button onClick={() => setSpec(null)} className="shrink-0">
-                <Pill tone="#888">📁 {activeDir}</Pill>
-              </button>
-            )}
           </div>
         </div>
       </header>
@@ -1030,14 +985,14 @@ function Index() {
         {/* LEFT RAIL */}
         {railOpen && (
           <aside className="hidden lg:block w-60 shrink-0 border-r border-hard">
-            <div className="sticky top-[89px] h-[calc(100vh-89px)]">{rail}</div>
+            <div className="sticky top-[53px] h-[calc(100vh-53px)]">{rail}</div>
           </aside>
         )}
 
         {/* CENTER */}
         <main className="min-w-0 flex-1">
           <AgentOsBanner specs={rootSpecs} onOpen={() => setAgentOpen(true)} onOpenFile={openSpec} />
-          <div className="grid grid-cols-2 border-b border-hard bg-black sm:grid-cols-4 lg:sticky lg:top-[89px] lg:z-20">
+          <div className="grid grid-cols-2 border-b border-hard bg-black sm:grid-cols-4 lg:sticky lg:top-[53px] lg:z-20">
             <Stat label="MD_RECORDS" value={files.length} accent="#00ff66" />
             <Stat label="DIRECTORIES" value={groups.length} />
             <Stat label="ACTIVE_ROWS" value={rows.length} accent="#ff5500" />
