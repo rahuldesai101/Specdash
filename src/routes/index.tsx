@@ -1186,9 +1186,22 @@ function Index() {
           state={searchState}
           repoLabel={`${owner}/${repo}`}
           initialPack={packOpen}
+          initialTab={cmdTab}
+          extraFiles={selPack}
+          shelfCtx={shelfCtx}
+          onRunPreset={(prompt) => {
+            setCmdOpen(false);
+            setCmdTab("all");
+            if (!spec) {
+              toast.error("OPEN_A_SPEC_FIRST");
+              return;
+            }
+            setSeed({ text: prompt, nonce: Date.now() });
+          }}
           onClose={() => {
             setCmdOpen(false);
             setPackOpen(false);
+            setCmdTab("all");
           }}
           onOpen={openSpec}
           onRunSnippet={(code, lang, path) => {
@@ -1223,9 +1236,29 @@ function Index() {
           branch={branch}
           files={loopFiles}
           cfg={aiCfg}
-          onClose={() => setLoopOpen(false)}
+          seedGoal={loopSeed}
+          bridge={bridge}
+          onClose={() => {
+            setLoopOpen(false);
+            setLoopSeed("");
+          }}
         />
       )}
+
+      {bridgeOpen && (
+        <BridgePanel
+          bridge={bridge}
+          commands={agentSpec?.commands ?? []}
+          onClose={() => setBridgeOpen(false)}
+        />
+      )}
+
+      <SelectionBar
+        sourcePath={spec?.path ?? null}
+        onExplain={selExplain}
+        onAddToPack={selAddToPack}
+        onRefine={selRefine}
+      />
 
       {apiOpen && (
         <ApiSandbox
