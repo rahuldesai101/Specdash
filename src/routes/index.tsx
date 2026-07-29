@@ -137,6 +137,7 @@ function Index() {
   const [depsOpen, setDepsOpen] = useState(false);
   const [relOpen, setRelOpen] = useState(false);
   const [bridgeOpen, setBridgeOpen] = useState(false);
+  const [ctrlOpen, setCtrlOpen] = useState(false);
   const [selPack, setSelPack] = useState<{ path: string; content: string }[]>([]);
   const [cmdTab, setCmdTab] = useState<"all" | "prompts">("all");
   const [loopSeed, setLoopSeed] = useState<string>("");
@@ -157,6 +158,7 @@ function Index() {
     setHasPat(Boolean(getPat()));
     if (!o) setCfgOpen(true);
     setAiCfg(loadAiConfig());
+    applyStoredTheme();
   }, []);
 
   // global hotkey engine
@@ -195,6 +197,7 @@ function Index() {
         setRelOpen(false);
         setReadmeOpen(false);
         setBridgeOpen(false);
+        setCtrlOpen(false);
         setSpec(null);
       }),
     ];
