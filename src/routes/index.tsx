@@ -312,6 +312,39 @@ function Index() {
     });
   }, []);
 
+  // --- text-selection floating actions --------------------------------------
+  const selExplain = useCallback((s: SelectionPayload) => {
+    setSeed({
+      text: `Explain the highlighted excerpt from \`${s.path}\` in plain terms, then flag anything ambiguous or under-specified.\n\n---\n${s.text}\n---`,
+      nonce: Date.now(),
+    });
+  }, []);
+
+  const selAddToPack = useCallback((s: SelectionPayload) => {
+    setSelPack((p) => [
+      ...p,
+      { path: `${s.path}#selection-${p.length + 1}`, content: s.text },
+    ]);
+    toast.success(`ADDED_TO_TOKEN_PACK — ~${fmtTokens(tokensOf(s.text))} tokens`);
+  }, []);
+
+  const selRefine = useCallback((s: SelectionPayload) => {
+    setLoopSeed(`Refine and evolve this excerpt from ${s.path}:\n\n${s.text}`);
+    setLoopOpen(true);
+  }, []);
+
+  const shelfCtx = useMemo(
+    () => ({
+      repo: owner ? `${owner}/${repo}` : "",
+      file: spec?.path ?? "",
+      branch,
+      framework: "vitest",
+      selection: spec?.text?.slice(0, 12000) ?? "",
+      content: spec?.text?.slice(0, 12000) ?? "",
+    }),
+    [owner, repo, branch, spec?.path, spec?.text],
+  );
+
   // spec-scoped hotkeys (Alt+C copy raw, Alt+G open on GitHub)
   useEffect(() => {
     const offs = [
