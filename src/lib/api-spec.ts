@@ -145,6 +145,7 @@ export async function sendRequest(opts: {
   headers: Record<string, string>;
   body?: string;
 }): Promise<HttpResult> {
+  if (!isHttpUrl(opts.url)) throw new Error("INVALID_URL — only http(s) endpoints are allowed");
   const started = performance.now();
   const init: RequestInit = { method: opts.method, headers: opts.headers, cache: "no-store" };
   if (!["GET", "HEAD"].includes(opts.method.toUpperCase()) && opts.body) init.body = opts.body;
