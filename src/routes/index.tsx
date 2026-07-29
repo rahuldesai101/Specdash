@@ -969,24 +969,6 @@ function Index() {
               >
                 ⌨
               </button>
-              <button
-                onClick={() => spec && window.open(ghBlobUrl(spec.path, headSha ?? branch), "_blank", "noopener,noreferrer")}
-                disabled={!spec}
-                className={`${btn} disabled:opacity-30`}
-                title="Open current file on GitHub (Alt+G)"
-                aria-label="Open current file on GitHub"
-              >
-                🐙
-              </button>
-              <button
-                onClick={() => spec?.text && copy(spec.text, "RAW_MARKDOWN_COPIED")}
-                disabled={!spec?.text}
-                className={`${btn} disabled:opacity-30`}
-                title="Copy raw content (Alt+C)"
-                aria-label="Copy raw content"
-              >
-                📋
-              </button>
               </span>
               <HeaderMenu
                 icon="•••"
@@ -1172,7 +1154,10 @@ function Index() {
 
           <footer className="flex flex-wrap justify-between gap-2 border-t border-hard px-4 py-2 text-[10px] uppercase tracking-widest text-[#555]">
             <span>&gt; ENGINE: git/trees?recursive=1 + ETAG_304 + RAW_CDN</span>
-            <span className="hidden sm:inline">{now}</span>
+            <span className="flex items-center gap-2">
+              <PerfPill />
+              <span className="hidden sm:inline">{now}</span>
+            </span>
           </footer>
         </main>
 
