@@ -484,11 +484,22 @@ function Index() {
             <div className="min-w-0">
               <div className="truncate text-[12px] uppercase tracking-widest text-[#00ff66]">/{spec.path}</div>
               <div className="text-[10px] uppercase tracking-widest text-[#555]">
-                {spec.text ? `${words(spec.text)} words · ${readTime(spec.text.length)}` : "loading…"}
+                {spec.text
+                  ? `${words(spec.text)} words · ~${fmtTokens(tokensOf(spec.text))} tokens · ${readTime(spec.text.length)}`
+                  : "loading…"}
               </div>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-widest">
+            {spec.text && isSpecifyPath(spec.path) && (
+              <button
+                onClick={() => setSddOpen(true)}
+                className="min-h-11 sm:min-h-9 inline-flex items-center border border-[#00ff66] bg-[#00ff66] px-3 text-black"
+                title="Compile this spec into tasks.md, test skeletons and agent prompt chains"
+              >
+                ⚡ COMPILE SPEC TO SCAFFOLD
+              </button>
+            )}
             <a
               href={ghBlobUrl(spec.path, branch)}
               target="_blank"
