@@ -688,6 +688,15 @@ function Index() {
                 ⚠️<span className="hidden md:inline ml-1">DRIFT</span>
               </button>
               <button
+                onClick={() => setLoopOpen(true)}
+                disabled={!owner}
+                className={`${btn} border-[#c07cff] text-[#c07cff] hover:border-[#c07cff] hover:text-black hover:bg-[#c07cff] disabled:opacity-40`}
+                title="Infinity Loop — synthesize all project specs and self-improve"
+                aria-label="Open infinity loop self-improving spec engine"
+              >
+                ♾️<span className="hidden md:inline ml-1">INFINITY LOOP</span>
+              </button>
+              <button
                 onClick={() => setNewOpen(true)}
                 disabled={!owner}
                 className={`${btn} border-[#00ff66] text-[#00ff66] disabled:opacity-40`}
