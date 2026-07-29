@@ -10,7 +10,7 @@
  */
 
 export type ExternalProvider = {
-  id: "chatgpt" | "claude" | "gemini" | "kimi";
+  id: "chatgpt" | "claude" | "gemini" | "kimi" | "perplexity";
   label: string;
   dot: string;
   color: string;
@@ -26,7 +26,7 @@ export const EXTERNAL_PROVIDERS: ExternalProvider[] = [
     label: "ChatGPT",
     dot: "🟢",
     color: "#00ff66",
-    urlLimit: 6000,
+    urlLimit: 8000,
     url: (p) => (p ? `https://chatgpt.com/?q=${encodeURIComponent(p)}` : "https://chatgpt.com/"),
   },
   {
@@ -34,7 +34,7 @@ export const EXTERNAL_PROVIDERS: ExternalProvider[] = [
     label: "Claude",
     dot: "🟣",
     color: "#c07cff",
-    urlLimit: 6000,
+    urlLimit: 8000,
     url: (p) => (p ? `https://claude.ai/new?q=${encodeURIComponent(p)}` : "https://claude.ai/new"),
   },
   {
@@ -42,16 +42,30 @@ export const EXTERNAL_PROVIDERS: ExternalProvider[] = [
     label: "Google Gemini",
     dot: "🔵",
     color: "#5599ff",
-    urlLimit: 0,
-    url: () => "https://gemini.google.com/app",
+    urlLimit: 4000,
+    url: (p) =>
+      p
+        ? `https://gemini.google.com/app?q=${encodeURIComponent(p)}`
+        : "https://gemini.google.com/app",
+  },
+  {
+    id: "perplexity",
+    label: "Perplexity",
+    dot: "🔎",
+    color: "#22d3ee",
+    urlLimit: 6000,
+    url: (p) =>
+      p
+        ? `https://www.perplexity.ai/search?q=${encodeURIComponent(p)}`
+        : "https://www.perplexity.ai/",
   },
   {
     id: "kimi",
     label: "Kimi AI",
     dot: "🌙",
     color: "#ffaa00",
-    urlLimit: 0,
-    url: () => "https://www.kimi.com/",
+    urlLimit: 6000,
+    url: (p) => (p ? `https://www.kimi.com/?q=${encodeURIComponent(p)}` : "https://www.kimi.com/"),
   },
 ];
 
@@ -73,19 +87,25 @@ export function buildExternalPayload(opts: {
   rawText: string;
   action: string;
   directive?: string;
+  repo?: string;
 }): string {
   return [
+    "[CONTEXT ATTACHED FROM SPEC DASH]",
+    opts.repo ? `Repository: ${opts.repo}` : null,
+    `Active File: ${opts.path}`,
+    "",
     "[ SYSTEM DIRECTIVE / GUIDELINES ]",
     opts.directive?.trim() || DEFAULT_DIRECTIVE,
     "",
-    "[ ACTIVE SPEC CONTEXT ]",
-    `File: ${opts.path}`,
     "---",
     clampSpec(opts.rawText ?? ""),
+    "---",
     "",
-    "[ PROMPT / USER ACTION ]",
+    "[INSTRUCTION]:",
     opts.action.trim(),
-  ].join("\n");
+  ]
+    .filter((l): l is string => l !== null)
+    .join("\n");
 }
 
 export async function copyText(text: string): Promise<boolean> {

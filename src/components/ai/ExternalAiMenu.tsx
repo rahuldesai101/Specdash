@@ -19,6 +19,7 @@ export function ExternalAiMenu({
   text,
   action,
   directive,
+  repo,
   dropUp = false,
   className = "",
   compact = false,
@@ -28,6 +29,7 @@ export function ExternalAiMenu({
   text: string | null;
   action: string;
   directive?: string;
+  repo?: string;
   dropUp?: boolean;
   className?: string;
   /** Renders a minimal icon-sized trigger (used in code-block toolbars). */
@@ -93,7 +95,7 @@ export function ExternalAiMenu({
     };
   }, [open]);
 
-  const payload = () => buildExternalPayload({ path, rawText: text ?? "", action, directive });
+  const payload = () => buildExternalPayload({ path, rawText: text ?? "", action, directive, repo });
 
   const go = async (p: ExternalProvider) => {
     setOpen(false);
@@ -101,13 +103,11 @@ export function ExternalAiMenu({
       toast.error("SPEC_NOT_LOADED");
       return;
     }
-    const { copied, prefilled } = await launchExternalAi(p, payload());
+    const { copied } = await launchExternalAi(p, payload());
     toast.success(
-      prefilled
-        ? `${p.label} OPENED — prompt prefilled`
-        : copied
-          ? `${p.label} OPENED — payload copied, paste with Ctrl/Cmd+V`
-          : `${p.label} OPENED — clipboard blocked, copy manually`,
+      copied
+        ? `[ ⚡ Content copied & passed to ${p.label}. Press Ctrl+V if field isn't pre-filled ]`
+        : `[ ⚡ ${p.label} opened — clipboard blocked, copy the payload manually ]`,
     );
   };
 
