@@ -36,7 +36,7 @@ import { AgentOsBanner, AgentOsPanel } from "@/components/agents/AgentOsPanel";
 import { DriftInspector } from "@/components/drift/DriftInspector";
 import { SddCompilerPanel } from "@/components/sdd/SddCompilerPanel";
 import { InfinityLoopModal } from "@/components/infinity/InfinityLoopModal";
-import { BridgePanel, BridgePill } from "@/components/bridge/BridgePanel";
+import { BridgePanel } from "@/components/bridge/BridgePanel";
 import { useCliBridge } from "@/hooks/use-cli-bridge";
 import { SelectionBar, type SelectionPayload } from "@/components/ai/SelectionBar";
 import { EnvGuard } from "@/components/devtools/EnvGuard";
@@ -928,7 +928,7 @@ function Index() {
                 <span className="shrink-0 text-[#444]">⇄</span>
               </button>
               <span
-                className="hidden xl:inline-block h-2 w-2 shrink-0 animate-pulse"
+                className="inline-block h-2 w-2 shrink-0 animate-pulse"
                 style={{ backgroundColor: dot }}
                 title={status}
               />
@@ -1371,16 +1371,6 @@ function Td({ children, className = "" }: { children: React.ReactNode; className
   return <td className={`border border-hard px-3 py-2 ${className}`}>{children}</td>;
 }
 
-function Pill({ tone, children }: { tone: string; children: React.ReactNode }) {
-  return (
-    <span
-      className="inline-flex shrink-0 items-center border px-1.5 py-0.5"
-      style={{ borderColor: `${tone}44`, color: tone }}
-    >
-      {children}
-    </span>
-  );
-}
 
 function Stat({ label, value, accent }: { label: string; value: string | number; accent?: string }) {
   const v = typeof value === "number" ? String(value).padStart(4, "0") : value;
