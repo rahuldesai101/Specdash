@@ -159,6 +159,8 @@ export const HOTKEY_GROUPS: HotkeyGroup[] = [
       { keys: ["G", "then", "R"], desc: "Go to README / How It Works" },
       { keys: ["["], desc: "Toggle left navigation rail" },
       { keys: ["]"], desc: "Toggle spec reader" },
+      { keys: ["Alt", "L"], desc: "Toggle Local Workspace CLI Bridge" },
+      { keys: ["Alt", "S"], desc: "Open Saved Prompt shelf" },
       { keys: ["Esc"], desc: "Close drawers, modals and reader" },
     ],
   },
