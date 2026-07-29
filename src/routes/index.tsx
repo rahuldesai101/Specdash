@@ -30,6 +30,11 @@ import { ReadmeModal } from "@/components/layout/ReadmeModal";
 import { editFileIntentUrl } from "@/lib/git-intent";
 import { detectRootSpecs, parseAgentSpec, type RootSpec } from "@/lib/agents-spec";
 import { AgentOsBanner, AgentOsPanel } from "@/components/agents/AgentOsPanel";
+import { DriftInspector } from "@/components/drift/DriftInspector";
+import { SddCompilerPanel } from "@/components/sdd/SddCompilerPanel";
+import { isSpecifyPath } from "@/lib/sdd-compiler";
+import { isRuleSource } from "@/lib/spec-drift";
+import { fmtTokens, tokensFromBytes, tokensOf } from "@/lib/context-pack";
 import {
   appPermalink,
   ghBlobUrl as buildBlobUrl,
@@ -110,6 +115,8 @@ function Index() {
   const [agentOpen, setAgentOpen] = useState(false);
   const [sideBySide, setSideBySide] = useState(false);
   const [seed, setSeed] = useState<{ text: string; nonce: number } | null>(null);
+  const [driftOpen, setDriftOpen] = useState(false);
+  const [sddOpen, setSddOpen] = useState(false);
 
   useEffect(() => {
     const dl = parseDeepLink(window.location.search);
@@ -146,6 +153,8 @@ function Index() {
         setKeysOpen(false);
         setCmdOpen(false);
         setAgentOpen(false);
+        setDriftOpen(false);
+        setSddOpen(false);
         setAiOpen(false);
         setPatOpen(false);
         setNewOpen(false);
