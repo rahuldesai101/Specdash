@@ -90,7 +90,7 @@ export function useCliBridge(): CliBridge {
     } catch (e) {
       setState("ERROR");
       setError(e instanceof Error ? e.message : "BRIDGE_URL_REJECTED");
-      return;
+      return false;
     }
     setBridgeEnabled(true);
     setEnabled(true);
