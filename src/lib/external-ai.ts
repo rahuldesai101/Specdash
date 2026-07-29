@@ -91,7 +91,7 @@ export function buildExternalPayload(opts: {
 }): string {
   return [
     "[CONTEXT ATTACHED FROM SPEC DASH]",
-    opts.repo ? `Repository: ${opts.repo}` : "",
+    opts.repo ? `Repository: ${opts.repo}` : null,
     `Active File: ${opts.path}`,
     "",
     "[ SYSTEM DIRECTIVE / GUIDELINES ]",
@@ -104,7 +104,7 @@ export function buildExternalPayload(opts: {
     "[INSTRUCTION]:",
     opts.action.trim(),
   ]
-    .filter((l, i) => l !== "" || i > 0)
+    .filter((l): l is string => l !== null)
     .join("\n");
 }
 
