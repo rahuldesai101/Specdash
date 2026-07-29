@@ -20,6 +20,8 @@ export type HotkeyAction =
   | "specOpenGithub"
   | "toggleRail"
   | "toggleReader"
+  | "toggleBridge"
+  | "promptShelf"
   | "escape";
 
 type Handler = () => void;
@@ -85,6 +87,8 @@ export function installHotkeys(): () => void {
         v: "specToggleSideBySide",
         c: "specCopyRaw",
         g: "specOpenGithub",
+        l: "toggleBridge",
+        s: "promptShelf",
       };
       const action = map[key];
       if (action) {
