@@ -295,10 +295,14 @@ export function SearchModal({
               </button>
             );
           })}
+          </>
+          )}
         </div>
 
         <div className="border-t border-hard px-4 py-2 text-[9px] uppercase tracking-widest text-[#555]">
-          ↑↓ NAVIGATE · ENTER {packMode ? "TOGGLE FILE" : "OPEN"} · SNIPPET HITS LAUNCH THE PLAYGROUND
+          {filter === "prompts"
+            ? "MUSTACHE {{VARIABLES}} AUTO-FILL FROM THE OPEN SPEC · SAVED LOCALLY"
+            : `↑↓ NAVIGATE · ENTER ${packMode ? "TOGGLE FILE" : "OPEN"} · SNIPPET HITS LAUNCH THE PLAYGROUND`}
         </div>
       </div>
     </div>
