@@ -70,3 +70,8 @@ function CodeBlockImpl({
     </div>
   );
 }
+/** Snippets are immutable strings — re-render only when the code itself changes. */
+export const CodeBlock = memo(
+  CodeBlockImpl,
+  (a, b) => a.code === b.code && a.lang === b.lang && a.path === b.path && a.onRun === b.onRun,
+);
