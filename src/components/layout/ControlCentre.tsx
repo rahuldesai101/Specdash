@@ -2,14 +2,15 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { EXTERNAL_PROVIDERS } from "@/lib/external-ai";
 import { getPreferredProviderId, setPreferredProviderId } from "@/lib/external-ai";
+import { getThemeMode, setThemeMode, type ThemeMode } from "@/lib/theme";
 
-const THEME_KEY = "sd:theme";
+export { applyStoredTheme } from "@/lib/theme";
 
-export function applyStoredTheme() {
-  if (typeof document === "undefined") return;
-  const t = localStorage.getItem(THEME_KEY) === "light" ? "light" : "dark";
-  document.documentElement.setAttribute("data-theme", t);
-}
+const THEME_OPTIONS: Array<{ id: ThemeMode; label: string }> = [
+  { id: "light", label: "☀️ LIGHT" },
+  { id: "dark", label: "🌙 DARK" },
+  { id: "system", label: "💻 SYSTEM" },
+];
 
 /**
  * ⚙️ CONTROL CENTRE — right-side slide-over holding every global setting:
@@ -37,11 +38,7 @@ export function ControlCentre({
   onOpenReadme: () => void;
 }) {
   const [target, setTarget] = useState(getPreferredProviderId());
-  const [theme, setTheme] = useState<"dark" | "light">(
-    typeof document !== "undefined" && document.documentElement.getAttribute("data-theme") === "light"
-      ? "light"
-      : "dark",
-  );
+  const [theme, setTheme] = useState<ThemeMode>(getThemeMode);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -49,10 +46,9 @@ export function ControlCentre({
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const setThemeAndStore = (t: "dark" | "light") => {
+  const setThemeAndStore = (t: ThemeMode) => {
     setTheme(t);
-    localStorage.setItem(THEME_KEY, t);
-    document.documentElement.setAttribute("data-theme", t);
+    setThemeMode(t);
   };
 
   return (
@@ -104,14 +100,18 @@ export function ControlCentre({
 
           <Section title="APPEARANCE & CACHE">
             <div className="flex gap-1 px-3 pb-2">
-              {(["dark", "light"] as const).map((t) => (
+              {THEME_OPTIONS.map((t) => (
                 <button
-                  key={t}
-                  onClick={() => setThemeAndStore(t)}
-                  className="flex-1 border px-2 py-2 text-[10px] uppercase tracking-widest"
-                  style={{ borderColor: theme === t ? "var(--t-green)" : "var(--t-line)", color: theme === t ? "var(--t-green)" : "var(--t-dim)" }}
+                  key={t.id}
+                  aria-pressed={theme === t.id}
+                  onClick={() => setThemeAndStore(t.id)}
+                  className="flex-1 border px-1 py-2 text-[10px] uppercase tracking-widest transition-colors duration-150"
+                  style={{
+                    borderColor: theme === t.id ? "var(--t-green)" : "var(--t-line)",
+                    color: theme === t.id ? "var(--t-green)" : "var(--t-dim)",
+                  }}
                 >
-                  {t === "dark" ? "🌑 DARK" : "☀ LIGHT"}
+                  {t.label}
                 </button>
               ))}
             </div>
