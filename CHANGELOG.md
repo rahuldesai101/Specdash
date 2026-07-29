@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- **AI Context Tree:** directory rail and record table now show byte size plus estimated token count (`~1.2k tokens`) per file, per directory, and per repository.
+- **Pack Context Window:** `Ctrl+K` search gains a `[ 🎒 PACK CONTEXT WINDOW ]` mode — multi-select specs, live `tokens / 200,000 (x%)` budget meter, and 1-click copy of the packed prompt for Claude Code, Cursor, or ChatGPT.
+- **Spec Drift Inspector:** extracts non-negotiable rules from `AGENTS.md`, `constitution.md`, `.cursorrules` and `/docs/adr/*.md`, cross-references the last 10 commits' changed files, and flags `⚠️ Spec Drift Warning` violations with rule text, commit and author.
+- **SDD Compiler:** `⚡ COMPILE SPEC TO SCAFFOLD` on `.specify/**.md` specs generates `tasks.md`, per-requirement `*.spec.ts` test skeletons, a 4-stage agent prompt chain, and 1-click Claude Code / Cursor / GitHub Copilot CLI commands.
 - In-memory full-text search engine (MiniSearch) indexing file names, paths, headings, frontmatter tags and raw content, with fuzzy/prefix matching, highlighted line snippets and All/Specs/Agent Rules/Code Snippets filter tabs.
 - Interactive code-block toolbar: Run in Playground (with `{{var}}` detection), Copy Command, Test in External AI; plus 1-click SKILL.md executable skill pills.
 - Global keyboard shortcut engine (Ctrl+K, `?`, G-chord navigation, Alt+P/E/D/V/C/G, Ctrl+Enter) with a terminal-styled cheat-sheet overlay.

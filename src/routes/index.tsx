@@ -30,6 +30,11 @@ import { ReadmeModal } from "@/components/layout/ReadmeModal";
 import { editFileIntentUrl } from "@/lib/git-intent";
 import { detectRootSpecs, parseAgentSpec, type RootSpec } from "@/lib/agents-spec";
 import { AgentOsBanner, AgentOsPanel } from "@/components/agents/AgentOsPanel";
+import { DriftInspector } from "@/components/drift/DriftInspector";
+import { SddCompilerPanel } from "@/components/sdd/SddCompilerPanel";
+import { isSpecifyPath } from "@/lib/sdd-compiler";
+import { isRuleSource } from "@/lib/spec-drift";
+import { fmtTokens, tokensFromBytes, tokensOf } from "@/lib/context-pack";
 import {
   appPermalink,
   ghBlobUrl as buildBlobUrl,
@@ -110,6 +115,8 @@ function Index() {
   const [agentOpen, setAgentOpen] = useState(false);
   const [sideBySide, setSideBySide] = useState(false);
   const [seed, setSeed] = useState<{ text: string; nonce: number } | null>(null);
+  const [driftOpen, setDriftOpen] = useState(false);
+  const [sddOpen, setSddOpen] = useState(false);
 
   useEffect(() => {
     const dl = parseDeepLink(window.location.search);
@@ -146,6 +153,8 @@ function Index() {
         setKeysOpen(false);
         setCmdOpen(false);
         setAgentOpen(false);
+        setDriftOpen(false);
+        setSddOpen(false);
         setAiOpen(false);
         setPatOpen(false);
         setNewOpen(false);
@@ -309,6 +318,11 @@ function Index() {
 
   const rows = groups.find(([d]) => d === activeDir)?.[1] ?? [];
   const agentsFile = files.find((f) => /^(agents\.md|llms\.txt)$/i.test(f.name));
+  const ruleFiles = useMemo(
+    () => [...new Set([...rootSpecs.map((s) => s.path), ...files.map((f) => f.path).filter(isRuleSource)])],
+    [rootSpecs, files],
+  );
+  const totalTokens = useMemo(() => files.reduce((n, f) => n + tokensFromBytes(f.size), 0), [files]);
 
   const dot =
     status === "SYNCED" ? "#00ff66" : status === "SYNCING" ? "#ffaa00" : status === "ERROR" ? "#ff5500" : "#666";
@@ -389,7 +403,7 @@ function Index() {
 
       <div className="flex-1 overflow-y-auto py-2">
         <div className="px-3 pb-2 text-[10px] uppercase tracking-widest text-[#666]">
-          [ DIRECTORIES: {String(groups.length).padStart(2, "0")} ]
+          [ AI_CONTEXT_TREE: {String(groups.length).padStart(2, "0")} DIRS · ~{fmtTokens(totalTokens)} TOK ]
         </div>
         {groups.map(([dir, list]) => (
           <div
@@ -402,10 +416,17 @@ function Index() {
                 setActiveDir(dir);
                 setMobileNav(false);
               }}
-              className="flex-1 min-w-0 min-h-11 px-3 text-left text-[11px] uppercase tracking-wider truncate"
+              className="flex-1 min-w-0 min-h-11 px-3 py-1 text-left text-[11px] uppercase tracking-wider"
               style={{ color: activeDir === dir ? "#000" : "#fff" }}
             >
-              📁 /{dir} ({String(list.length).padStart(2, "0")})
+              <span className="block truncate">📁 /{dir} ({String(list.length).padStart(2, "0")})</span>
+              <span
+                className="block text-[9px] tracking-widest"
+                style={{ color: activeDir === dir ? "#000" : "#666" }}
+              >
+                {fmtSize(list.reduce((n, f) => n + f.size, 0))} · ~
+                {fmtTokens(list.reduce((n, f) => n + tokensFromBytes(f.size), 0))} tokens
+              </span>
             </button>
             {owner && (
               <a
@@ -463,11 +484,22 @@ function Index() {
             <div className="min-w-0">
               <div className="truncate text-[12px] uppercase tracking-widest text-[#00ff66]">/{spec.path}</div>
               <div className="text-[10px] uppercase tracking-widest text-[#555]">
-                {spec.text ? `${words(spec.text)} words · ${readTime(spec.text.length)}` : "loading…"}
+                {spec.text
+                  ? `${words(spec.text)} words · ~${fmtTokens(tokensOf(spec.text))} tokens · ${readTime(spec.text.length)}`
+                  : "loading…"}
               </div>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-widest">
+            {spec.text && isSpecifyPath(spec.path) && (
+              <button
+                onClick={() => setSddOpen(true)}
+                className="min-h-11 sm:min-h-9 inline-flex items-center border border-[#00ff66] bg-[#00ff66] px-3 text-black"
+                title="Compile this spec into tasks.md, test skeletons and agent prompt chains"
+              >
+                ⚡ COMPILE SPEC TO SCAFFOLD
+              </button>
+            )}
             <a
               href={ghBlobUrl(spec.path, branch)}
               target="_blank"
@@ -644,6 +676,15 @@ function Index() {
                 </button>
               )}
               <button
+                onClick={() => setDriftOpen(true)}
+                disabled={!owner}
+                className={`${btn} border-[#ff5500] text-[#ff5500] disabled:opacity-40`}
+                title="Spec Drift Inspector — compare recent commits against AGENTS.md / constitution.md / ADRs"
+                aria-label="Open spec drift inspector"
+              >
+                ⚠️<span className="hidden md:inline ml-1">DRIFT</span>
+              </button>
+              <button
                 onClick={() => setNewOpen(true)}
                 disabled={!owner}
                 className={`${btn} border-[#00ff66] text-[#00ff66] disabled:opacity-40`}
@@ -747,6 +788,9 @@ function Index() {
                     <div className="truncate text-[11px] text-[#888]">/{f.path}</div>
                     <div className="mt-1 flex flex-wrap gap-2 text-[10px] uppercase tracking-widest text-[#555]">
                       <span className="border border-hard px-2 py-0.5">{fmtSize(f.size)}</span>
+                      <span className="border border-hard px-2 py-0.5 text-[#00ff66]">
+                        ~{fmtTokens(tokensFromBytes(f.size))} tok
+                      </span>
                       <span className="border border-hard px-2 py-0.5">{readTime(f.size)}</span>
                       <span className="border border-hard px-2 py-0.5">{f.sha.slice(0, 7)}</span>
                     </div>
@@ -787,6 +831,7 @@ function Index() {
                       <Th>FILE_NAME</Th>
                       <Th>RELATIVE_PATH</Th>
                       <Th>SIZE</Th>
+                      <Th>TOKENS</Th>
                       <Th>READ</Th>
                       <Th>SHA</Th>
                       <Th>ACTIONS</Th>
@@ -803,6 +848,7 @@ function Index() {
                         <Td className="text-white">{f.name}</Td>
                         <Td className="text-[#888]">/{f.path}</Td>
                         <Td className="tabular-nums text-[#666]">{fmtSize(f.size)}</Td>
+                        <Td className="tabular-nums text-[#00ff66]">~{fmtTokens(tokensFromBytes(f.size))}</Td>
                         <Td className="text-[#666]">{readTime(f.size)}</Td>
                         <Td className="tabular-nums text-[#666]">{f.sha.slice(0, 10)}</Td>
                         <Td>
@@ -936,6 +982,7 @@ function Index() {
       {cmdOpen && (
         <SearchModal
           state={searchState}
+          repoLabel={`${owner}/${repo}`}
           onClose={() => setCmdOpen(false)}
           onOpen={openSpec}
           onRunSnippet={(code, lang, path) => {
@@ -943,6 +990,24 @@ function Index() {
             runSnippet(code, lang);
           }}
         />
+      )}
+
+      {driftOpen && owner && (
+        <DriftInspector
+          owner={owner}
+          repo={repo}
+          branch={branch}
+          ruleFiles={ruleFiles}
+          onClose={() => setDriftOpen(false)}
+          onOpenFile={(p) => {
+            setDriftOpen(false);
+            openSpec(p);
+          }}
+        />
+      )}
+
+      {sddOpen && spec?.text && (
+        <SddCompilerPanel path={spec.path} text={spec.text} onClose={() => setSddOpen(false)} />
       )}
 
       {newOpen && owner && (
