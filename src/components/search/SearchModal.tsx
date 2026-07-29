@@ -187,7 +187,7 @@ export function SearchModal({
                   color: filter === t.id ? "#00ff66" : "#888",
                 }}
               >
-                {t.label} {String(counts[t.id === "all" ? "all" : t.id]).padStart(2, "0")}
+                {t.label} {t.id === "prompts" ? "" : String(counts[t.id]).padStart(2, "0")}
               </button>
             ))}
             <button
@@ -206,12 +206,12 @@ export function SearchModal({
           </div>
         </div>
 
-        {packMode && (
+        {packMode && filter !== "prompts" && (
           <div className="border-b border-hard px-4 py-2 text-[10px] uppercase tracking-widest">
             <div className="flex flex-wrap items-center gap-2">
               <span style={{ color: packPct > 100 ? "#ff5500" : "#00ff66" }}>
                 [ {packTokens.toLocaleString()} / {CONTEXT_WINDOW.toLocaleString()} TOKENS ({packPct.toFixed(1)}%) ·{" "}
-                {picked.length} FILES ]
+                {packFiles.length} FILES ]
               </span>
               <button onClick={() => setPicked([])} className="border border-[#333] px-2 py-1 text-[#888] hover:text-white">
                 CLEAR
@@ -242,6 +242,10 @@ export function SearchModal({
         )}
 
         <div className="min-h-0 flex-1 overflow-y-auto p-3 text-[11px]">
+          {filter === "prompts" ? (
+            <PromptShelf ctx={shelfCtx} onRun={onRunPreset} />
+          ) : (
+          <>
           {hits.length === 0 && (
             <div className="px-2 py-6 text-center text-[11px] uppercase tracking-widest text-[#555]">
               &gt; NO_MATCHES
