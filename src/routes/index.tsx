@@ -982,6 +982,7 @@ function Index() {
       {cmdOpen && (
         <SearchModal
           state={searchState}
+          repoLabel={`${owner}/${repo}`}
           onClose={() => setCmdOpen(false)}
           onOpen={openSpec}
           onRunSnippet={(code, lang, path) => {
@@ -989,6 +990,24 @@ function Index() {
             runSnippet(code, lang);
           }}
         />
+      )}
+
+      {driftOpen && owner && (
+        <DriftInspector
+          owner={owner}
+          repo={repo}
+          branch={branch}
+          ruleFiles={ruleFiles}
+          onClose={() => setDriftOpen(false)}
+          onOpenFile={(p) => {
+            setDriftOpen(false);
+            openSpec(p);
+          }}
+        />
+      )}
+
+      {sddOpen && spec?.text && (
+        <SddCompilerPanel path={spec.path} text={spec.text} onClose={() => setSddOpen(false)} />
       )}
 
       {newOpen && owner && (
