@@ -35,6 +35,9 @@ import { DriftInspector } from "@/components/drift/DriftInspector";
 import { SddCompilerPanel } from "@/components/sdd/SddCompilerPanel";
 import { InfinityLoopModal } from "@/components/infinity/InfinityLoopModal";
 import { ApiSandbox } from "@/components/devtools/ApiSandbox";
+import { BridgePanel, BridgePill } from "@/components/bridge/BridgePanel";
+import { useCliBridge } from "@/hooks/use-cli-bridge";
+import { SelectionBar, type SelectionPayload } from "@/components/ai/SelectionBar";
 import { EnvGuard } from "@/components/devtools/EnvGuard";
 import { DependencyRadar } from "@/components/devtools/DependencyRadar";
 import { ReleaseStudio } from "@/components/devtools/ReleaseStudio";
@@ -129,7 +132,12 @@ function Index() {
   const [envOpen, setEnvOpen] = useState(false);
   const [depsOpen, setDepsOpen] = useState(false);
   const [relOpen, setRelOpen] = useState(false);
+  const [bridgeOpen, setBridgeOpen] = useState(false);
+  const [selPack, setSelPack] = useState<{ path: string; content: string }[]>([]);
+  const [cmdTab, setCmdTab] = useState<"all" | "prompts">("all");
+  const [loopSeed, setLoopSeed] = useState<string>("");
   const navigate = useNavigate();
+  const bridge = useCliBridge();
 
   useEffect(() => {
     const dl = parseDeepLink(window.location.search);
@@ -152,6 +160,11 @@ function Index() {
     const uninstall = installHotkeys();
     const offs = [
       onHotkey("search", () => setCmdOpen((v) => !v)),
+      onHotkey("toggleBridge", () => setBridgeOpen((v) => !v)),
+      onHotkey("promptShelf", () => {
+        setCmdTab("prompts");
+        setCmdOpen(true);
+      }),
       onHotkey("help", () => setKeysOpen((v) => !v)),
       onHotkey("toggleRail", () => setRailOpen((v) => !v)),
       onHotkey("toggleReader", () => setReaderOpen((v) => !v)),
@@ -178,6 +191,7 @@ function Index() {
         setDepsOpen(false);
         setRelOpen(false);
         setReadmeOpen(false);
+        setBridgeOpen(false);
         setSpec(null);
       }),
     ];
